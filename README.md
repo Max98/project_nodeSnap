@@ -1,5 +1,7 @@
 # project_nodeSnap
-Rigs of rods truck file editor
+Open source Rigs of rods truck file editor
 
-Based on the old rorEditozer.
-Made with Electron, VueJS and Typescript
+Based on the old rorEditozer. \n
+Made with Electron, VueJS and Typescript \n
+
+Source code to come soon..
