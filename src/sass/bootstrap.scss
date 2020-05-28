@@ -1,0 +1,172 @@
+@import "./var.scss";
+
+//
+//Font sizes
+//
+@import "./font.scss";
+
+$font-family-sans-serif: "Source Sans Pro", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol";
+
+$font-size-base: 1rem; // Assumes the browser default, typically `16px`
+$font-size-sm: $font-size-base * 0.795;
+$font-size-lg: $font-size-base * 1.15;
+
+$h1-font-size: $font-size-base * 2;
+$h2-font-size: $font-size-base * 1.75;
+$h3-font-size: $font-size-base * 1.5;
+$h4-font-size: $font-size-base * 1.25;
+$h5-font-size: $font-size-base * 1.15;
+$h6-font-size: $font-size-base;
+
+$paragraph-margin-bottom: 0.3rem;
+$font-weight-bolder: 600;
+
+//
+// Forms
+//
+$input-bg: #00000066;
+$input-color: #fcfcfcdd;
+$input-placeholder-color: rgba(255, 255, 255, 0.5);
+
+//$input-disabled-bg: $gray-200 ;
+//$input-disabled-border-color: null ;
+$input-border-color: transparent;
+//$input-border-width: $input-btn-border-width ;
+//$input-box-shadow: $box-shadow-inset ;
+
+//
+//containers
+//
+$container-max-widths: (
+    sm: 100%,
+    md: 100%,
+    lg: 100%,
+    xl: 100%,
+    xxl: 100%
+);
+
+/**
+*
+*   Breadcrumb
+*/
+
+$breadcrumb-bg: $gray-900;
+
+//List group
+$list-group-color: white;
+
+$list-group-item-bg-level: -9;
+$list-group-item-color-level: 6;
+
+$list-group-hover-bg: $gray-700;
+
+$list-group-bg: $gray-800;
+
+$list-group-action-color: $gray-100;
+$list-group-action-hover-color: $list-group-action-color;
+
+$list-group-action-active-color: $body-color;
+$list-group-action-active-bg: $gray-200;
+
+@import "node_modules/bootstrap/scss/bootstrap";
+
+//set sidebar header height the same as the navbar (56px)
+$b-sidebar-header-padding-y: 10px;
+$b-sidebar-width: 265px;
+
+@import "node_modules/bootstrap-vue/src/index.scss";
+
+.side_bar_col {
+    flex: 0 0 $b-sidebar-width !important;
+    padding-right: 0 !important;
+}
+
+.nav-tabs {
+    border: none;
+    .nav-link {
+        border: none;
+    }
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus {
+    background-color: $primary;
+
+    color: white;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: $secondary;
+
+    color: white;
+}
+
+hr {
+    border-top: 1px solid rgba(0, 0, 0, 0.54);
+}
+
+a {
+    color: #ffffff80;
+    &:hover {
+        color: white;
+        text-decoration: none;
+    }
+}
+
+.navbar-text {
+    padding: 0.5rem 1rem;
+    font-size: 14px;
+    margin-top: 15px;
+}
+
+.sidebar_menu_card > .nav > .nav-item {
+    &:hover {
+        background-color: $gray-800;
+        border-radius: 5px;
+    }
+    .active {
+        border-radius: 5px;
+    }
+}
+
+//vue js stuff
+.container > div > .row {
+    margin-bottom: 20px;
+}
+
+.btn {
+    margin-right: 10px;
+}
+
+.reverse-color-a {
+    color: white;
+    &:hover {
+        color: #ffffff80;
+    }
+}
+
+.toast {
+    border-radius: 0 !important;
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #252525;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: rgb(94, 94, 94);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
