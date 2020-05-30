@@ -1,18 +1,18 @@
 <template>
-  <div id="app">
-    <transition name="fade" mode="out-in">
-      <router-view />
-    </transition>
-  </div>
+    <div id="app">
+        <transition name="fade" mode="out-in">
+            <router-view />
+        </transition>
+    </div>
 </template>
 
 <style lang="scss">
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.1s;
+    transition: opacity 0.1s;
 }
 .fade-enter,
 .fade-leave-to {
-  opacity: 0;
+    opacity: 0;
 }
 </style>

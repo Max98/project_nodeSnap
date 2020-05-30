@@ -23,7 +23,11 @@
                                 label-for="input-title"
                                 description="Vehicle name"
                             >
-                                <b-form-input id="input-title" required v-model="truckTitle"></b-form-input>
+                                <b-form-input
+                                    id="input-title"
+                                    required
+                                    v-model="truckTitle"
+                                ></b-form-input>
                             </b-form-group>
                             <b-row>
                                 <b-col>
@@ -64,7 +68,10 @@
                                     :options="fileFormatArray"
                                 ></b-form-select>
                             </b-form-group>
-                            <b-form-group label="Category" description="What's your vehicle?">
+                            <b-form-group
+                                label="Category"
+                                description="What's your vehicle?"
+                            >
                                 <b-form-select
                                     v-model="selectedCategoryValue"
                                     :options="categoryArray"
@@ -72,8 +79,14 @@
                             </b-form-group>
 
                             <template v-slot:footer>
-                                <b-button type="submit" variant="success">Create</b-button>
-                                <b-button @click="$router.push('/')" variant="secondary">Cancel</b-button>
+                                <b-button type="submit" variant="success"
+                                    >Create</b-button
+                                >
+                                <b-button
+                                    @click="$router.push('/')"
+                                    variant="secondary"
+                                    >Cancel</b-button
+                                >
                             </template>
                         </b-card>
                     </b-form>

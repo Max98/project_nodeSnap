@@ -4,7 +4,8 @@ import {
     TruckFileNodes,
     TruckFileBeams,
     TruckFileCameras,
-    TruckFileCineCam
+    TruckFileCineCam,
+    TruckFileWheels2
 } from "@/components/Editor/ts/TruckFileParser";
 
 const state = {
@@ -43,6 +44,12 @@ const actions = {
         truckData: { cameras: TruckFileCameras; cinecam: TruckFileCineCam }
     ) => {
         context.commit("setTruckCameras", truckData);
+    },
+    setTruckWheels2: (
+        context: any,
+        truckData: { wheels2: TruckFileWheels2 }
+    ) => {
+        context.commit("setTruckWheels2", truckData);
     }
 };
 
@@ -80,6 +87,9 @@ const mutations = {
     ) {
         state.truckData.cameras = truckData.cameras;
         state.truckData.cineCam = truckData.cinecam;
+    },
+    setTruckWheels2(state: any, truckData: { wheels2: TruckFileWheels2 }) {
+        state.truckData.wheels2 = truckData.wheels2;
     }
 };
 
