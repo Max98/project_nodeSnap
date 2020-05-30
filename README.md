@@ -2,8 +2,8 @@
 
 Open source Rigs of rods truck file editor
 
-Based on the old rorEditozer. \n
-Made with Electron, VueJS and Typescript \n
+Based on the old rorEditozer.
+Made with Electron, three.js, VueJS and Typescript
 
 ## Project setup
 
