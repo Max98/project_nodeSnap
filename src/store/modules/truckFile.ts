@@ -5,7 +5,8 @@ import {
     TruckFileBeams,
     TruckFileCameras,
     TruckFileCineCam,
-    TruckFileWheels2
+    TruckFileWheels2,
+    TruckFileWheels
 } from "@/components/Editor/ts/TruckFileParser";
 
 const state = {
@@ -15,6 +16,18 @@ const state = {
 const getters = {
     getTruckData: (state: any) => {
         return state.truckData;
+    },
+    getNodeRealId: (state: any) => (id: string) => {
+        return state.truckData.nodes?.filter(
+            //@ts-ignore
+            currNode => currNode.idEditor == parseInt(id)
+        )[0].id!;
+    },
+    getNodeEditorId: (state: any) => (id: string) => {
+        return state.truckData.nodes?.filter(
+            //@ts-ignore
+            currNode => currNode.id == id
+        )[0].idEditor!;
     }
 };
 
@@ -50,6 +63,9 @@ const actions = {
         truckData: { wheels2: TruckFileWheels2 }
     ) => {
         context.commit("setTruckWheels2", truckData);
+    },
+    setTruckWheels: (context: any, truckData: { wheels: TruckFileWheels }) => {
+        context.commit("setTruckWheels", truckData);
     }
 };
 
@@ -57,6 +73,8 @@ const mutations = {
     addTruckData(state: any, truckData: TruckFileInterface) {
         //state.truckData.pop();
         state.truckData = truckData;
+
+        state.truckData = JSON.parse(JSON.stringify(state.truckData));
     },
     setTruckInfo(
         state: any,
@@ -73,6 +91,7 @@ const mutations = {
             material: truckData.material
         };
         state.truckData.info.title = truckData.title;
+        state.truckData = JSON.parse(JSON.stringify(state.truckData));
     },
     setTruckNB(
         state: any,
@@ -80,6 +99,7 @@ const mutations = {
     ) {
         state.truckData.nodes = truckData.nodes;
         state.truckData.beams = truckData.beams;
+        state.truckData = JSON.parse(JSON.stringify(state.truckData));
     },
     setTruckCameras(
         state: any,
@@ -87,9 +107,15 @@ const mutations = {
     ) {
         state.truckData.cameras = truckData.cameras;
         state.truckData.cineCam = truckData.cinecam;
+        state.truckData = JSON.parse(JSON.stringify(state.truckData));
     },
     setTruckWheels2(state: any, truckData: { wheels2: TruckFileWheels2 }) {
         state.truckData.wheels2 = truckData.wheels2;
+        state.truckData = JSON.parse(JSON.stringify(state.truckData));
+    },
+    setTruckWheels(state: any, truckData: { wheels: TruckFileWheels }) {
+        state.truckData.wheels = truckData.wheels;
+        state.truckData = JSON.parse(JSON.stringify(state.truckData));
     }
 };
 

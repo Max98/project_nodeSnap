@@ -53,10 +53,139 @@ export interface TruckFileSetBeamDefaults {
 }
 
 /**
- * Wheels2
- * rorEditor will use this as default wheels instead of wheels
+ * flexbodies
  */
+export interface TruckFileFlexbodies {
+    refNode: string;
+    xNode: string;
+    yNode: string;
+    offsetX: number;
+    offsetY: number;
+    offsetZ: number;
+    rotX: number;
+    rotY: number;
+    rotZ: number;
+    meshName: string;
+    forset: string;
+    disableFlexbodyShadow?: boolean;
+    flexbodyCameraMode?: number;
+}
 
+/**
+ * Animators
+ */
+export interface TruckFileAnimators {
+    node1: string;
+    node2: string;
+    factor: number;
+    option: string;
+}
+
+/**
+ * Shocks
+ */
+export interface TruckFileShocks {
+    node1: string;
+    node2: string;
+    springRate: number;
+    damping: number;
+    maxContraction: number;
+    maxExtention: number;
+    preCompression: number;
+    options?: string;
+}
+
+/**
+ * Hydros
+ */
+export interface TruckFileHydros {
+    node1: string;
+    node2: string;
+    lengtheningFactor: number;
+    options?: string;
+    startDelay?: number;
+    stopDelay?: number;
+    startFunction?: string;
+    stopFunction?: string;
+}
+
+/**
+ * Commands
+ */
+export interface TruckFileCommands {
+    node1: string;
+    node2: string;
+    rateFactor: number;
+    maxContraction: number;
+    maxExtention: number;
+
+    contractionKey: number;
+    extentionKey: number;
+
+    option?: string;
+    description?: string;
+}
+
+/**
+ * Commands2
+ */
+export interface TruckFileCommands2 {
+    node1: string;
+    node2: string;
+    contractionRateFactor: number;
+    extentionRateFactor: number;
+
+    maxContraction: number;
+    maxExtention: number;
+
+    contractionKey: number;
+    extentionKey: number;
+
+    option?: string;
+    description?: string;
+
+    startDelay?: number;
+    stopDelay?: number;
+    startFunction?: string;
+    stropFunction?: string;
+
+    affectEngine?: number;
+    needEngine?: boolean;
+}
+
+/**
+ * Slidenodes
+ */
+export interface TruckFileSlideNodes {
+    node1: string;
+    node2: string;
+    node3: string;
+}
+
+/**
+ * Wheels
+ * rorEditor will use this as default wheels
+ */
+export interface TruckFileWheels {
+    radius: number;
+    width: number;
+    numRays: number;
+    node1: string;
+    node2: string;
+    rigNode: string;
+    braking: number;
+    drive: number;
+    refArmNode: string;
+    mass: number;
+    springness: number;
+    damping: number;
+    material: string;
+}
+
+/**
+ * Wheels2
+ *
+ */
 export interface TruckFileWheels2 {
     rimRadius: number;
     tyreRadius: number;
@@ -113,7 +242,7 @@ export interface TruckFileWings {
     minDeflection: number;
     maxDeflection: number;
     airfoil: string;
-    coeff: number;
+    coeff?: number;
 }
 
 /**
@@ -124,6 +253,7 @@ export interface TruckFileFuseDrag {
     frontNode: string;
     backNode: string;
     fuselageWidth: number;
+    airfoil: string;
 }
 
 /**
@@ -222,8 +352,8 @@ export interface TruckFileNodes {
  * Beams
  */
 export interface TruckFileBeams {
-    node1: string | number;
-    node2: string | number;
+    node1: string;
+    node2: string;
     options?: string;
     /**
      * We use id here to keep stuff in order
@@ -250,7 +380,16 @@ export interface TruckFileInterface {
     turboProp?: TruckFileTurboProp[];
     pistonProp?: TruckFilePistonProp[];
     wings?: TruckFileWings[];
+
     wheels2?: TruckFileWheels2[];
+    wheels?: TruckFileWheels[];
+
+    slidenodes?: TruckFileSlideNodes[];
+    shocks?: TruckFileShocks[];
+    commands?: TruckFileCommands[];
+    commands2?: TruckFileCommands2[];
+    hydros?: TruckFileHydros[];
+    animators?: TruckFileAnimators[];
 }
 
 export default class TruckFileLoad {
@@ -275,7 +414,12 @@ export default class TruckFileLoad {
         beams: false,
         cameras: false,
         cineCam: false,
+        wheels: false,
         wheels2: false,
+        shocks: false,
+        hydros: false,
+        commands: false,
+        commands2: false,
 
         /**
          * Planes specific
@@ -284,7 +428,14 @@ export default class TruckFileLoad {
         turboJet: false,
         turboProp: false,
         pistonProp: false,
-        wings: false
+        wings: false,
+
+        /**
+         * other stuff
+         */
+        slidenodes: false,
+        setBeamDefaults: false,
+        animators: false
     };
 
     private beamsIndex = 0;
@@ -309,6 +460,8 @@ export default class TruckFileLoad {
                 element.idEditor = index;
             }
         }
+
+        //this.processFileForEditor();
 
         console.log(this.truckFile);
 
@@ -594,6 +747,67 @@ export default class TruckFileLoad {
         }
 
         /**
+         * Wheels
+         */
+
+        if (this.parserConfig.wheels) {
+            this.parserConfig.canParse = true;
+
+            if (line.split(",").length == 1) {
+                //if line doesn't start with a number
+                //that's it, we are done here
+
+                this.parserConfig.wheels = false;
+                this.parserConfig.canParse = false;
+            }
+
+            try {
+                if (this.parserConfig.canParse) {
+                    if (line.split(",").length != 1) {
+                        {
+                            const wheels = line.split(",");
+
+                            if (this.truckFile.wheels == undefined) {
+                                this.truckFile.wheels = [];
+                            }
+
+                            //console.log(beam);
+                            const wheelsArray: TruckFileWheels = {
+                                radius: parseFloat(wheels[0]),
+                                width: parseFloat(wheels[1]),
+                                numRays: parseFloat(wheels[2]),
+                                node1: wheels[3].trim(),
+                                node2: wheels[4].trim(),
+                                rigNode: wheels[5].trim(),
+                                braking: parseFloat(wheels[6]),
+                                drive: parseFloat(wheels[7]),
+                                refArmNode: wheels[8].trim(),
+                                mass: parseFloat(wheels[9]),
+                                springness: parseFloat(wheels[10]),
+                                damping: parseFloat(wheels[11]),
+                                material: wheels[12].trim()
+                            };
+
+                            this.truckFile.wheels!.push(wheelsArray);
+                        }
+                    } else {
+                        this.parserConfig.wheels = false;
+                        this.parserConfig.isNextEmptyLine = false;
+                    }
+                }
+            } catch (error) {
+                console.log("wheels exception", error);
+                this.parserConfig.wheels = false;
+                this.parserConfig.isNextEmptyLine = false;
+
+                this.parserConfig.canParse = false;
+            }
+        }
+
+        if (line.startsWith("wheels")) {
+            this.parserConfig.wheels = true;
+        }
+        /**
          * Wheels2
          */
 
@@ -658,9 +872,597 @@ export default class TruckFileLoad {
             this.parserConfig.wheels2 = true;
         }
 
+        /**
+         * Wings
+         */
+
+        if (this.parserConfig.wings) {
+            this.parserConfig.canParse = true;
+
+            if (line.split(",").length == 1) {
+                //if line doesn't start with a number
+                //that's it, we are done here
+
+                this.parserConfig.wings = false;
+                this.parserConfig.canParse = false;
+            }
+
+            try {
+                if (this.parserConfig.canParse) {
+                    if (line.split(",").length != 1) {
+                        {
+                            const wings = line.split(",");
+
+                            if (this.truckFile.wings == undefined) {
+                                this.truckFile.wings = [];
+                            }
+
+                            //console.log(beam);
+                            const wingsArray: TruckFileWings = {
+                                nodeA: wings[0].trim(),
+                                nodeB: wings[1].trim(),
+                                nodeC: wings[2].trim(),
+                                nodeD: wings[3].trim(),
+                                nodeE: wings[4].trim(),
+                                nodeF: wings[5].trim(),
+                                nodeG: wings[6].trim(),
+                                nodeH: wings[7].trim(),
+                                frontLeftX: parseFloat(wings[8]),
+                                frontLeftY: parseFloat(wings[9]),
+                                frontRightX: parseFloat(wings[10]),
+                                frontRightY: parseFloat(wings[11]),
+                                backLeftX: parseFloat(wings[12]),
+                                backLeftY: parseFloat(wings[13]),
+                                backRightX: parseFloat(wings[14]),
+                                backRightY: parseFloat(wings[15]),
+
+                                controlType: wings[16].trim(),
+                                chordControlStart: parseFloat(wings[17]),
+                                minDeflection: parseFloat(wings[18]),
+                                maxDeflection: parseFloat(wings[19]),
+                                airfoil: wings[20].trim().split(" ")[0]
+                            };
+
+                            if (wings[20].trim().split(" ")[1]) {
+                                wingsArray.coeff = parseFloat(
+                                    wings[20].trim().split(" ")[1]
+                                );
+                            }
+
+                            this.truckFile.wings!.push(wingsArray);
+                        }
+                    } else {
+                        this.parserConfig.wings = false;
+                        this.parserConfig.isNextEmptyLine = false;
+                    }
+                }
+            } catch (error) {
+                console.log("wheels2 exception", error);
+                this.parserConfig.wings = false;
+                this.parserConfig.isNextEmptyLine = false;
+
+                this.parserConfig.canParse = false;
+            }
+        }
+
+        if (line.startsWith("wings")) {
+            this.parserConfig.wings = true;
+        }
+
+        /**
+         * Turbojets
+         */
+
+        if (this.parserConfig.turboJet) {
+            this.parserConfig.canParse = true;
+
+            if (line.split(",").length == 1) {
+                //if line doesn't start with a number
+                //that's it, we are done here
+
+                this.parserConfig.turboJet = false;
+                this.parserConfig.canParse = false;
+            }
+
+            try {
+                if (this.parserConfig.canParse) {
+                    if (line.split(",").length != 1) {
+                        {
+                            const currTurboJet = line.split(",");
+
+                            if (this.truckFile.turboJet == undefined) {
+                                this.truckFile.turboJet = [];
+                            }
+                            const turboJetsArray: TruckFileTurboJets = {
+                                frontNode: currTurboJet[0].trim(),
+                                backNode: currTurboJet[1].trim(),
+                                sideNode: currTurboJet[2].trim(),
+                                isReversable: currTurboJet[3].trim() == "1",
+                                dryThrust: parseFloat(currTurboJet[4]),
+                                wetThrust: parseFloat(currTurboJet[5]),
+                                frontDiameter: parseFloat(currTurboJet[6]),
+                                backDiameter: parseFloat(currTurboJet[7]),
+                                nozzleLenght: parseFloat(currTurboJet[8])
+                            };
+
+                            this.truckFile.turboJet!.push(turboJetsArray);
+                        }
+                    } else {
+                        this.parserConfig.turboJet = false;
+                        this.parserConfig.isNextEmptyLine = false;
+                    }
+                }
+            } catch (error) {
+                console.log("turbojets exception", error);
+                this.parserConfig.turboJet = false;
+                this.parserConfig.isNextEmptyLine = false;
+
+                this.parserConfig.canParse = false;
+            }
+        }
+
+        if (line.startsWith("turbojets")) {
+            this.parserConfig.turboJet = true;
+        }
+
+        /**
+         * fusedrag
+         */
+        if (this.parserConfig.fusedrag) {
+            const fusedrag = line.split(",");
+
+            if (this.truckFile.fusedrag == undefined) {
+                this.truckFile.fusedrag = {
+                    frontNode: "",
+                    backNode: "",
+                    fuselageWidth: 1,
+                    airfoil: "NACA0009.afl"
+                };
+            }
+
+            this.truckFile.fusedrag.frontNode = fusedrag[0].trim();
+            this.truckFile.fusedrag.backNode = fusedrag[1].trim();
+            this.truckFile.fusedrag.fuselageWidth = parseFloat(fusedrag[2]);
+            if (fusedrag[3])
+                this.truckFile.fusedrag.airfoil = fusedrag[3].trim();
+
+            this.parserConfig.fusedrag = false;
+        }
+
+        if (line.startsWith("fusedrag")) {
+            this.parserConfig.fusedrag = true;
+        }
+
+        /**
+         * Slidenodes
+         */
+
+        if (this.parserConfig.slidenodes) {
+            this.parserConfig.canParse = true;
+
+            if (line.split(",").length == 1) {
+                //if line doesn't start with a number
+                //that's it, we are done here
+
+                this.parserConfig.slidenodes = false;
+                this.parserConfig.canParse = false;
+            }
+
+            try {
+                if (this.parserConfig.canParse) {
+                    if (line.split(",").length != 1) {
+                        {
+                            const slidenodes = line.split(",");
+
+                            if (this.truckFile.slidenodes == undefined) {
+                                this.truckFile.slidenodes = [];
+                            }
+                            const slideNodesArray: TruckFileSlideNodes = {
+                                node1: slidenodes[0].trim(),
+                                node2: slidenodes[1].trim(),
+                                node3: slidenodes[2].trim()
+                            };
+
+                            this.truckFile.slidenodes!.push(slideNodesArray);
+                        }
+                    } else {
+                        this.parserConfig.slidenodes = false;
+                        this.parserConfig.isNextEmptyLine = false;
+                    }
+                }
+            } catch (error) {
+                console.log("slidenodes exception", error);
+                this.parserConfig.slidenodes = false;
+                this.parserConfig.isNextEmptyLine = false;
+
+                this.parserConfig.canParse = false;
+            }
+        }
+
+        if (line.startsWith("slidenodes")) {
+            this.parserConfig.slidenodes = true;
+        }
+
+        /**
+         * Shocks
+         */
+
+        if (this.parserConfig.shocks) {
+            this.parserConfig.canParse = true;
+
+            if (line.split(",").length == 1) {
+                //if line doesn't start with a number
+                //that's it, we are done here
+
+                this.parserConfig.shocks = false;
+                this.parserConfig.canParse = false;
+            }
+
+            try {
+                if (this.parserConfig.canParse) {
+                    if (line.split(",").length != 1) {
+                        {
+                            const shocks = line.split(",");
+
+                            if (this.truckFile.shocks == undefined) {
+                                this.truckFile.shocks = [];
+                            }
+                            const shocksArray: TruckFileShocks = {
+                                node1: shocks[0].trim(),
+                                node2: shocks[1].trim(),
+                                springRate: parseFloat(shocks[2]),
+                                damping: parseFloat(shocks[3]),
+                                maxContraction: parseFloat(shocks[4]),
+                                maxExtention: parseFloat(shocks[5]),
+                                preCompression: parseFloat(shocks[6])
+                            };
+
+                            if (shocks[7]) {
+                                shocksArray.options = shocks[7].trim();
+                            }
+
+                            this.truckFile.shocks!.push(shocksArray);
+                        }
+                    } else {
+                        this.parserConfig.shocks = false;
+                        this.parserConfig.isNextEmptyLine = false;
+                    }
+                }
+            } catch (error) {
+                console.log("shocks exception", error);
+                this.parserConfig.shocks = false;
+                this.parserConfig.isNextEmptyLine = false;
+
+                this.parserConfig.canParse = false;
+            }
+        }
+
+        if (line.startsWith("shocks")) {
+            this.parserConfig.shocks = true;
+        }
+
+        /**
+         * hydros
+         */
+
+        if (this.parserConfig.hydros) {
+            this.parserConfig.canParse = true;
+
+            if (line.split(",").length == 1) {
+                //if line doesn't start with a number
+                //that's it, we are done here
+
+                this.parserConfig.hydros = false;
+                this.parserConfig.canParse = false;
+            }
+
+            try {
+                if (this.parserConfig.canParse) {
+                    if (line.split(",").length != 1) {
+                        {
+                            const hydros = line.split(",");
+
+                            if (this.truckFile.hydros == undefined) {
+                                this.truckFile.hydros = [];
+                            }
+                            const hydrosArray: TruckFileHydros = {
+                                node1: hydros[0].trim(),
+                                node2: hydros[1].trim(),
+                                lengtheningFactor: parseFloat(hydros[2])
+                            };
+
+                            if (hydros[3]) {
+                                hydrosArray.options = hydros[3].trim();
+                            }
+
+                            if (hydros[4]) {
+                                hydrosArray.startDelay = parseFloat(hydros[4]);
+                            }
+                            if (hydros[5]) {
+                                hydrosArray.stopDelay = parseFloat(hydros[5]);
+                            }
+                            if (hydros[6]) {
+                                hydrosArray.startFunction = hydros[6]
+                                    .trim()
+                                    .split(" ")[0];
+                                if (hydros[6].trim().split(" ")[1])
+                                    hydrosArray.stopFunction = hydros[6]
+                                        .trim()
+                                        .split(" ")[1];
+                            }
+
+                            this.truckFile.hydros!.push(hydrosArray);
+                        }
+                    } else {
+                        this.parserConfig.hydros = false;
+                        this.parserConfig.isNextEmptyLine = false;
+                    }
+                }
+            } catch (error) {
+                console.log("hydros exception", error);
+                this.parserConfig.hydros = false;
+                this.parserConfig.isNextEmptyLine = false;
+
+                this.parserConfig.canParse = false;
+            }
+        }
+
+        if (line.startsWith("hydros")) {
+            this.parserConfig.hydros = true;
+        }
+
+        /**
+         * commands
+         */
+
+        if (this.parserConfig.commands) {
+            this.parserConfig.canParse = true;
+
+            if (line.split(",").length == 1) {
+                //if line doesn't start with a number
+                //that's it, we are done here
+
+                this.parserConfig.commands = false;
+                this.parserConfig.canParse = false;
+            }
+
+            try {
+                if (this.parserConfig.canParse) {
+                    if (line.split(",").length != 1) {
+                        {
+                            const commands = line.split(",");
+
+                            if (this.truckFile.commands == undefined) {
+                                this.truckFile.commands = [];
+                            }
+                            const commandsArray: TruckFileCommands = {
+                                node1: commands[0].trim(),
+                                node2: commands[1].trim(),
+                                rateFactor: parseFloat(commands[2]),
+                                maxContraction: parseFloat(commands[3]),
+                                maxExtention: parseFloat(commands[4]),
+                                contractionKey: parseFloat(commands[5]),
+                                extentionKey: parseFloat(commands[5])
+                            };
+
+                            if (commands[6]) {
+                                commandsArray.option = commands[6].trim();
+                            }
+
+                            if (commands[7]) {
+                                commandsArray.description = commands[7].trim();
+                            }
+
+                            this.truckFile.commands!.push(commandsArray);
+                        }
+                    } else {
+                        this.parserConfig.commands = false;
+                        this.parserConfig.isNextEmptyLine = false;
+                    }
+                }
+            } catch (error) {
+                console.log("commands exception", error);
+                this.parserConfig.commands = false;
+                this.parserConfig.isNextEmptyLine = false;
+
+                this.parserConfig.canParse = false;
+            }
+        }
+
+        if (line.trim() == "commands") {
+            this.parserConfig.commands = true;
+        }
+
+        /**
+         * commands2
+         */
+
+        if (this.parserConfig.commands2) {
+            this.parserConfig.canParse = true;
+
+            if (line.split(",").length == 1) {
+                //if line doesn't start with a number
+                //that's it, we are done here
+
+                this.parserConfig.commands2 = false;
+                this.parserConfig.canParse = false;
+            }
+
+            try {
+                if (this.parserConfig.canParse) {
+                    if (line.split(",").length != 1) {
+                        {
+                            const commands2 = line.split(",");
+
+                            if (this.truckFile.commands2 == undefined) {
+                                this.truckFile.commands2 = [];
+                            }
+                            const commands2Array: TruckFileCommands2 = {
+                                node1: commands2[0].trim(),
+                                node2: commands2[1].trim(),
+                                contractionRateFactor: parseFloat(commands2[2]),
+                                extentionRateFactor: parseFloat(commands2[3]),
+                                maxContraction: parseFloat(commands2[4]),
+                                maxExtention: parseFloat(commands2[5]),
+                                contractionKey: parseFloat(commands2[6]),
+                                extentionKey: parseFloat(commands2[7])
+                            };
+
+                            if (commands2[8]) {
+                                commands2Array.option = commands2[8].trim();
+                            }
+
+                            if (commands2[9]) {
+                                commands2Array.description = commands2[9].trim();
+                            }
+
+                            if (commands2[10]) {
+                                commands2Array.startDelay = parseFloat(
+                                    commands2[10]
+                                );
+                            }
+
+                            if (commands2[11]) {
+                                commands2Array.stopDelay = parseFloat(
+                                    commands2[11]
+                                );
+                            }
+
+                            if (commands2[12]) {
+                                commands2Array.startFunction = commands2[12].trim();
+                            }
+
+                            if (commands2[13]) {
+                                commands2Array.stropFunction = commands2[13].trim();
+                            }
+
+                            if (commands2[14]) {
+                                commands2Array.affectEngine = parseFloat(
+                                    commands2[14]
+                                );
+                            }
+
+                            if (commands2[15]) {
+                                commands2Array.needEngine =
+                                    commands2[15] == "true";
+                            }
+
+                            this.truckFile.commands2!.push(commands2Array);
+                        }
+                    } else {
+                        this.parserConfig.commands2 = false;
+                        this.parserConfig.isNextEmptyLine = false;
+                    }
+                }
+            } catch (error) {
+                console.log("commands2 exception", error);
+                this.parserConfig.commands2 = false;
+                this.parserConfig.isNextEmptyLine = false;
+
+                this.parserConfig.canParse = false;
+            }
+        }
+
+        if (line.trim() == "commands2") {
+            this.parserConfig.commands2 = true;
+        }
+
+        /**
+         * animators
+         */
+
+        if (this.parserConfig.animators) {
+            this.parserConfig.canParse = true;
+
+            if (line.split(",").length == 1) {
+                //if line doesn't start with a number
+                //that's it, we are done here
+
+                this.parserConfig.animators = false;
+                this.parserConfig.canParse = false;
+            }
+
+            try {
+                if (this.parserConfig.canParse) {
+                    if (line.split(",").length != 1) {
+                        {
+                            const animators = line.split(",");
+
+                            if (this.truckFile.animators == undefined) {
+                                this.truckFile.animators = [];
+                            }
+                            const animatorsArray: TruckFileAnimators = {
+                                node1: animators[0].trim(),
+                                node2: animators[1].trim(),
+                                factor: parseFloat(animators[2]),
+                                option: animators[3].trim()
+                            };
+
+                            this.truckFile.animators!.push(animatorsArray);
+                        }
+                    } else {
+                        this.parserConfig.animators = false;
+                        this.parserConfig.isNextEmptyLine = false;
+                    }
+                }
+            } catch (error) {
+                console.log("animators exception", error);
+                this.parserConfig.animators = false;
+                this.parserConfig.isNextEmptyLine = false;
+
+                this.parserConfig.canParse = false;
+            }
+        }
+
+        if (line.trim() == "animators") {
+            this.parserConfig.animators = true;
+        }
+
+        /**
+         * set_beam_defaults
+         */
+
+        if (line.startsWith("set_beam_defaults") && !this.parserConfig.beams) {
+            try {
+                if (this.truckFile.setBeamDefaults == undefined) {
+                    this.truckFile.setBeamDefaults = [];
+                }
+                const node = line.replace("set_beam_defaults", "").split(",");
+
+                //we check for comments and we jump them lol
+                //TODO this is not enough
+                let lineIndex = 0;
+                do {
+                    lineIndex++;
+                } while (array[i + lineIndex].startsWith(";"));
+
+                this.truckFile.setBeamDefaults.push({
+                    after: this.parserConfig.lastLine,
+                    before: array[i + lineIndex], //next line lol before we get there
+                    springiness: parseInt(node[0]),
+                    dampingConstant: parseInt(node[1]),
+                    deformationThresholdConstant: parseInt(node[2]),
+                    breakingThresholdConstant: parseInt(node[3])
+                    /*beamDiameter: parseInt(node[4]),
+                            beamMaterial: node[5].trim(),
+                            plasticDeformationCoef: parseInt(node[6])*/
+                });
+            } catch (error) {
+                console.log("setBeamDefaults exception", error);
+
+                this.parserConfig.isNextEmptyLine = false;
+
+                this.parserConfig.canParse = false;
+            }
+        }
+
         //Keep this last
         this.parserConfig.lastLine = line;
     }
+
+    /*processFileForEditor() {
+
+    }*/
 
     saveFile(path: string /*data: TruckFileInterface*/) {
         this.truckFile = store.getters.getTruckData;
@@ -841,7 +1643,13 @@ export default class TruckFileLoad {
                     fileStr += el.node1 + ", " + el.node2 + ", " + lineBreak; //TODO should i leave that or no
                 }*/
 
-                fileStr += el.node1 + ", " + el.node2 + ", v" + lineBreak;
+                //fileStr += this.truckFile.nodes?.filter(currNode => currNode.idEditor == el.node1)[0].id + ", " + el.node2 + ", v" + lineBreak;
+                fileStr +=
+                    this.getNodeRealId(el.node1) +
+                    ", " +
+                    this.getNodeRealId(el.node2) +
+                    ", v" +
+                    lineBreak;
             }
         }
 
@@ -853,11 +1661,11 @@ export default class TruckFileLoad {
         if (this.truckFile.cameras) {
             fileStr += "cameras" + lineBreak;
             fileStr +=
-                this.truckFile.cameras.centerNode +
-                "," +
-                this.truckFile.cameras.backNode +
-                "," +
-                this.truckFile.cameras.leftNode +
+                this.getNodeRealId(this.truckFile.cameras.centerNode) +
+                ", " +
+                this.getNodeRealId(this.truckFile.cameras.backNode) +
+                ", " +
+                this.getNodeRealId(this.truckFile.cameras.leftNode) +
                 lineBreak;
         }
 
@@ -870,28 +1678,68 @@ export default class TruckFileLoad {
             fileStr += "cinecam" + lineBreak;
             fileStr +=
                 this.truckFile.cineCam.x +
-                "," +
+                ", " +
                 this.truckFile.cineCam.y +
-                "," +
+                ", " +
                 this.truckFile.cineCam.z +
-                "," +
-                this.truckFile.cineCam.node1 +
-                "," +
-                this.truckFile.cineCam.node2 +
-                "," +
-                this.truckFile.cineCam.node3 +
-                "," +
-                this.truckFile.cineCam.node4 +
-                "," +
-                this.truckFile.cineCam.node5 +
-                "," +
-                this.truckFile.cineCam.node6 +
-                "," +
-                this.truckFile.cineCam.node7 +
-                "," +
-                this.truckFile.cineCam.node8 +
+                ", " +
+                this.getNodeRealId(this.truckFile.cineCam.node1) +
+                ", " +
+                this.getNodeRealId(this.truckFile.cineCam.node2) +
+                ", " +
+                this.getNodeRealId(this.truckFile.cineCam.node3) +
+                ", " +
+                this.getNodeRealId(this.truckFile.cineCam.node4) +
+                ", " +
+                this.getNodeRealId(this.truckFile.cineCam.node5) +
+                ", " +
+                this.getNodeRealId(this.truckFile.cineCam.node6) +
+                ", " +
+                this.getNodeRealId(this.truckFile.cineCam.node7) +
+                ", " +
+                this.getNodeRealId(this.truckFile.cineCam.node8) +
                 //TODO cinecam extras
                 lineBreak;
+        }
+
+        fileStr += lineBreak; //extra line breaks
+
+        /**
+         * Wheels
+         */
+        if (this.truckFile.wheels) {
+            fileStr += "wheels" + lineBreak;
+            for (let i = 0; i < this.truckFile.wheels.length; i++) {
+                const currWheels = this.truckFile.wheels[i];
+
+                fileStr +=
+                    currWheels.radius +
+                    ", " +
+                    currWheels.width +
+                    ", " +
+                    currWheels.numRays +
+                    ", " +
+                    this.getNodeRealId(currWheels.node1) +
+                    ", " +
+                    this.getNodeRealId(currWheels.node2) +
+                    ", " +
+                    currWheels.rigNode +
+                    ", " +
+                    currWheels.braking +
+                    ", " +
+                    currWheels.drive +
+                    ", " +
+                    currWheels.refArmNode +
+                    ", " +
+                    currWheels.mass +
+                    ", " +
+                    currWheels.springness +
+                    ", " +
+                    currWheels.damping +
+                    ", " +
+                    currWheels.material +
+                    lineBreak;
+            }
         }
 
         fileStr += lineBreak; //extra line breaks
@@ -913,9 +1761,9 @@ export default class TruckFileLoad {
                     ", " +
                     currWheels2.numRays +
                     ", " +
-                    currWheels2.node1 +
+                    this.getNodeRealId(currWheels2.node1) +
                     ", " +
-                    currWheels2.node2 +
+                    this.getNodeRealId(currWheels2.node2) +
                     ", " +
                     currWheels2.rigNode +
                     ", " +
@@ -942,6 +1790,306 @@ export default class TruckFileLoad {
 
         fileStr += lineBreak; //extra line breaks
 
+        /**
+         * Wings
+         */
+        if (this.truckFile.wings) {
+            fileStr += "wings" + lineBreak;
+            for (let i = 0; i < this.truckFile.wings.length; i++) {
+                const currWings = this.truckFile.wings[i];
+
+                fileStr +=
+                    this.getNodeRealId(currWings.nodeA) +
+                    ", " +
+                    this.getNodeRealId(currWings.nodeB) +
+                    ", " +
+                    this.getNodeRealId(currWings.nodeC) +
+                    ", " +
+                    this.getNodeRealId(currWings.nodeD) +
+                    ", " +
+                    this.getNodeRealId(currWings.nodeE) +
+                    ", " +
+                    this.getNodeRealId(currWings.nodeF) +
+                    ", " +
+                    this.getNodeRealId(currWings.nodeG) +
+                    ", " +
+                    this.getNodeRealId(currWings.nodeH) +
+                    ", " +
+                    currWings.frontLeftX +
+                    ", " +
+                    currWings.frontLeftY +
+                    ", " +
+                    currWings.frontRightX +
+                    ", " +
+                    currWings.frontRightY +
+                    ", " +
+                    currWings.backLeftX +
+                    ", " +
+                    currWings.backLeftY +
+                    ", " +
+                    currWings.backRightX +
+                    ", " +
+                    currWings.backRightY +
+                    ", " +
+                    currWings.controlType +
+                    ", " +
+                    currWings.chordControlStart +
+                    ", " +
+                    currWings.minDeflection +
+                    ", " +
+                    currWings.maxDeflection +
+                    ", " +
+                    currWings.airfoil;
+
+                if (currWings.coeff) {
+                    fileStr += " " + currWings.coeff;
+                }
+
+                fileStr += lineBreak;
+            }
+        }
+        fileStr += lineBreak;
+
+        /**
+         * Trubojets
+         */
+        if (this.truckFile.turboJet) {
+            fileStr += "turbojets" + lineBreak;
+            for (let i = 0; i < this.truckFile.turboJet.length; i++) {
+                const currTruboJet = this.truckFile.turboJet[i];
+
+                fileStr +=
+                    this.getNodeRealId(currTruboJet.frontNode) +
+                    ", " +
+                    this.getNodeRealId(currTruboJet.backNode) +
+                    ", " +
+                    this.getNodeRealId(currTruboJet.sideNode) +
+                    ", " +
+                    (currTruboJet.isReversable ? "1" : "0") +
+                    ", " +
+                    currTruboJet.dryThrust +
+                    ", " +
+                    currTruboJet.wetThrust +
+                    ", " +
+                    currTruboJet.frontDiameter +
+                    ", " +
+                    currTruboJet.backDiameter +
+                    ", " +
+                    currTruboJet.nozzleLenght +
+                    lineBreak;
+            }
+        }
+        fileStr += lineBreak;
+
+        /**
+         * fusedrag
+         */
+        if (this.truckFile.fusedrag) {
+            fileStr += "fusedrag" + lineBreak;
+            fileStr +=
+                this.getNodeRealId(this.truckFile.fusedrag.frontNode) +
+                ", " +
+                this.getNodeRealId(this.truckFile.fusedrag.backNode) +
+                ", " +
+                this.truckFile.fusedrag.fuselageWidth +
+                ", " +
+                this.truckFile.fusedrag.airfoil +
+                lineBreak;
+        }
+
+        fileStr += lineBreak; //extra line breaks
+
+        /**
+         * Slidenodes
+         */
+        if (this.truckFile.slidenodes) {
+            fileStr += "slidenodes" + lineBreak;
+            for (let i = 0; i < this.truckFile.slidenodes.length; i++) {
+                const slidenodes = this.truckFile.slidenodes[i];
+
+                fileStr +=
+                    this.getNodeRealId(slidenodes.node1) +
+                    ", " +
+                    this.getNodeRealId(slidenodes.node2) +
+                    ", " +
+                    this.getNodeRealId(slidenodes.node3) +
+                    lineBreak;
+            }
+        }
+        fileStr += lineBreak;
+
+        /**
+         * hydros
+         */
+        if (this.truckFile.hydros) {
+            fileStr += "hydros" + lineBreak;
+            for (let i = 0; i < this.truckFile.hydros.length; i++) {
+                const hydros = this.truckFile.hydros[i];
+
+                fileStr +=
+                    this.getNodeRealId(hydros.node1) +
+                    ", " +
+                    this.getNodeRealId(hydros.node2) +
+                    ", " +
+                    hydros.lengtheningFactor +
+                    ", " +
+                    hydros.options;
+
+                if (hydros.startDelay) {
+                    fileStr += ", " + hydros.startDelay;
+                }
+                if (hydros.stopDelay) {
+                    fileStr += ", " + hydros.stopDelay;
+                }
+                if (hydros.startFunction) {
+                    fileStr += ", " + hydros.startFunction;
+                    if (hydros.stopFunction) {
+                        fileStr += " " + hydros.stopFunction;
+                    }
+                }
+
+                fileStr += lineBreak;
+            }
+        }
+        fileStr += lineBreak;
+
+        /**
+         * commands
+         */
+        if (this.truckFile.commands) {
+            fileStr += "commands" + lineBreak;
+            for (let i = 0; i < this.truckFile.commands.length; i++) {
+                const commands = this.truckFile.commands[i];
+
+                fileStr +=
+                    this.getNodeRealId(commands.node1) +
+                    ", " +
+                    this.getNodeRealId(commands.node2) +
+                    ", " +
+                    commands.rateFactor +
+                    ", " +
+                    commands.maxContraction +
+                    ", " +
+                    commands.maxExtention +
+                    ", " +
+                    commands.contractionKey +
+                    ", " +
+                    commands.extentionKey;
+
+                if (commands.option) {
+                    fileStr += ", " + commands.option;
+
+                    if (commands.description) {
+                        fileStr += ", " + commands.description;
+                    }
+                }
+
+                fileStr += lineBreak;
+            }
+        }
+        fileStr += lineBreak;
+
+        /**
+         * commands2
+         */
+        if (this.truckFile.commands2) {
+            fileStr += "commands2" + lineBreak;
+            for (let i = 0; i < this.truckFile.commands2.length; i++) {
+                const commands2 = this.truckFile.commands2[i];
+
+                fileStr +=
+                    this.getNodeRealId(commands2.node1) +
+                    ", " +
+                    this.getNodeRealId(commands2.node2) +
+                    ", " +
+                    commands2.contractionRateFactor +
+                    ", " +
+                    commands2.extentionRateFactor +
+                    ", " +
+                    commands2.maxContraction +
+                    ", " +
+                    commands2.maxExtention +
+                    ", " +
+                    commands2.contractionKey +
+                    ", " +
+                    commands2.extentionKey;
+
+                if (commands2.option) {
+                    fileStr += ", " + commands2.option;
+
+                    if (commands2.description) {
+                        fileStr += ", " + commands2.description;
+                    }
+                }
+
+                fileStr += lineBreak;
+            }
+        }
+        fileStr += lineBreak;
+
+        /**
+         * shocks
+         */
+        if (this.truckFile.shocks) {
+            fileStr += "shocks" + lineBreak;
+            for (let i = 0; i < this.truckFile.shocks.length; i++) {
+                const shocks = this.truckFile.shocks[i];
+
+                fileStr +=
+                    this.getNodeRealId(shocks.node1) +
+                    ", " +
+                    this.getNodeRealId(shocks.node2) +
+                    ", " +
+                    shocks.springRate +
+                    ", " +
+                    shocks.damping +
+                    ", " +
+                    shocks.maxContraction +
+                    ", " +
+                    shocks.maxExtention +
+                    ", " +
+                    shocks.preCompression;
+
+                if (shocks.options) {
+                    fileStr += ", " + shocks.options;
+                }
+
+                fileStr += lineBreak;
+            }
+        }
+        fileStr += lineBreak;
+
+        /**
+         * Animators
+         */
+        if (this.truckFile.animators) {
+            fileStr += "animators" + lineBreak;
+            for (let i = 0; i < this.truckFile.animators.length; i++) {
+                const animators = this.truckFile.animators[i];
+
+                fileStr +=
+                    this.getNodeRealId(animators.node1) +
+                    ", " +
+                    this.getNodeRealId(animators.node2) +
+                    ", " +
+                    animators.factor +
+                    ", " +
+                    animators.option;
+
+                fileStr += lineBreak;
+            }
+        }
+        fileStr += lineBreak;
+
+        fileStr += "end";
+
         fs.writeFileSync("C:/Users/Moncef/Desktop/test.truck", fileStr);
+    }
+
+    private getNodeRealId(str: string): string {
+        //console.log(str);
+        return this.truckFile.nodes?.filter(
+            currNode => currNode.idEditor == parseInt(str)
+        )[0].id!;
     }
 }

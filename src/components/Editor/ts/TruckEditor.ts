@@ -14,6 +14,11 @@ import fs from "fs";
 
 import store from "@/store/index";
 
+import { remote } from "electron";
+const { Menu, MenuItem } = remote;
+
+import OgreLoader from "../ts/OgreLoader";
+
 export interface RenderInterface {
     readonly id: number;
     readonly canvas: string;
@@ -77,6 +82,10 @@ export default class TruckEditor {
 
     private isReadyRenders = false;
 
+    private nodeSpriteScale = 10;
+
+    private ogreLoader!: OgreLoader;
+
     /**
      *
      * User configs
@@ -119,6 +128,7 @@ export default class TruckEditor {
     private truckFileData!: TRUCK.TruckFileInterface;
     private nodesTruck: TRUCK.TruckFileNodes[] = [];
     private beamsTruck: TRUCK.TruckFileBeams[] = [];
+    private nodeObject: THREE.Sprite[] = [];
 
     /**
      * Init some stuff if new truck
@@ -172,7 +182,7 @@ export default class TruckEditor {
             new THREE.Color("red"),
             0x272727
         );
-        this.gridTop.position.set(0, -8000, 0);
+        this.gridTop.position.set(0, -9200, 0);
         this.scene.add(this.gridTop);
 
         this.gridFront = new THREE.GridHelper(
@@ -181,8 +191,8 @@ export default class TruckEditor {
             new THREE.Color("green"),
             0x272727
         );
-        this.gridFront.position.set(-8000, 0, 0);
-        this.gridFront.rotateZ(Math.PI / 2);
+        this.gridFront.position.set(7000, 0, 0);
+        this.gridFront.rotateZ(-Math.PI / 2);
         this.scene.add(this.gridFront);
 
         this.gridSide = new THREE.GridHelper(
@@ -191,7 +201,7 @@ export default class TruckEditor {
             new THREE.Color("blue"),
             0x272727
         );
-        this.gridSide.position.set(0, 0, -8000);
+        this.gridSide.position.set(0, 0, -9500);
         this.gridSide.rotateX(Math.PI / 2);
         this.scene.add(this.gridSide);
 
@@ -266,8 +276,6 @@ export default class TruckEditor {
                 false
             );
 
-            //console.log("lol", canvas.clientHeight);
-
             if (render.type != "full") {
                 render.cameraOrtho = new THREE.OrthographicCamera(
                     canvas.width / -2,
@@ -283,7 +291,7 @@ export default class TruckEditor {
                     45,
                     canvas.width / canvas.height,
                     0.1,
-                    5000
+                    7000
                 );
                 render.cameraPersp.lookAt(0, 0, 0);
             }
@@ -296,7 +304,7 @@ export default class TruckEditor {
                     render.cameraOrtho!.position.set(0, 0, 500);
                     break;
                 case "front":
-                    render.cameraOrtho!.position.set(500, 0, 0);
+                    render.cameraOrtho!.position.set(-3000, 0, 0);
                     break;
 
                 case "full":
@@ -336,7 +344,7 @@ export default class TruckEditor {
         //window.addEventListener("resize", this.onWindowResize, false);
     }
 
-    private requestAllRendersUpdate() {
+    public requestAllRendersUpdate() {
         this.rendersArray.forEach(render => {
             if (this.currActiveRenderId != render.id) {
                 //this.createDragNodes(render);
@@ -400,9 +408,11 @@ export default class TruckEditor {
      * Mouse events
      *
      */
-
+    private isMouseMove = false;
     public onMouseDown(event: MouseEvent2) {
         this.setRender(event.path[1].id);
+
+        this.isMouseMove = false;
 
         /**
          * We disable dragable stuff on right click
@@ -417,7 +427,7 @@ export default class TruckEditor {
             });
         }
     }
-    public onMouseUp(event: MouseEvent) {
+    public onMouseUp(event: MouseEvent2) {
         //console.log(event);
 
         /**
@@ -426,6 +436,54 @@ export default class TruckEditor {
          */
         //right click
         if (event.button == 2) {
+            if (!this.isMouseMove) {
+                this.rendersArray.forEach(render => {
+                    if (this.currActiveRenderId != render.id) {
+                        return;
+                    }
+                    if (render.cameraOrtho == undefined) {
+                        return;
+                    }
+                    render.mouse!.set(
+                        ((event.clientX -
+                            event.target.getBoundingClientRect().x) /
+                            render.worker!.domElement.clientWidth) *
+                            2 -
+                            1,
+                        -(
+                            (event.clientY -
+                                event.target.getBoundingClientRect().y) /
+                            render.worker!.domElement.clientHeight
+                        ) *
+                            2 +
+                            1
+                    );
+
+                    render.raycaster!.setFromCamera(
+                        render.mouse!,
+                        render.cameraOrtho!
+                    );
+
+                    const intersects = render.raycaster?.intersectObjects(
+                        this.nodeObject
+                    );
+                    //console.log(this.gridIntersect);
+                    const menu = new Menu();
+                    if (intersects!.length > 0) {
+                        const intersect = intersects![0];
+                        menu.append(
+                            new MenuItem({
+                                label: "Delete node",
+                                click: () => {
+                                    this.deleteNodeByThreeObj(intersect.object);
+                                }
+                            })
+                        );
+                        menu.popup({ window: remote.getCurrentWindow() });
+                    }
+                });
+            }
+
             this.rendersArray.forEach(render => {
                 if (this.dragControl == undefined) return;
                 if (this.dragControl[render.id] == undefined) return;
@@ -435,8 +493,34 @@ export default class TruckEditor {
         }
     }
 
+    private deleteNodeByThreeObj(obj: THREE.Object3D) {
+        this.nodesTruck = this.nodesTruck.filter(
+            el => el.idEditor != parseInt(obj.name)
+        );
+
+        this.beamsTruck = this.beamsTruck.filter(el => el.node1 != obj.name);
+        this.beamsTruck = this.beamsTruck.filter(el => el.node2 != obj.name);
+
+        this.nodeObject = this.nodeObject.filter(el => el != obj);
+
+        for (let index = 0; index < this.nodesTruck.length; index++) {
+            const element = this.nodesTruck[index];
+            element.id = index.toString();
+        }
+        for (let index = 0; index < this.beamsTruck.length; index++) {
+            const element = this.beamsTruck[index];
+            element.id = index;
+        }
+
+        this.scene.remove(obj);
+
+        this.buildBeamsLines();
+        this.requestAllRendersUpdate();
+    }
+
     public onMouseMove(event: MouseEvent2) {
         if (this.currActiveRenderId == undefined) return;
+        this.isMouseMove = true;
 
         this.rendersArray.forEach(render => {
             if (this.currActiveRenderId != render.id) {
@@ -825,7 +909,7 @@ export default class TruckEditor {
         let node: TRUCK.TruckFileNodes | undefined;
 
         this.nodesTruck.forEach(currNode => {
-            if (currNode.id == str) {
+            if (currNode.idEditor == parseInt(str)) {
                 node = currNode;
             }
         });
@@ -872,7 +956,6 @@ export default class TruckEditor {
         this.requestAllRendersUpdate();
     }
 
-    private nodeObject: THREE.Sprite[] = [];
     private geoBeamsArray: any = [];
     private nodesText: any[] = [];
     private wheelsMeshArray: THREE.LineSegments[] = [];
@@ -906,24 +989,25 @@ export default class TruckEditor {
 
             spriteMaterial.name = currNode.idEditor + "_mat";
 
-            this.nodeObject[currNode.idEditor] = new THREE.Sprite(
-                spriteMaterial
+            const idx = parseInt(currNode.id);
+            this.nodeObject[idx] = new THREE.Sprite(spriteMaterial);
+            this.nodeObject[idx].scale.set(
+                this.nodeSpriteScale,
+                this.nodeSpriteScale,
+                1.0
             );
-            this.nodeObject[currNode.idEditor].scale.set(4, 4, 1.0);
 
-            this.nodeObject[currNode.idEditor].position.set(
+            this.nodeObject[idx].position.set(
                 currNode.x * this.renderOptions.nodePosRenderScale,
                 currNode.y * this.renderOptions.nodePosRenderScale,
                 currNode.z * this.renderOptions.nodePosRenderScale
             );
 
-            this.nodeObject[currNode.idEditor].name = currNode.id.toString();
+            this.nodeObject[idx].name = currNode.idEditor.toString();
 
-            this.scene!.add(this.nodeObject[currNode.idEditor]);
+            this.scene!.add(this.nodeObject[idx]);
 
             //console.log("loadTruckJson", currNode.idEditor);
-
-            //TODO SUPPORT FOR NODES2
         }
 
         /**
@@ -969,19 +1053,14 @@ export default class TruckEditor {
                     nodeKey = beamData.node2.toString();
                 }
 
-                let currNode: TRUCK.TruckFileNodes;
-
-                this.nodesTruck.forEach(nodeEl => {
-                    if (nodeEl.id == nodeKey) {
-                        currNode = nodeEl;
-                    }
-                });
-
-                if (currNode! == undefined) return;
-                if (currNode.idEditor! == undefined) return;
+                const currNode: TRUCK.TruckFileNodes = this.nodesTruck.filter(
+                    el => el.idEditor == parseInt(nodeKey)
+                )[0];
 
                 //its already defined
-                pt[index] = this.nodeObject[currNode.idEditor].position;
+                pt[index] = this.nodeObject.filter(
+                    el => el.name == currNode.idEditor?.toString()
+                )[0].position;
             }
 
             //and we make our beam using two points (two nodes posiiton)
@@ -997,6 +1076,16 @@ export default class TruckEditor {
          * Wheels?
          */
         this.updateWheels();
+
+        /**
+         *
+         * Update UI stuff and everything else
+         *
+         */
+        store.dispatch("setTruckNB", {
+            nodes: this.nodesTruck,
+            beams: this.beamsTruck
+        });
     }
 
     public updateWheels() {
@@ -1020,8 +1109,19 @@ export default class TruckEditor {
                 });
             });
         }
+        if (store.getters.getTruckData.wheels) {
+            const wheelData: TRUCK.TruckFileWheels[] =
+                store.getters.getTruckData.wheels;
 
-        console.log(this.wheelWireFrame);
+            wheelData.forEach(wheel => {
+                this.wheelWireFrame.push({
+                    node1: wheel.node1,
+                    node2: wheel.node2,
+                    numRays: wheel.numRays,
+                    tyreRadius: wheel.radius
+                });
+            });
+        }
 
         /**
          * get them ready to render
@@ -1077,8 +1177,6 @@ export default class TruckEditor {
         matrix.set(1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1);
         orientation.multiply(matrix);
 
-        console.log(orientation);
-
         const wireframe = new THREE.WireframeGeometry(geometry);
 
         const cylinder = new THREE.LineSegments(wireframe);
@@ -1133,12 +1231,8 @@ export default class TruckEditor {
             id: this.getLastBeamId() + 1
         });
 
-        console.log(this.beamsTruck);
-
         this.LoadTruckJson();
         this.buildBeamsLines();
-
-        console.log(node1.name + ", " + node2.name);
     }
 
     private buildBeamsLines(init = false) {
@@ -1178,7 +1272,7 @@ export default class TruckEditor {
         if (obj == undefined) return;
 
         const node: any = this.nodesTruck.filter(
-            node => node.id == obj.name
+            node => node.idEditor == obj.name
         )[0];
 
         //console.log("before", node);
@@ -1210,13 +1304,11 @@ export default class TruckEditor {
         }
 
         if (this.dragControl[render.id] != undefined) {
-            this.dragControl[render.id].removeEventListener(
-                "hoveron",
-                this.hoverOn
+            this.dragControl[render.id].removeEventListener("hoveron", e =>
+                this.hoverOn(e)
             );
-            this.dragControl[render.id].removeEventListener(
-                "hoveroff",
-                this.hoverOff
+            this.dragControl[render.id].removeEventListener("hoveroff", e =>
+                this.hoverOff(e)
             );
             this.dragControl[render.id].removeEventListener("dragstart", e =>
                 this.dragStart(e)
@@ -1331,7 +1423,6 @@ export default class TruckEditor {
         }
 
         this.isNodeDrag = true;
-        console.log("onDragStart", this.isNodeDrag);
     }
 
     private dragEnd(event: any) {
@@ -1354,7 +1445,7 @@ export default class TruckEditor {
         //console.log("selectednode:", this.selectedNode);
 
         this.isNodeDrag = false;
-        console.log("onDragEnd", this.isNodeDrag);
+
         //console.log(self.updateBeams);
         this.updateBeams(event.object);
     }
@@ -1362,6 +1453,21 @@ export default class TruckEditor {
     /* private onDrag(event: any) {
         console.log("");
     }*/
+
+    /**
+     *
+     * Ogre Mesh Loader
+     *
+     */
+
+    public loadMeshWireframe(MeshXMLFile: File) {
+        this.ogreLoader = new OgreLoader(
+            MeshXMLFile,
+            this.scene,
+            this.renderOptions.nodePosRenderScale,
+            this
+        );
+    }
 
     /**
      *
@@ -1373,7 +1479,6 @@ export default class TruckEditor {
 
     public async loadBluePrints(bluePrintFile: File) {
         const dataURI = fs.readFileSync(bluePrintFile.path, "base64");
-        console.log(bluePrintFile.type);
 
         const imgData = `data:${bluePrintFile.type};base64,` + dataURI;
 
@@ -1384,7 +1489,7 @@ export default class TruckEditor {
             w: number;
             h: number;
         } = await this.getImageDimensions(imgData);
-        console.log(dimensions);
+
         const bluePrintPlanes: any = [];
 
         this.rendersArray.forEach(render => {
@@ -1479,13 +1584,6 @@ export default class TruckEditor {
     }
 
     public requestSave() {
-        store.dispatch("setTruckNB", {
-            nodes: this.nodesTruck,
-            beams: this.beamsTruck
-        });
-
-        console.log(store.getters.getTruckData);
-
         const truckParser = new TRUCK.default();
         truckParser.saveFile("");
     }
@@ -1512,5 +1610,11 @@ export default class TruckEditor {
         );
 
         this.requestAllRendersUpdate();
+    }
+
+    public toggleBlueprint() {
+        if (this.ogreLoader) {
+            this.ogreLoader.toggleVisibility();
+        }
     }
 }

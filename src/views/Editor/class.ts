@@ -7,6 +7,9 @@ export default class EditorComponent extends Vue {
      */
     //@ts-ignore
     protected EditorObj: TruckEditor = undefined;
+    protected get getTruckData() {
+        return this.$store.getters.getTruckData;
+    }
 
     protected init() {
         this.$root.$on("setEditorObj", (obj: TruckEditor) => {

@@ -124,6 +124,14 @@
                                 v-b-modal.modal-loadBluePrints
                                 >Load blueprint</b-button
                             >
+                            <b-button
+                                @mousedown="update = !update"
+                                v-b-modal.modal-meshwireframe
+                                >Load Mesh wireframe</b-button
+                            >
+                            <b-button @click="toggleBlueprint"
+                                >Toggle blueprint</b-button
+                            >
                             <b-button @click="resetPrespCamera"
                                 >Reset 3D Camera position</b-button
                             >
@@ -134,6 +142,11 @@
                             >
                             <b-button @click="toggleNodesNames"
                                 >Toggle nodes names</b-button
+                            >
+                            <b-button
+                                @mousedown="update = !update"
+                                v-b-modal.modal-configWheels
+                                >wheels</b-button
                             >
                             <b-button
                                 @mousedown="update = !update"
@@ -221,7 +234,9 @@
             </b-col>
         </b-row>
         <LoadBluePrintsModal />
+        <LoadMeshWireframeModal />
         <ConfigCameras />
+        <ConfigWheels />
         <ConfigWheels2 />
     </div>
 </template>
@@ -234,13 +249,17 @@ import {
 } from "../components/Editor/ts/TruckFileParser";
 
 import LoadBluePrintsModal from "./Editor/LoadBluePrintsModal.vue";
+import LoadMeshWireframeModal from "./Editor/LoadMeshWireFrameModal.vue";
 import ConfigCameras from "./Editor/ConfigCameras.vue";
+import ConfigWheels from "./Editor/ConfigWheels.vue";
 import ConfigWheels2 from "./Editor/ConfigWheels2.vue";
 
 @Component({
     components: {
         LoadBluePrintsModal,
+        LoadMeshWireframeModal,
         ConfigCameras,
+        ConfigWheels,
         ConfigWheels2
     }
 })
@@ -336,7 +355,7 @@ export default class Editor extends Vue {
     }
 
     onMouseUp(event: MouseEvent) {
-        this.EditorObj.onMouseUp(event);
+        this.EditorObj.onMouseUp(event as any);
     }
 
     onDblClick(event: MouseEvent) {
@@ -367,6 +386,10 @@ export default class Editor extends Vue {
 
     setNodeEditor(node: TruckFileNodes) {
         this.selectedNode = node;
+    }
+
+    toggleBlueprint() {
+        this.EditorObj.toggleBlueprint();
     }
 }
 </script>
