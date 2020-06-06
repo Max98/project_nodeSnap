@@ -4,6 +4,9 @@ import { Section, Keyword } from "./TruckFileParserSections";
 import fs from "fs";
 import * as Logger from "electron-log";
 
+import store from "@/store/index";
+import { TruckFileInterface } from "./TruckFileParser";
+
 export default class TruckFileParser {
     private FileBuffer: string[] | null;
     private truckFile: TruckSectionsInterface.TruckFileInterface;
@@ -107,6 +110,10 @@ export default class TruckFileParser {
             beamArray.options = this.currArgs[2];
         }
 
+        if (this.beamDetacherGroup != -1) {
+            beamArray.detacher_group_id = this.beamDetacherGroup;
+        }
+
         this.truckFile.beams!.push(beamArray);
         this.beamIndex++;
     }
@@ -130,6 +137,16 @@ export default class TruckFileParser {
 
         if (this.currArgs[4]) {
             nodeParams.options = this.currArgs[4];
+
+            /**
+             * option param
+             * for e.g
+             * node..., cl 500
+             */
+            if (this.currArgs[5]) {
+                nodeParams.options =
+                    nodeParams.options + " " + this.currArgs[5];
+            }
         }
 
         this.truckFile.nodes!.push(nodeParams);
@@ -159,7 +176,6 @@ export default class TruckFileParser {
         }
 
         this.currPresetBeamId++;
-        console.log(this.currArgs);
 
         const setBeamDefault: TruckSectionsInterface.TruckFileSetBeamDefaults = {
             preset_id: this.currPresetBeamId,
@@ -197,18 +213,67 @@ export default class TruckFileParser {
 
     private ParseComment() {
         this.currCommentId++;
+
+        if (this.truckFile.comments == undefined) {
+            this.truckFile.comments = [];
+        }
+
+        const comment: TruckSectionsInterface.TruckFileComment = {
+            comment_id: this.currCommentId,
+            text: this.currLine
+        };
+
+        this.truckFile.comments.push(comment);
+
         return;
     }
 
     private ParseGroup() {
+        if (!this.CheckNumArguments(2)) return; // 2 items: ;grp : title, also maybe log a warning here?
+
         this.currGroupId++;
+
+        if (this.truckFile.groups == undefined) {
+            this.truckFile.groups = [];
+        }
+
+        const groups: TruckSectionsInterface.TruckFileGroup = {
+            grp_id: this.currGroupId,
+            title: this.currLine.substr(5)
+        };
+
+        this.truckFile.groups.push(groups);
         return;
     }
 
     private beamDetacherGroup = -1;
 
     private ParseDirectiveDetacherGroup() {
-        this.beamDetacherGroup++;
+        if (!this.CheckNumArguments(2)) return; // 2 items: keyword, arg
+
+        if (this.currArgs[1] != "end") {
+            this.beamDetacherGroup = this.currArgs[1];
+        } else {
+            this.beamDetacherGroup = -1;
+            return;
+        }
+
+        if (this.truckFile.detacher_group == undefined) {
+            this.truckFile.detacher_group = [];
+        }
+
+        const detacher_group: TruckSectionsInterface.TruckFileDetacherGroup = {
+            detacher_id: this.currArgs[1]
+        };
+
+        if (
+            this.truckFile.detacher_group.filter(
+                el => el.detacher_id == this.currArgs[1]
+            ).length == 0
+        )
+            this.truckFile.detacher_group.push(detacher_group);
+
+        return;
     }
 
     /**
@@ -358,8 +423,213 @@ export default class TruckFileParser {
      * @param path path where the file will be saved
      * TODO: backups
      */
-    public saveFile(path: string /*data: TruckFileInterface*/) {
-        console.log();
+    public saveFile(path: string) {
+        this.parserLog.info("Requesting file save to: " + path);
+
+        this.truckFile = store.getters.getTruckData;
+
+        let fileStr = "";
+        const lineBreak = " \n";
+
+        fileStr += this.truckFile.info.title;
+
+        fileStr += lineBreak + lineBreak; //extra line breaks
+
+        if (this.truckFile.globals) {
+            fileStr += "globals" + lineBreak;
+            fileStr +=
+                this.truckFile.globals.dryMass +
+                "," +
+                this.truckFile.globals.cargoMass +
+                "," +
+                this.truckFile.globals.material +
+                lineBreak;
+        }
+
+        fileStr += lineBreak; //extra line breaks
+
+        /**
+         * nodes
+         */
+        if (this.truckFile.nodes.length != 0) {
+            fileStr += "nodes" + lineBreak;
+
+            for (let i = 0; i < this.truckFile.nodes.length; i++) {
+                const el = this.truckFile.nodes[i];
+
+                fileStr += this.onSaveProcessGroups(el, lineBreak);
+                fileStr += this.onSaveProcessComments(el, lineBreak);
+
+                fileStr += el.id + ", " + el.x + ", " + el.y + ", " + el.z;
+
+                if (el.options) {
+                    fileStr += ", " + el.options;
+                }
+
+                fileStr += lineBreak;
+            }
+        } else {
+            this.parserLog.error("No nodes found, truck file invalid!");
+        }
+
+        fileStr += lineBreak; //extra line breaks
+
+        /**
+         * Beams
+         *
+         * order ->
+         * 1 group
+         * 2 set_beam_default
+         * 3 detacher_group
+         * 4 comments
+         */
+        if (this.truckFile.beams.length != 0) {
+            fileStr += "beams" + lineBreak;
+
+            for (let i = 0; i < this.truckFile.beams.length; i++) {
+                const el = this.truckFile.beams[i];
+
+                fileStr += this.onSaveProcessGroups(el, lineBreak);
+                fileStr += this.onSaveProcessSetBeamDefaults(el, lineBreak);
+                fileStr += this.onSaveProcessDetacherGroups(el, lineBreak);
+                fileStr += this.onSaveProcessComments(el, lineBreak);
+
+                fileStr +=
+                    this.getNodeRealId(el.node1) +
+                    ", " +
+                    this.getNodeRealId(el.node2);
+
+                if (el.options) {
+                    fileStr += ", " + el.options;
+                }
+
+                fileStr += lineBreak;
+            }
+        } else {
+            this.parserLog.error("No beams found, truck file invalid!");
+        }
+
+        fileStr += lineBreak;
+
+        fileStr += "end";
+
+        fs.writeFileSync("C:/Users/Moncef/Desktop/test.truck", fileStr);
+    }
+
+    private onSaveProcessGroups(
+        el: TruckSectionsInterface.SECTION,
+        lineBreak: string
+    ): string {
+        let fileStr = "";
+
+        if (el.grp_id != -1) {
+            if (this.currGroupId != el.grp_id) {
+                this.currGroupId = el.grp_id;
+                fileStr +=
+                    lineBreak +
+                    ";grp:" +
+                    this.truckFile.groups?.filter(
+                        el => el.grp_id == this.currGroupId
+                    )[0].title +
+                    lineBreak;
+            }
+        } else {
+            this.currGroupId = -1;
+        }
+
+        return fileStr;
+    }
+
+    private onSaveProcessComments(
+        el: TruckSectionsInterface.SECTION,
+        lineBreak: string
+    ): string {
+        let fileStr = "";
+
+        if (el.comment_id != -1) {
+            if (this.currCommentId != el.comment_id) {
+                this.currCommentId = el.comment_id;
+                fileStr +=
+                    lineBreak +
+                    this.truckFile.comments?.filter(
+                        el => el.comment_id == this.currCommentId
+                    )[0].text +
+                    lineBreak;
+            }
+        } else {
+            this.currGroupId = -1;
+        }
+
+        return fileStr;
+    }
+
+    /**
+     * This section is specific to beams
+     * @param el
+     * @param lineBreak
+     */
+    private onSaveProcessDetacherGroups(
+        el: TruckSectionsInterface.TruckFileBeams,
+        lineBreak: string
+    ): string {
+        let fileStr = "";
+
+        if (el.detacher_group_id && el.detacher_group_id != -1) {
+            if (this.beamDetacherGroup != el.detacher_group_id) {
+                this.beamDetacherGroup = el.detacher_group_id;
+                fileStr += "detacher_group " + el.detacher_group_id + lineBreak;
+            }
+        } else {
+            this.beamDetacherGroup = -1;
+        }
+
+        return fileStr;
+    }
+
+    private onSaveProcessSetBeamDefaults(
+        el: TruckSectionsInterface.SECTION,
+        lineBreak: string
+    ): string {
+        let fileStr = "";
+
+        if (el.sbd_preset_id != -1) {
+            if (this.currPresetBeamId != el.sbd_preset_id) {
+                this.currPresetBeamId = el.sbd_preset_id;
+
+                const sbd = this.truckFile.setBeamDefaults?.filter(
+                    el => el.preset_id == this.currPresetBeamId
+                )[0];
+
+                fileStr += lineBreak + "set_beam_defaults " + sbd?.springiness;
+
+                if (sbd?.dampingConstant) {
+                    fileStr += ", " + sbd?.dampingConstant;
+                }
+
+                if (sbd?.deformationThresholdConstant) {
+                    fileStr += ", " + sbd?.deformationThresholdConstant;
+                }
+
+                if (sbd?.breakingThresholdConstant) {
+                    fileStr += ", " + sbd?.breakingThresholdConstant;
+                }
+
+                if (sbd?.beamDiameter) {
+                    fileStr += ", " + sbd?.beamDiameter;
+                }
+
+                if (sbd?.beamMaterial) {
+                    fileStr += ", " + sbd?.beamMaterial;
+                }
+
+                if (sbd?.plasticDeformationCoef) {
+                    fileStr += ", " + sbd?.plasticDeformationCoef;
+                }
+
+                fileStr += lineBreak;
+            }
+        }
+        return fileStr;
     }
 
     public getTruckFileObject() {

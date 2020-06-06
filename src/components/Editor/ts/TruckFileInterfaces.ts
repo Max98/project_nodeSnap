@@ -2,7 +2,7 @@
  * Truck file section definitions
  */
 
-interface SECTION {
+export interface SECTION {
     sbd_preset_id: number;
     snd_preset_id: number;
     //sbds_preset_id: number; //scale
@@ -37,9 +37,16 @@ export interface TruckFileGlobals {
 /**
  * group
  */
+export interface TruckFileDetacherGroup {
+    detacher_id: number;
+}
+
+/**
+ * group
+ */
 export interface TruckFileGroup {
     grp_id: number;
-    text: string;
+    title: string;
 }
 
 /**
@@ -399,8 +406,13 @@ export interface TruckFileInterface {
     globals: TruckFileGlobals;
     nodes: TruckFileNodes[];
     beams: TruckFileBeams[];
+
     setNodesDefaults?: TruckFileSetNodesDefaults[];
     setBeamDefaults?: TruckFileSetBeamDefaults[];
+    groups?: TruckFileGroup[];
+    comments?: TruckFileComment[];
+    detacher_group?: TruckFileDetacherGroup[];
+
     /*cameras?: TruckFileCameras;
     cineCam?: TruckFileCineCam;
 
