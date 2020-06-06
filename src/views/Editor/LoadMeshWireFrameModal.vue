@@ -17,7 +17,9 @@
                 placeholder="Choose a file or drop it here..."
                 drop-placeholder="Drop file here..."
             ></b-form-file>
-            <b-button variant="danger" @click="removeMeshWireframe">Remove current</b-button>
+            <b-button variant="danger" @click="removeMeshWireframe"
+                >Remove current</b-button
+            >
         </b-modal>
     </div>
 </template>

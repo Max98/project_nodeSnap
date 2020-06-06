@@ -82,17 +82,25 @@ export default class OgreLoader {
             }
         }
 
-        for (
-            let index = 0;
-            index < obj.mesh.submeshes[0].submesh[0].faces[0].face.length;
-            index++
-        ) {
-            const element =
-                obj.mesh.submeshes[0].submesh[0].faces[0].face[index];
+        if (obj.mesh.submeshes[0].submesh) {
+            for (
+                let index = 0;
+                index < obj.mesh.submeshes[0].submesh.length;
+                index++
+            ) {
+                const element = obj.mesh.submeshes[0].submesh[index];
+                for (
+                    let index = 0;
+                    index < element.faces[0].face.length;
+                    index++
+                ) {
+                    const el2 = element.faces[0].face[index];
 
-            geometry.faces.push(
-                new THREE.Face3(element.$.v1, element.$.v2, element.$.v3)
-            );
+                    geometry.faces.push(
+                        new THREE.Face3(el2.$.v1, el2.$.v2, el2.$.v3)
+                    );
+                }
+            }
         }
 
         geometry.computeFaceNormals();

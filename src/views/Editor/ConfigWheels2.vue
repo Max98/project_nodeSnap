@@ -26,84 +26,114 @@
                 <b-row>
                     <b-col>
                         <b-form-group label="Mass">
-                            <b-form-input v-model="selectedWheel2.mass"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.mass"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Rim radius">
-                            <b-form-input v-model="selectedWheel2.rimRadius"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.rimRadius"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Tyre radius">
-                            <b-form-input v-model="selectedWheel2.tyreRadius"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.tyreRadius"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
 
                     <b-col>
                         <b-form-group label="Number of rays">
-                            <b-form-input v-model="selectedWheel2.numRays"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.numRays"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                 </b-row>
                 <b-row>
                     <b-col>
                         <b-form-group label="Node 1">
-                            <b-form-input v-model="selectedWheel2.node1"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.node1"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Node 2">
-                            <b-form-input v-model="selectedWheel2.node2"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.node2"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Rigidity Node">
-                            <b-form-input v-model="selectedWheel2.rigNode"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.rigNode"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Reference arm node">
-                            <b-form-input v-model="selectedWheel2.refArmNode"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.refArmNode"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                 </b-row>
                 <b-row>
                     <b-col>
                         <b-form-group label="Tyre Springiness">
-                            <b-form-input v-model="selectedWheel2.tyreSpringness"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.tyreSpringness"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Tyre Damping">
-                            <b-form-input v-model="selectedWheel2.tyreDamping"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.tyreDamping"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Rim springiness">
-                            <b-form-input v-model="selectedWheel2.rimSpringness"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.rimSpringness"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Rim damping">
-                            <b-form-input v-model="selectedWheel2.rimDamping"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.rimDamping"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                 </b-row>
                 <b-row>
                     <b-col>
                         <b-form-group label="Wheel braking">
-                            <b-form-input v-model="selectedWheel2.braking"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.braking"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Wheel drive">
-                            <b-form-input v-model="selectedWheel2.drive"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.drive"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Material">
-                            <b-form-input v-model="selectedWheel2.material"></b-form-input>
+                            <b-form-input
+                                v-model="selectedWheel2.material"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                 </b-row>

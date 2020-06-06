@@ -17,17 +17,23 @@
                 <b-row>
                     <b-col>
                         <b-form-group label="Center node">
-                            <b-form-input v-model="cameras.centerNode"></b-form-input>
+                            <b-form-input
+                                v-model="cameras.centerNode"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Back node">
-                            <b-form-input v-model="cameras.backNode"></b-form-input>
+                            <b-form-input
+                                v-model="cameras.backNode"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Left node">
-                            <b-form-input v-model="cameras.leftNode"></b-form-input>
+                            <b-form-input
+                                v-model="cameras.leftNode"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                 </b-row>
@@ -54,42 +60,58 @@
                 <b-row>
                     <b-col>
                         <b-form-group label="Node 1">
-                            <b-form-input v-model="cinecam.node1"></b-form-input>
+                            <b-form-input
+                                v-model="cinecam.node1"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Node 2">
-                            <b-form-input v-model="cinecam.node2"></b-form-input>
+                            <b-form-input
+                                v-model="cinecam.node2"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Node 3">
-                            <b-form-input v-model="cinecam.node3"></b-form-input>
+                            <b-form-input
+                                v-model="cinecam.node3"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Node 4">
-                            <b-form-input v-model="cinecam.node4"></b-form-input>
+                            <b-form-input
+                                v-model="cinecam.node4"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Node 5">
-                            <b-form-input v-model="cinecam.node5"></b-form-input>
+                            <b-form-input
+                                v-model="cinecam.node5"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Node 6">
-                            <b-form-input v-model="cinecam.node6"></b-form-input>
+                            <b-form-input
+                                v-model="cinecam.node6"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Node 7">
-                            <b-form-input v-model="cinecam.node7"></b-form-input>
+                            <b-form-input
+                                v-model="cinecam.node7"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                     <b-col>
                         <b-form-group label="Node 8">
-                            <b-form-input v-model="cinecam.node8"></b-form-input>
+                            <b-form-input
+                                v-model="cinecam.node8"
+                            ></b-form-input>
                         </b-form-group>
                     </b-col>
                 </b-row>

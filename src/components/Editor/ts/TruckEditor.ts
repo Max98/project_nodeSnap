@@ -6,7 +6,8 @@ import { OrbitControls } from "../js/EditorOrbitCamera.js";
 import { DragControls } from "three/examples/jsm/controls/DragControls.js";
 import Stats from "../js/stats.module.js";
 
-import * as TRUCK from "./TruckFileParser";
+import * as Parser from "./TruckFileParser2";
+import * as TRUCK from "./TruckFileInterfaces";
 
 import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
@@ -82,7 +83,7 @@ export default class TruckEditor {
 
     private isReadyRenders = false;
 
-    private nodeSpriteScale = 10;
+    private nodeSpriteScale = 2;
 
     private ogreLoader!: OgreLoader;
 
@@ -891,6 +892,11 @@ export default class TruckEditor {
         const nodeId = this.getLastNodeId() + 1;
 
         this.nodesTruck.push({
+            sbd_preset_id: -1,
+            snd_preset_id: -1,
+            grp_id: -1,
+            comment_id: -1,
+
             id: nodeId.toString(),
             idEditor: nodeId,
             x: position.x / this.renderOptions.nodePosRenderScale,
@@ -1057,6 +1063,8 @@ export default class TruckEditor {
                     el => el.idEditor == parseInt(nodeKey)
                 )[0];
 
+                // console.log(currNode.idEditor);
+                //console.log(pt[index]);
                 //its already defined
                 pt[index] = this.nodeObject.filter(
                     el => el.name == currNode.idEditor?.toString()
@@ -1226,6 +1234,11 @@ export default class TruckEditor {
         }
 
         this.beamsTruck.push({
+            sbd_preset_id: -1,
+            snd_preset_id: -1,
+            grp_id: -1,
+            comment_id: -1,
+
             node1: node1.name.toString(),
             node2: node2.name.toString(),
             id: this.getLastBeamId() + 1
@@ -1584,7 +1597,7 @@ export default class TruckEditor {
     }
 
     public requestSave() {
-        const truckParser = new TRUCK.default();
+        const truckParser = new Parser.default();
         truckParser.saveFile("");
     }
 
