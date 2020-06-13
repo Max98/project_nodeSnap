@@ -3,7 +3,7 @@
  * author: @only_a_ptr
  */
 export enum Keyword {
-    KEYWORD_ADD_ANIMATION = 1,
+    //KEYWORD_ADD_ANIMATION = 1,
     //KEYWORD_ADVDRAG, // not supported yet
     /*KEYWORD_AIRBRAKES,
     KEYWORD_ANIMATORS,
@@ -198,6 +198,12 @@ export enum Section {
 	SECTION_WINGS,*/
 
     SECTION_NONE, ///< Right after rig name, for example.
+
+    /**
+     * Editor specific
+     */
+
+    SECTION_UNKNOWN,
 
     SECTION_INVALID = 0xffffffff
 }

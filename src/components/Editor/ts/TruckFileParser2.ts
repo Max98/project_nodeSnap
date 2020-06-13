@@ -15,7 +15,10 @@ export default class TruckFileParser {
 
     private currArgs: any[];
     private currSection: Section;
+    private lastSection: Section;
+    private lastKnownSection: Section;
     private currKeyword: Keyword;
+    private lastKeyword: Keyword;
     private currLine: string;
     private currLineIndex: number;
 
@@ -43,8 +46,13 @@ export default class TruckFileParser {
         };
 
         this.currArgs = [];
+
         this.currSection = Section.SECTION_TRUCK_NAME;
+        this.lastSection = Section.SECTION_TRUCK_NAME;
+        this.lastKnownSection = Section.SECTION_TRUCK_NAME;
+
         this.currKeyword = Keyword.KEYWORD_INVALID;
+        this.lastKeyword = Keyword.KEYWORD_INVALID;
         this.currLine = "";
         this.currLineIndex = -1;
     }
@@ -68,6 +76,14 @@ export default class TruckFileParser {
 
             this.parseTruckFileRawLine();
         });
+
+        /**
+         * We could do this as soon as we detect keyword "end"
+         * But in the latest versions, "end" is not obligatory anymore.
+         */
+        if (this.unkownData != "") {
+            this.FinalizeUnkown();
+        }
 
         this.parserLog.info("File loading done");
         console.log(this.truckFile);
@@ -184,26 +200,21 @@ export default class TruckFileParser {
 
         if (this.currArgs[2]) {
             setBeamDefault.dampingConstant = this.currArgs[2];
-        }
-
-        if (this.currArgs[3]) {
-            setBeamDefault.deformationThresholdConstant = this.currArgs[3];
-        }
-
-        if (this.currArgs[4]) {
-            setBeamDefault.breakingThresholdConstant = this.currArgs[4];
-        }
-
-        if (this.currArgs[5]) {
-            setBeamDefault.beamDiameter = this.currArgs[5];
-        }
-
-        if (this.currArgs[6]) {
-            setBeamDefault.beamMaterial = this.currArgs[6];
-        }
-
-        if (this.currArgs[7]) {
-            setBeamDefault.plasticDeformationCoef = this.currArgs[7];
+            if (this.currArgs[3]) {
+                setBeamDefault.deformationThresholdConstant = this.currArgs[3];
+                if (this.currArgs[4]) {
+                    setBeamDefault.breakingThresholdConstant = this.currArgs[4];
+                    if (this.currArgs[5]) {
+                        setBeamDefault.beamDiameter = this.currArgs[5];
+                        if (this.currArgs[6]) {
+                            setBeamDefault.beamMaterial = this.currArgs[6];
+                            if (this.currArgs[7]) {
+                                setBeamDefault.plasticDeformationCoef = this.currArgs[7];
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         this.truckFile.setBeamDefaults.push(setBeamDefault);
@@ -211,21 +222,29 @@ export default class TruckFileParser {
         return;
     }
 
-    private ParseComment() {
-        this.currCommentId++;
+    private currCommentText = "";
 
+    private ParseComment() {
+        if (this.lastKeyword != this.currKeyword) this.currCommentId++;
+
+        this.currCommentText += this.currLine + "\n";
+
+        return;
+    }
+
+    private FinalizeComments() {
         if (this.truckFile.comments == undefined) {
             this.truckFile.comments = [];
         }
 
         const comment: TruckSectionsInterface.TruckFileComment = {
             comment_id: this.currCommentId,
-            text: this.currLine
+            text: this.currCommentText
         };
 
         this.truckFile.comments.push(comment);
 
-        return;
+        this.currCommentText = "";
     }
 
     private ParseGroup() {
@@ -276,14 +295,45 @@ export default class TruckFileParser {
         return;
     }
 
+    private unkownData = "";
+
+    private ParseUnknown() {
+        /**
+         * In case we unknownly parse the rest of the file, we don't need to parse the end keyword
+         */
+        if (this.currLine != "end") this.unkownData += this.currLine + "\n";
+    }
+
+    private FinalizeUnkown() {
+        if (this.truckFile.unknown == undefined) {
+            this.truckFile.unknown = [];
+        }
+
+        const unknown: TruckSectionsInterface.TruckFileUnknown = {
+            sbd_preset_id: this.currPresetBeamId,
+            snd_preset_id: -1,
+            grp_id: -1,
+            comment_id: this.currCommentId,
+
+            after_section: Section[this.lastSection],
+            data: this.unkownData
+        };
+
+        this.truckFile.unknown.push(unknown);
+
+        this.unkownData = "";
+    }
+
     /**
      * parse current line
      */
     private parseTruckFileLine() {
         this.TokenizeCurrentLine();
-        const keyword = this.IdentifyKeywordInCurrentLine();
 
-        switch (keyword) {
+        this.lastKeyword = this.currKeyword;
+        this.currKeyword = this.IdentifyKeywordInCurrentLine();
+
+        switch (this.currKeyword) {
             case Keyword.KEYWORD_INVALID:
                 break;
 
@@ -300,10 +350,12 @@ export default class TruckFileParser {
                 return;
 
             case Keyword.KEYWORD_GROUP:
+                if (this.currSection == Section.SECTION_UNKNOWN) break;
                 this.ParseGroup();
                 return;
 
             case Keyword.KEYWORD_COMMENT:
+                if (this.currSection == Section.SECTION_UNKNOWN) break;
                 this.ParseComment();
                 return;
 
@@ -324,6 +376,10 @@ export default class TruckFileParser {
             case Section.SECTION_NODES:
             case Section.SECTION_NODES_2:
                 this.ParseNodesUnified();
+                return;
+
+            case Section.SECTION_UNKNOWN:
+                this.ParseUnknown();
                 return;
         }
     }
@@ -357,11 +413,13 @@ export default class TruckFileParser {
             } else {
                 return Keyword.KEYWORD_COMMENT;
             }
+        } else if (
+            this.lastKeyword == Keyword.KEYWORD_COMMENT &&
+            this.currSection != Section.SECTION_UNKNOWN //this should be ditched after all sections are parsed by rorEditor
+        ) {
+            this.FinalizeComments();
         }
 
-        /**
-         *
-         */
         if (c > "z" || c < "a") {
             return Keyword.KEYWORD_INVALID;
         }
@@ -382,18 +440,16 @@ export default class TruckFileParser {
             ];
 
         if (searchKeyword != undefined) {
+            if (this.currSection == Section.SECTION_UNKNOWN) {
+                this.FinalizeUnkown();
+            }
             return searchKeyword;
+        } else {
+            this.parserLog.warn("Keyword not supported, parsing as unknown...");
+            this.ChangeSection(Section.SECTION_UNKNOWN, true);
+
+            return Keyword.KEYWORD_INVALID;
         }
-
-        //Reset section to none once we find a new section
-        //So even if the editor does not know about the section, it won't keep parsing data as
-        //it thought it was the last one
-        //second param is just to not log section none state
-        this.ChangeSection(Section.SECTION_NONE, true);
-
-        this.parserLog.warn("Keyword not supported, ignoring...");
-
-        return Keyword.KEYWORD_INVALID;
     }
 
     private TokenizeCurrentLine() {
@@ -407,6 +463,15 @@ export default class TruckFileParser {
     private ChangeSection(newSection: Section, bl = false) {
         if (!bl)
             this.parserLog.info("Changing section to: " + Section[newSection]);
+
+        if (
+            newSection != Section.SECTION_UNKNOWN &&
+            newSection != Section.SECTION_NONE
+        ) {
+            this.lastKnownSection = this.currSection;
+        }
+
+        this.lastSection = this.currSection;
 
         this.currSection = newSection;
     }
@@ -435,7 +500,7 @@ export default class TruckFileParser {
 
         fileStr += lineBreak + lineBreak; //extra line breaks
 
-        if (this.truckFile.globals) {
+        /*if (this.truckFile.globals) {
             fileStr += "globals" + lineBreak;
             fileStr +=
                 this.truckFile.globals.dryMass +
@@ -446,10 +511,38 @@ export default class TruckFileParser {
                 lineBreak;
         }
 
-        fileStr += lineBreak; //extra line breaks
+        fileStr += lineBreak; //extra line breaks*/
+
+        let lastUnkownIndex = 0;
+        /**
+         * first array of section unkown [SECTION_NONE] comes before n/b
+         */
+        if (this.truckFile.unknown) {
+            for (let i = 0; i < this.truckFile.unknown.length; i++) {
+                const element = this.truckFile.unknown[i];
+
+                if (element.after_section == "SECTION_UNKNOWN") {
+                    fileStr += this.onSaveProcessComments(element, lineBreak);
+                    fileStr += this.onSaveProcessSetBeamDefaults(
+                        element,
+                        lineBreak
+                    );
+                    fileStr += element.data;
+                } else {
+                    lastUnkownIndex = i;
+                    break;
+                }
+            }
+            fileStr += lineBreak; //extra line breaks
+        }
 
         /**
          * nodes
+         * order ->
+         * 1 group
+         * 2 set_nodes_default
+         * 3 Set_default_minimass
+         * 4 comments
          */
         if (this.truckFile.nodes.length != 0) {
             fileStr += "nodes" + lineBreak;
@@ -510,6 +603,24 @@ export default class TruckFileParser {
         }
 
         fileStr += lineBreak;
+
+        if (this.truckFile.unknown) {
+            for (
+                let i = lastUnkownIndex;
+                i < this.truckFile.unknown.length;
+                i++
+            ) {
+                const element = this.truckFile.unknown[i];
+
+                fileStr += this.onSaveProcessComments(element, lineBreak);
+                fileStr += this.onSaveProcessSetBeamDefaults(
+                    element,
+                    lineBreak
+                );
+                fileStr += element.data;
+            }
+            fileStr += lineBreak; //extra line breaks
+        }
 
         fileStr += "end";
 
@@ -604,26 +715,22 @@ export default class TruckFileParser {
 
                 if (sbd?.dampingConstant) {
                     fileStr += ", " + sbd?.dampingConstant;
-                }
-
-                if (sbd?.deformationThresholdConstant) {
-                    fileStr += ", " + sbd?.deformationThresholdConstant;
-                }
-
-                if (sbd?.breakingThresholdConstant) {
-                    fileStr += ", " + sbd?.breakingThresholdConstant;
-                }
-
-                if (sbd?.beamDiameter) {
-                    fileStr += ", " + sbd?.beamDiameter;
-                }
-
-                if (sbd?.beamMaterial) {
-                    fileStr += ", " + sbd?.beamMaterial;
-                }
-
-                if (sbd?.plasticDeformationCoef) {
-                    fileStr += ", " + sbd?.plasticDeformationCoef;
+                    if (sbd?.deformationThresholdConstant) {
+                        fileStr += ", " + sbd?.deformationThresholdConstant;
+                        if (sbd?.breakingThresholdConstant) {
+                            fileStr += ", " + sbd?.breakingThresholdConstant;
+                            if (sbd?.beamDiameter) {
+                                fileStr += ", " + sbd?.beamDiameter;
+                                if (sbd?.beamMaterial) {
+                                    fileStr += ", " + sbd?.beamMaterial;
+                                    if (sbd?.plasticDeformationCoef) {
+                                        fileStr +=
+                                            ", " + sbd?.plasticDeformationCoef;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 fileStr += lineBreak;

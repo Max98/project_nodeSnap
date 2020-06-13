@@ -10,3 +10,7 @@ Made with Electron, three.js, VueJS and Typescript
 ```
 npm install
 ```
+
+## Code style
+
+It is recommended to use Prettier with VS Code for code formatting.

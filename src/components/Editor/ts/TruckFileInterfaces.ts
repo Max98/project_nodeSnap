@@ -398,6 +398,11 @@ export interface TruckFileBeams extends SECTION {
     detacher_group_id?: number;
 }
 
+export interface TruckFileUnknown extends SECTION {
+    after_section: any;
+    data: string;
+}
+
 /**
  * The whole truck file interface
  */
@@ -412,6 +417,8 @@ export interface TruckFileInterface {
     groups?: TruckFileGroup[];
     comments?: TruckFileComment[];
     detacher_group?: TruckFileDetacherGroup[];
+
+    unknown?: TruckFileUnknown[];
 
     /*cameras?: TruckFileCameras;
     cineCam?: TruckFileCineCam;
