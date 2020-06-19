@@ -15,27 +15,49 @@
                     <b-tabs @mousedown="emitObj">
                         <b-tab title="Nodes" active>
                             <div v-if="doneLoading" class="node-table">
-                                <div
-                                    v-for="(node, idx) in nodesTruck"
-                                    :key="idx"
-                                >
-                                    <b-row
-                                        @click="setNodeEditor(node)"
-                                        :class="{
-                                            active: selectedNode.id == node.id
-                                        }"
-                                    >
-                                        <b-col>{{ node.id }}</b-col>
-                                        <b-col>{{
-                                            Math.trunc(node.x * 100) / 100
-                                        }}</b-col>
-                                        <b-col>{{
-                                            Math.trunc(node.y * 100) / 100
-                                        }}</b-col>
-                                        <b-col>{{
-                                            Math.trunc(node.z * 100) / 100
-                                        }}</b-col>
+                                <div v-for="grp in nodesList" :key="grp.grp_id">
+                                    <b-row>
+                                        {{ getGrpName(grp.grp_id) }}
                                     </b-row>
+                                    <div
+                                        v-for="(node, idx) in grp.nodes"
+                                        :key="idx"
+                                    >
+                                        <b-row
+                                            @click="setNodeEditor(node)"
+                                            :class="{
+                                                active:
+                                                    selectedNode.id == node.id
+                                            }"
+                                        >
+                                            <b-col
+                                                style="flex: 0 0 26px !important;"
+                                            >
+                                                <b-form-checkbox
+                                                    :id="`checkbox-` + idx"
+                                                ></b-form-checkbox>
+                                            </b-col>
+                                            <b-col>{{ node.id }}</b-col>
+                                            <b-col>
+                                                {{
+                                                    Math.trunc(node.x * 100) /
+                                                        100
+                                                }}
+                                            </b-col>
+                                            <b-col>
+                                                {{
+                                                    Math.trunc(node.y * 100) /
+                                                        100
+                                                }}
+                                            </b-col>
+                                            <b-col>
+                                                {{
+                                                    Math.trunc(node.z * 100) /
+                                                        100
+                                                }}
+                                            </b-col>
+                                        </b-row>
+                                    </div>
                                 </div>
                             </div>
                             <b-card
@@ -245,8 +267,9 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import * as TruckEditor from "../components/Editor/ts/TruckEditor";
 import {
     TruckFileNodes,
-    TruckFileBeams
-} from "../components/Editor/ts/TruckFileParser";
+    TruckFileBeams,
+    TruckFileGroup
+} from "../components/Editor/ts/TruckFileInterfaces";
 
 import LoadBluePrintsModal from "./Editor/LoadBluePrintsModal.vue";
 import LoadMeshWireframeModal from "./Editor/LoadMeshWireFrameModal.vue";
@@ -268,15 +291,25 @@ export default class Editor extends Vue {
 
     private nodesTruck: TruckFileNodes[] | null = null;
     private beamsTruck: TruckFileBeams[] | null = null;
+    private groups: TruckFileGroup[] | null = null;
+
+    private nodesList: { grp_id: number; nodes: TruckFileNodes[] }[] = [];
 
     private doneLoading = false;
+
+    private currGroupId = -1;
 
     private selectedNode: TruckFileNodes = {
         id: "0",
         x: 0,
         y: 0,
         z: 0,
-        options: ""
+        options: "",
+        idEditor: 0,
+        grp_id: 0,
+        comment_id: 0,
+        sbd_preset_id: 0,
+        snd_preset_id: 0
     };
 
     private update = false;
@@ -338,6 +371,31 @@ export default class Editor extends Vue {
 
         this.nodesTruck = this.$store.getters.getTruckData.nodes;
         this.beamsTruck = this.$store.getters.getTruckData.beams;
+        this.groups = this.$store.getters.getTruckData.groups;
+
+        let lastGrp = -1;
+
+        this.nodesTruck!.forEach(node => {
+            if (node.grp_id != lastGrp) {
+                this.nodesList.push({
+                    grp_id: node.grp_id,
+                    nodes: []
+                });
+                lastGrp = node.grp_id;
+            }
+        });
+
+        this.nodesTruck!.forEach(node => {
+            if (this.nodesList.some(el => el.grp_id == node.grp_id)) {
+                this.nodesList
+                    .filter(el => el.grp_id == node.grp_id)[0]
+                    .nodes.push(node);
+            }
+        });
+
+        console.log(this.nodesList);
+
+        //console.log("nodes", this.nodesTruck);
 
         this.doneLoading = true;
 
@@ -390,6 +448,18 @@ export default class Editor extends Vue {
 
     toggleBlueprint() {
         this.EditorObj.toggleBlueprint();
+    }
+
+    getGrpName(grp: number) {
+        //console.log(grp);
+        //this.currGroupId = grp;
+
+        const title = this.groups?.filter(el => el.grp_id == grp)[0].title;
+        return "grp: " + title;
+    }
+
+    log(data: any) {
+        console.log(data);
     }
 }
 </script>

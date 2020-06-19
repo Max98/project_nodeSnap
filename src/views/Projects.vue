@@ -149,10 +149,7 @@ export default class Projects extends Vue {
         }
 
         if (mytruckParser.loadFile(project.path)) {
-            this.$store.dispatch(
-                "setTruckData",
-                mytruckParser.getTruckFileObject()
-            );
+
 
             //console.log(this.$store.getters.getTruckData);
 

@@ -1,4 +1,3 @@
-import Vue from "vue";
 import {
     TruckFileInterface,
     TruckFileNodes,
@@ -10,12 +9,16 @@ import {
 } from "@/components/Editor/ts/TruckFileParser";
 
 const state = {
-    truckData: { info: { title: "" } } as TruckFileInterface
+    truckData: { info: { title: "" } } as TruckFileInterface,
+    parserSettings: { sectionsKeywordOrder: [] }
 };
 
 const getters = {
     getTruckData: (state: any) => {
         return state.truckData;
+    },
+    getParserSettings: (state: any) => {
+        return state.parserSettings;
     },
     getNodeRealId: (state: any) => (id: string) => {
         return state.truckData.nodes?.filter(
@@ -34,6 +37,9 @@ const getters = {
 const actions = {
     setTruckData: (context: any, truckData: TruckFileInterface) => {
         context.commit("addTruckData", truckData);
+    },
+    setParserSettings: (context: any, data: any) => {
+        context.commit("addParserSettings", data);
     },
     setTruckInfo: (
         context: any,
@@ -71,10 +77,12 @@ const actions = {
 
 const mutations = {
     addTruckData(state: any, truckData: TruckFileInterface) {
-        //state.truckData.pop();
         state.truckData = truckData;
-
         state.truckData = JSON.parse(JSON.stringify(state.truckData));
+    },
+    addParserSettings(state: any, data: any) {
+        state.parserSettings = data;
+        state.parserSettings = JSON.parse(JSON.stringify(state.parserSettings));
     },
     setTruckInfo(
         state: any,
