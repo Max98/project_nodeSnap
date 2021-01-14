@@ -597,29 +597,29 @@ export default class Editor extends Vue {
 
         console.log("updateNodesData");
         if (Array.isArray(this.nodesTruck)) {
-            if (this.groups.length > 0) {
-                this.nodesTruck!.forEach(node => {
-                    if (node.grp_id != lastGrp) {
-                        this.nodesList.push({
-                            grp_id: node.grp_id,
-                            is_visible: true,
-                            nodes: []
-                        });
-                        lastGrp = node.grp_id;
-                    }
-                });
+            console.log(this.groups);
 
-                this.nodesTruck!.forEach(node => {
-                    if (this.nodesList.some(el => el.grp_id == node.grp_id)) {
-                        const newNode: EditorNodes = node as EditorNodes;
-                        newNode.is_visible = true;
+            this.nodesTruck!.forEach(node => {
+                if (node.grp_id != lastGrp) {
+                    this.nodesList.push({
+                        grp_id: node.grp_id,
+                        is_visible: true,
+                        nodes: []
+                    });
+                    lastGrp = node.grp_id;
+                }
+            });
 
-                        this.nodesList
-                            .filter(el => el.grp_id == node.grp_id)[0]
-                            .nodes.push(newNode);
-                    }
-                });
-            }
+            this.nodesTruck!.forEach(node => {
+                if (this.nodesList.some(el => el.grp_id == node.grp_id)) {
+                    const newNode: EditorNodes = node as EditorNodes;
+                    newNode.is_visible = true;
+
+                    this.nodesList
+                        .filter(el => el.grp_id == node.grp_id)[0]
+                        .nodes.push(newNode);
+                }
+            });
         }
 
         //Select first node
