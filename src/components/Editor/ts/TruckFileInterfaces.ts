@@ -19,16 +19,10 @@ export interface TruckFileAuthors {
     author_name: string;
     email?: string;
 }
-
-export interface TruckFileInfo {
-    title: string;
-    authors: TruckFileAuthors[];
-}
-
 /**
  * Globals
  */
-export interface TruckFileGlobals {
+export interface TruckFileGlobals extends SECTION {
     dryMass: number;
     cargoMass: number;
     material: string;
@@ -201,7 +195,7 @@ export interface TruckFileSlideNodes {
  * Wheels
  * rorEditor will use this as default wheels
  */
-export interface TruckFileWheels {
+export interface TruckFileWheels extends SECTION {
     radius: number;
     width: number;
     numRays: number;
@@ -214,7 +208,8 @@ export interface TruckFileWheels {
     mass: number;
     springness: number;
     damping: number;
-    material: string;
+    face_material_name: string;
+    band_material_name: string;
 }
 
 /**
@@ -398,6 +393,26 @@ export interface TruckFileBeams extends SECTION {
     detacher_group_id?: number;
 }
 
+/**
+ * fileformat
+ */
+export interface TruckFileFormat {
+    version: number;
+}
+
+/**
+ * fileinfo
+ */
+export interface TruckFileInfo {
+    uniqueId: number;
+    categoryId?: number;
+    fileVersion?: number;
+}
+
+/**
+ * Last: unknown sections
+ */
+
 export interface TruckFileUnknown extends SECTION {
     after_section: any;
     data: string;
@@ -407,7 +422,9 @@ export interface TruckFileUnknown extends SECTION {
  * The whole truck file interface
  */
 export interface TruckFileInterface {
-    info: TruckFileInfo;
+    title: string;
+    fileformat?: TruckFileFormat;
+    fileinfo?: TruckFileInfo;
     globals: TruckFileGlobals;
     nodes: TruckFileNodes[];
     beams: TruckFileBeams[];
@@ -428,10 +445,10 @@ export interface TruckFileInterface {
     turboProp?: TruckFileTurboProp[];
     pistonProp?: TruckFilePistonProp[];
     wings?: TruckFileWings[];
-
+*/
     wheels2?: TruckFileWheels2[];
     wheels?: TruckFileWheels[];
-
+    /*
     slidenodes?: TruckFileSlideNodes[];
     shocks?: TruckFileShocks[];
     commands?: TruckFileCommands[];

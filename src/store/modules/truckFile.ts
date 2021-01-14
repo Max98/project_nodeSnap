@@ -8,14 +8,21 @@ import {
     TruckFileWheels
 } from "@/components/Editor/ts/TruckFileParser";
 
+import * as rorEditor from "@/components/Editor/ts/TruckEditor";
+
 const state = {
     truckData: { info: { title: "" } } as TruckFileInterface,
-    parserSettings: { sectionsKeywordOrder: [] }
+    parserSettings: { sectionsKeywordOrder: [] },
+    Editor: {} as rorEditor.default,
+    truckFilePath: ""
 };
 
 const getters = {
     getTruckData: (state: any) => {
         return state.truckData;
+    },
+    getTruckFilePath: (state: any) => {
+        return state.truckFilePath;
     },
     getParserSettings: (state: any) => {
         return state.parserSettings;
@@ -35,8 +42,14 @@ const getters = {
 };
 
 const actions = {
+    setEditor: (context: any, editor: rorEditor.default) => {
+        context.commit("setEditor", editor);
+    },
     setTruckData: (context: any, truckData: TruckFileInterface) => {
         context.commit("addTruckData", truckData);
+    },
+    setTruckFilePath: (context: any, path: string) => {
+        context.commit("setTruckFilePath", path);
     },
     setParserSettings: (context: any, data: any) => {
         context.commit("addParserSettings", data);
@@ -72,13 +85,31 @@ const actions = {
     },
     setTruckWheels: (context: any, truckData: { wheels: TruckFileWheels }) => {
         context.commit("setTruckWheels", truckData);
+    },
+    reset: (context: any) => {
+        context.commit("reset", {});
+    },
+    applyUINodesData: (context: any, data: TruckFileNodes) => {
+        context.commit("applyUINodesData", data);
+    },
+    applyUIBeamsData: (context: any, data: TruckFileBeams) => {
+        context.commit("applyUIBeamsData", data);
     }
 };
 
 const mutations = {
+    /**
+     * Not so sure about this one
+     */
+    setEditor(state: any, editor: rorEditor.default) {
+        state.Editor = editor;
+    },
     addTruckData(state: any, truckData: TruckFileInterface) {
         state.truckData = truckData;
         state.truckData = JSON.parse(JSON.stringify(state.truckData));
+    },
+    setTruckFilePath(state: any, path: string) {
+        state.truckFilePath = path;
     },
     addParserSettings(state: any, data: any) {
         state.parserSettings = data;
@@ -124,6 +155,24 @@ const mutations = {
     setTruckWheels(state: any, truckData: { wheels: TruckFileWheels }) {
         state.truckData.wheels = truckData.wheels;
         state.truckData = JSON.parse(JSON.stringify(state.truckData));
+    },
+    reset(state: any) {
+        state.truckData = { info: { title: "" } } as TruckFileInterface;
+        state.parserSettings = { sectionsKeywordOrder: [] };
+    },
+    applyUINodesData(state: any, data: TruckFileNodes) {
+        state.truckData.nodes = data;
+        state.truckData = JSON.parse(JSON.stringify(state.truckData));
+
+        const myEditor: rorEditor.default = state.Editor;
+        myEditor.refresh();
+    },
+    applyUIBeamsData(state: any, data: TruckFileBeams) {
+        state.truckData.beams = data;
+        state.truckData = JSON.parse(JSON.stringify(state.truckData));
+
+        const myEditor: rorEditor.default = state.Editor;
+        myEditor.refresh();
     }
 };
 

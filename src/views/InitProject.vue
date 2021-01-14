@@ -135,12 +135,16 @@ export default class ComponentName extends Vue {
 
     next() {
         console.log("next");
+
+        this.$store.dispatch("reset");
+
         this.$store.dispatch("setTruckInfo", {
             title: this.truckTitle,
             cargoMass: this.cargoMass,
             dryMass: this.dryMass,
             material: ""
         });
+
         this.$router.push("/editor");
     }
 }

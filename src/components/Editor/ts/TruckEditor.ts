@@ -15,7 +15,7 @@ import fs from "fs";
 
 import store from "@/store/index";
 
-import { remote } from "electron";
+const remote = require("electron").remote;
 const { Menu, MenuItem } = remote;
 
 import OgreLoader from "../ts/OgreLoader";
@@ -44,6 +44,7 @@ interface DragControlEvents extends THREE.Event {
  * This is a quick fix
  */
 interface Target extends EventTarget {
+    id: number;
     getBoundingClientRect(): {
         bottom: number;
         height: number;
@@ -67,6 +68,14 @@ interface WheelWireFrame {
     tyreRadius: number;
 }
 
+interface HistorySystem {
+    fn: string;
+    data: string;
+}
+
+/**
+ * Main editor code
+ */
 export default class TruckEditor {
     /**
      *
@@ -83,9 +92,11 @@ export default class TruckEditor {
 
     private isReadyRenders = false;
 
-    private nodeSpriteScale = 2;
+    private nodeSpriteScale = 4;
 
     private ogreLoader!: OgreLoader;
+
+    private HistorySystem: HistorySystem[] = [];
 
     /**
      *
@@ -183,7 +194,7 @@ export default class TruckEditor {
             new THREE.Color("red"),
             0x272727
         );
-        this.gridTop.position.set(0, -9200, 0);
+        this.gridTop.position.set(0, -12200, 0);
         this.scene.add(this.gridTop);
 
         this.gridFront = new THREE.GridHelper(
@@ -192,7 +203,7 @@ export default class TruckEditor {
             new THREE.Color("green"),
             0x272727
         );
-        this.gridFront.position.set(7000, 0, 0);
+        this.gridFront.position.set(-12000, 0, 0);
         this.gridFront.rotateZ(-Math.PI / 2);
         this.scene.add(this.gridFront);
 
@@ -202,7 +213,7 @@ export default class TruckEditor {
             new THREE.Color("blue"),
             0x272727
         );
-        this.gridSide.position.set(0, 0, -9500);
+        this.gridSide.position.set(0, 0, -12500);
         this.gridSide.rotateX(Math.PI / 2);
         this.scene.add(this.gridSide);
 
@@ -284,7 +295,7 @@ export default class TruckEditor {
                     canvas.height / 2,
                     canvas.height / -2,
                     0.1,
-                    10000
+                    100000
                 );
                 render.cameraOrtho.lookAt(0, 0, 0);
             } else {
@@ -292,7 +303,7 @@ export default class TruckEditor {
                     45,
                     canvas.width / canvas.height,
                     0.1,
-                    7000
+                    9000
                 );
                 render.cameraPersp.lookAt(0, 0, 0);
             }
@@ -305,7 +316,7 @@ export default class TruckEditor {
                     render.cameraOrtho!.position.set(0, 0, 500);
                     break;
                 case "front":
-                    render.cameraOrtho!.position.set(-3000, 0, 0);
+                    render.cameraOrtho!.position.set(2500, 0, 0);
                     break;
 
                 case "full":
@@ -400,8 +411,6 @@ export default class TruckEditor {
 
     private setRender(id: number) {
         this.currActiveRenderId = id;
-        //console.log("Render: ", this.renderId);
-        //console.log(this.renders[0].worker!.info);
     }
 
     /**
@@ -429,8 +438,6 @@ export default class TruckEditor {
         }
     }
     public onMouseUp(event: MouseEvent2) {
-        //console.log(event);
-
         /**
          *
          * we enable them again
@@ -468,7 +475,6 @@ export default class TruckEditor {
                     const intersects = render.raycaster?.intersectObjects(
                         this.nodeObject
                     );
-                    //console.log(this.gridIntersect);
                     const menu = new Menu();
                     if (intersects!.length > 0) {
                         const intersect = intersects![0];
@@ -519,6 +525,16 @@ export default class TruckEditor {
         this.requestAllRendersUpdate();
     }
 
+    private deleteNodeById(id: string) {
+        this.deleteNodeByThreeObj(this.scene.getObjectByName(id)!);
+    }
+
+    private deleteBeamById(id: string) {
+        this.beamsTruck = this.beamsTruck.filter(el => el.id != parseInt(id));
+        this.buildBeamsLines();
+        this.requestAllRendersUpdate();
+    }
+
     public onMouseMove(event: MouseEvent2) {
         if (this.currActiveRenderId == undefined) return;
         this.isMouseMove = true;
@@ -535,14 +551,13 @@ export default class TruckEditor {
                 const intersects = render.raycaster?.intersectObjects(
                     this.gridIntersect
                 );
-                //console.log(this.gridIntersect);
+
                 if (intersects!.length > 0) {
                     const intersect = intersects![0];
 
                     //We snap to grid on CTRL
                     if (this.selectedNode != undefined) {
                         this.requestAllRendersUpdate();
-                        //console.log("render");
 
                         if (this.isKeyComb.isCtrlKey) {
                             //this.selectedNode.position.copy(intersect.point);
@@ -607,8 +622,6 @@ export default class TruckEditor {
             const parent = canvas.parentElement;
             const box = canvas.getBoundingClientRect();
 
-            ////console.log(canvas.clientWidth);
-
             if (render.type != "full") {
                 if (render.cameraOrtho == undefined) return;
 
@@ -629,8 +642,6 @@ export default class TruckEditor {
                 render.cameraPersp.updateProjectionMatrix();
             }
 
-            //console.log("lol2", canvas.clientHeight);
-
             render.worker!.setPixelRatio(window.devicePixelRatio);
 
             render.worker!.setSize(box.width, box.height, false);
@@ -649,8 +660,6 @@ export default class TruckEditor {
             if (render.cameraOrtho == undefined) {
                 return;
             }
-
-            //console.log(event.ctrlKey);
 
             render.mouse!.set(
                 ((event.clientX - event.target.getBoundingClientRect().x) /
@@ -752,6 +761,7 @@ export default class TruckEditor {
         isCtrlKey: false,
         dragBluePrintKey: false
     };
+
     public keyDown(event: KeyboardEvent) {
         this.isKeyComb.isShiftKey = event.shiftKey;
         this.isKeyComb.isCtrlKey = event.ctrlKey;
@@ -846,8 +856,6 @@ export default class TruckEditor {
      */
 
     addNewNode(position: { x: number; y: number; z: number }) {
-        //console.log(this.getLastNodeId()); // this.nodesTruck[]
-
         let isDuplicate = false;
 
         this.nodesTruck.forEach(currNode => {
@@ -904,10 +912,14 @@ export default class TruckEditor {
             z: position.z / this.renderOptions.nodePosRenderScale
         });
 
+        const historyData: HistorySystem = {
+            fn: "addNode",
+            data: "index:" + nodeId
+        };
+
+        this.HistorySystem.unshift(historyData);
+
         this.LoadTruckJson();
-
-        ////console.log(this.nodeObject);
-
         this.requestAllRendersUpdate();
     }
 
@@ -945,11 +957,11 @@ export default class TruckEditor {
         return id;
     }
 
-    public loadTruckFile(truckData: TRUCK.TruckFileInterface) {
-        this.truckFileData = truckData;
+    public loadTruckFile() {
+        this.truckFileData = store.getters.getTruckData;
 
-        this.nodesTruck = truckData.nodes!;
-        this.beamsTruck = truckData.beams!;
+        this.nodesTruck = this.truckFileData.nodes!;
+        this.beamsTruck = this.truckFileData.beams!;
 
         //if (truckData.cameras) this.cameras = truckData.cameras!;
 
@@ -982,7 +994,6 @@ export default class TruckEditor {
          */
 
         for (let i = 0; i < this.nodesTruck.length; i++) {
-            //console.log("loadTruckJson:", i);
             const currNode = this.nodesTruck[i];
 
             if (currNode.idEditor == undefined) {
@@ -1012,8 +1023,6 @@ export default class TruckEditor {
             this.nodeObject[idx].name = currNode.idEditor.toString();
 
             this.scene!.add(this.nodeObject[idx]);
-
-            //console.log("loadTruckJson", currNode.idEditor);
         }
 
         /**
@@ -1046,7 +1055,6 @@ export default class TruckEditor {
         });
 
         for (let i = 0; i < this.beamsTruck.length; i++) {
-            ////console.log(i);
             const beamData = this.beamsTruck[i];
 
             const pt = [];
@@ -1063,8 +1071,6 @@ export default class TruckEditor {
                     el => el.idEditor == parseInt(nodeKey)
                 )[0];
 
-                // console.log(currNode.idEditor);
-                //console.log(pt[index]);
                 //its already defined
                 pt[index] = this.nodeObject.filter(
                     el => el.name == currNode.idEditor?.toString()
@@ -1233,16 +1239,26 @@ export default class TruckEditor {
             return;
         }
 
+        const beamId = this.getLastBeamId() + 1;
+
         this.beamsTruck.push({
             sbd_preset_id: -1,
             snd_preset_id: -1,
             grp_id: -1,
             comment_id: -1,
+            options: "v",
 
             node1: node1.name.toString(),
             node2: node2.name.toString(),
-            id: this.getLastBeamId() + 1
+            id: beamId
         });
+
+        const historyData: HistorySystem = {
+            fn: "addBeam",
+            data: "index:" + beamId
+        };
+
+        this.HistorySystem.unshift(historyData);
 
         this.LoadTruckJson();
         this.buildBeamsLines();
@@ -1280,7 +1296,6 @@ export default class TruckEditor {
         position: { x: number; y: number; z: number };
     }) {
         //node number
-        //console.log("onUpdateBeams.obj.name ", obj.name);
 
         if (obj == undefined) return;
 
@@ -1288,13 +1303,9 @@ export default class TruckEditor {
             node => node.idEditor == obj.name
         )[0];
 
-        //console.log("before", node);
-
         node.x = obj.position.x * (1 / this.renderOptions.nodePosRenderScale);
         node.y = obj.position.y * (1 / this.renderOptions.nodePosRenderScale);
         node.z = obj.position.z * (1 / this.renderOptions.nodePosRenderScale);
-
-        //console.log("after", node);
 
         this.buildBeamsLines();
         this.requestAllRendersUpdate();
@@ -1334,8 +1345,6 @@ export default class TruckEditor {
                 this.dragEnd(e)
             );
             this.dragControl[render.id].dispose();
-
-            //console.log(this.dragControl);
         }
 
         if (render.type == "full") {
@@ -1367,7 +1376,6 @@ export default class TruckEditor {
     }
 
     private hoverOn(event: any) {
-        //console.log(event);
         event.object.material.color.g = 0;
         event.object.material.color.r = 1;
         event.object.material.color.b = 0;
@@ -1435,6 +1443,31 @@ export default class TruckEditor {
             }
         }
 
+        if (this.selectedNode && this.selectedNode.name) {
+            if (this.isKeyComb.isShiftKey) return;
+
+            const ourNode = this.nodesTruck.filter(
+                el => el.idEditor == parseInt(this.selectedNode!.name)
+            )[0];
+
+            console.log(this.selectedNode?.name);
+
+            const hist: HistorySystem = {
+                fn: "moveNode",
+                data:
+                    ourNode.idEditor +
+                    "|" +
+                    ourNode.x +
+                    "|" +
+                    ourNode.y +
+                    "|" +
+                    ourNode.z
+            };
+
+            this.HistorySystem.unshift(hist);
+            console.log(this.HistorySystem);
+        }
+
         this.isNodeDrag = true;
     }
 
@@ -1455,17 +1488,16 @@ export default class TruckEditor {
         }
 
         //this.selectedNode = undefined;
-        //console.log("selectednode:", this.selectedNode);
 
         this.isNodeDrag = false;
 
-        //console.log(self.updateBeams);
         this.updateBeams(event.object);
-    }
 
-    /* private onDrag(event: any) {
-        console.log("");
-    }*/
+        /*store.dispatch("setTruckNB", {
+            nodes: this.nodesTruck,
+            beams: this.beamsTruck
+        });*/
+    }
 
     /**
      *
@@ -1598,7 +1630,7 @@ export default class TruckEditor {
 
     public requestSave() {
         const truckParser = new Parser.default();
-        truckParser.saveFile("");
+        truckParser.saveFile(store.getters.getTruckFilePath);
     }
 
     public setGridFactor(f: number) {
@@ -1625,9 +1657,77 @@ export default class TruckEditor {
         this.requestAllRendersUpdate();
     }
 
+    public setNodeSizeFactor(f: number) {
+        this.nodeSpriteScale = f * 4;
+        this.LoadTruckJson();
+        this.requestAllRendersUpdate();
+    }
+
     public toggleBlueprint() {
         if (this.ogreLoader) {
             this.ogreLoader.toggleVisibility();
         }
+    }
+
+    /**
+     * Undo/Redo
+     * Only for nodes and beams
+     *
+     * addNode
+     * removeNode
+     * moveNode
+     *
+     * addBeam
+     * removeBeam
+     */
+    public requestUndo() {
+        console.log(this.HistorySystem);
+
+        if (this.HistorySystem.length == 0) return;
+
+        const data: HistorySystem = this.HistorySystem[0];
+
+        switch (data.fn) {
+            case "addNode":
+                console.log("removing node:" + data.data);
+                this.deleteNodeById(data.data.split(":")[1]);
+                this.HistorySystem.shift();
+                break;
+            case "addBeam":
+                console.log("removing beam:" + data.data);
+                this.deleteBeamById(data.data.split(":")[1]);
+                this.HistorySystem.shift();
+                break;
+            case "moveNode":
+                console.log("restored node to pos");
+
+                this.updateBeams({
+                    name: data.data.split("|")[0],
+                    position: {
+                        x:
+                            parseFloat(data.data.split("|")[1]) *
+                            this.renderOptions.nodePosRenderScale,
+                        y:
+                            parseFloat(data.data.split("|")[2]) *
+                            this.renderOptions.nodePosRenderScale,
+                        z:
+                            parseFloat(data.data.split("|")[3]) *
+                            this.renderOptions.nodePosRenderScale
+                    }
+                });
+                this.HistorySystem.shift();
+                break;
+        }
+    }
+
+    public refresh() {
+        this.truckFileData = store.getters.getTruckData;
+
+        this.nodesTruck = this.truckFileData.nodes!;
+        this.beamsTruck = this.truckFileData.beams!;
+
+        this.LoadTruckJson();
+        this.buildBeamsLines();
+        this.requestAllRendersUpdate();
     }
 }

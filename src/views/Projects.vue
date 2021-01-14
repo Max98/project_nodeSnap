@@ -149,15 +149,15 @@ export default class Projects extends Vue {
         }
 
         if (mytruckParser.loadFile(project.path)) {
-
-
             //console.log(this.$store.getters.getTruckData);
 
             this.latestProjects.pushProject({
-                title: this.$store.getters.getTruckData.info.title,
+                title: this.$store.getters.getTruckData.title,
                 path: project.path
             });
             this.latestProjectsArray = this.latestProjects.getLatestProjects();
+
+            this.$store.dispatch("setTruckFilePath", project.path);
 
             this.$router.push("/editor?load=true");
         }

@@ -156,7 +156,6 @@ export default class ConfigCameras extends EditorComponent {
 
     created() {
         this.init();
-        console.log("this init");
         this.load();
     }
 
