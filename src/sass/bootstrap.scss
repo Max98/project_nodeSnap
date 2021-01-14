@@ -170,3 +170,7 @@ a {
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+.custom-file-label::after {
+    background-color: $secondary;
+}

@@ -26,19 +26,15 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-import EditorComponent from "./class";
-import TruckEditor from "../../components/Editor/ts/TruckEditor";
+import * as TruckEditor from "../../components/Editor/ts/TruckEditor";
 
 @Component({
     name: "",
     components: {}
 })
-export default class LoadMeshWireframeModal extends EditorComponent {
+export default class LoadMeshWireframeModal extends Vue {
     private meshWireframeFile: File | null = null;
-
-    created() {
-        this.init();
-    }
+    @Prop(TruckEditor.default) readonly EditorObj!: TruckEditor.default;
 
     loadMeshWireframe() {
         if (this.meshWireframeFile)
@@ -47,7 +43,7 @@ export default class LoadMeshWireframeModal extends EditorComponent {
 
     removeMeshWireframe() {
         this.meshWireframeFile = null;
-        //this.EditorObj.removeBluePrints();
+        this.EditorObj.removeMeshWireframe();
     }
 }
 </script>

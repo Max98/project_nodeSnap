@@ -159,6 +159,7 @@ const mutations = {
     reset(state: any) {
         state.truckData = { info: { title: "" } } as TruckFileInterface;
         state.parserSettings = { sectionsKeywordOrder: [] };
+        state.truckFilePath = "";
     },
     applyUINodesData(state: any, data: TruckFileNodes) {
         state.truckData.nodes = data;

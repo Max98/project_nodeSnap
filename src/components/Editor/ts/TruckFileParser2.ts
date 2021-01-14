@@ -124,6 +124,8 @@ export default class TruckFileParser {
     }
 
     private beamIndex = 0;
+    private firstBeamLine = false;
+
     private ParseBeams() {
         if (!this.CheckNumArguments(2)) return;
 
@@ -298,14 +300,14 @@ export default class TruckFileParser {
     private ParseGroup() {
         if (!this.CheckNumArguments(2)) return; // 2 items: ;grp : title, also maybe log a warning here?
 
-        this.currGroupId++;
-
         if (this.truckFile.groups == undefined) {
             this.truckFile.groups = [];
         }
 
+        this.currGroupId = this.truckFile.groups.length;
+
         const groups: TruckSectionsInterface.TruckFileGroup = {
-            grp_id: this.currGroupId,
+            grp_id: this.truckFile.groups.length,
             title: this.currLine.substr(5)
         };
 
@@ -483,6 +485,17 @@ export default class TruckFileParser {
 
             case Keyword.KEYWORD_BEAMS:
                 this.sectionsKeywordOrder.push(this.currKeyword);
+                if (!this.firstBeamLine) {
+                    /**
+                     * for grp indexing
+                     */
+
+                    this.currGroupId = -1;
+                    console.log("resseting groups index");
+
+                    this.firstBeamLine = true;
+                }
+
                 this.ChangeSection(Section.SECTION_BEAMS);
                 return;
 

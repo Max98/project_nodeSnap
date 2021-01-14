@@ -26,19 +26,15 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-import EditorComponent from "./class";
-import TruckEditor from "../../components/Editor/ts/TruckEditor";
+import * as TruckEditor from "../../components/Editor/ts/TruckEditor";
 
 @Component({
     name: "",
     components: {}
 })
-export default class LoadBluePrintsModal extends EditorComponent {
+export default class LoadBluePrintsModal extends Vue {
     private bluePrintFile: File | null = null;
-
-    created() {
-        this.init();
-    }
+    @Prop(TruckEditor.default) readonly EditorObj!: TruckEditor.default;
 
     loadBluePrints() {
         if (this.bluePrintFile)

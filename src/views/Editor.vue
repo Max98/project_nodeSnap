@@ -242,24 +242,32 @@
                                 v-b-modal.modal-loadBluePrints
                                 >Load blueprint</b-button
                             >
+                            <b-button @click="toggleBlueprint"
+                                >Toggle blueprint</b-button
+                            >
                             <b-button
                                 @mousedown="update = !update"
                                 v-b-modal.modal-meshwireframe
                                 >Load Mesh wireframe</b-button
                             >
-                            <b-button @click="toggleBlueprint"
-                                >Toggle blueprint</b-button
+                            <b-button @click="toggleMeshWireframe"
+                                >Toggle Mesh wireframe</b-button
                             >
+
                             <b-button @click="resetPrespCamera"
                                 >Reset 3D Camera position</b-button
                             >
                             <b-button
                                 @mousedown="update = !update"
                                 v-b-modal.modal-configCameras
+                                disabled
                                 >Configure cameras</b-button
                             >
                             <b-button @click="toggleNodesNames"
                                 >Toggle nodes names</b-button
+                            >
+                            <b-button @click="toggleWheelsVisibility"
+                                >Toggle wheels visibility</b-button
                             >
                             <b-button
                                 @mousedown="update = !update"
@@ -269,6 +277,7 @@
                             <b-button
                                 @mousedown="update = !update"
                                 v-b-modal.modal-configWheels2
+                                disabled
                                 >wheels2</b-button
                             >
                         </b-tab>
@@ -393,11 +402,24 @@
                 </div>
             </b-col>
         </b-row>
-        <LoadBluePrintsModal />
-        <LoadMeshWireframeModal />
+        <LoadBluePrintsModal v-bind:EditorObj="EditorObj" />
+        <LoadMeshWireframeModal v-bind:EditorObj="EditorObj" />
         <ConfigCameras />
-        <ConfigWheels />
-        <ConfigWheels2 />
+        <ConfigWheels v-bind:EditorObj="EditorObj" />
+        <ConfigWheels2 v-bind:EditorObj="EditorObj" />
+        <AddGroupModal
+            v-bind:nodeId="addGrpNodeId"
+            v-bind:EditorObj="EditorObj"
+        />
+        <AddGroupModalBeam
+            v-bind:beamId="addGrpBeamId"
+            v-bind:EditorObj="EditorObj"
+        />
+        <RenameGroupModal
+            v-bind:grpId="renameGrpId"
+            v-bind:EditorObj="EditorObj"
+            v-bind:grpTitle="renameGrpTitle"
+        />
     </div>
 </template>
 <script lang="ts">
@@ -411,6 +433,9 @@ import {
 
 import LoadBluePrintsModal from "./Editor/LoadBluePrintsModal.vue";
 import LoadMeshWireframeModal from "./Editor/LoadMeshWireFrameModal.vue";
+import AddGroupModal from "./Editor/addGroupModal.vue";
+import AddGroupModalBeam from "./Editor/addGroupModalBeam.vue";
+import RenameGroupModal from "./Editor/renameGroupModal.vue";
 import ConfigCameras from "./Editor/ConfigCameras.vue";
 import ConfigWheels from "./Editor/ConfigWheels.vue";
 import ConfigWheels2 from "./Editor/ConfigWheels2.vue";
@@ -435,11 +460,20 @@ interface EditorBeams extends TruckFileBeams {
         LoadMeshWireframeModal,
         ConfigCameras,
         ConfigWheels,
-        ConfigWheels2
+        ConfigWheels2,
+        AddGroupModal,
+        AddGroupModalBeam,
+        RenameGroupModal
     }
 })
 export default class Editor extends Vue {
     public EditorObj!: TruckEditor.default;
+
+    public addGrpNodeId = -1;
+    public addGrpBeamId = -1;
+
+    public renameGrpId = -1;
+    public renameGrpTitle = "";
 
     get nodesTruck(): TruckFileNodes[] {
         return this.$store.getters.getTruckData.nodes;
@@ -560,36 +594,45 @@ export default class Editor extends Vue {
             is_visible: true,
             nodes: []
         });
+
         console.log("updateNodesData");
         if (Array.isArray(this.nodesTruck)) {
-            this.nodesTruck!.forEach(node => {
-                if (node.grp_id != lastGrp) {
-                    this.nodesList.push({
-                        grp_id: node.grp_id,
-                        is_visible: true,
-                        nodes: []
-                    });
-                    lastGrp = node.grp_id;
-                }
-            });
+            if (this.groups.length > 0) {
+                this.nodesTruck!.forEach(node => {
+                    if (node.grp_id != lastGrp) {
+                        this.nodesList.push({
+                            grp_id: node.grp_id,
+                            is_visible: true,
+                            nodes: []
+                        });
+                        lastGrp = node.grp_id;
+                    }
+                });
 
-            this.nodesTruck!.forEach(node => {
-                if (this.nodesList.some(el => el.grp_id == node.grp_id)) {
-                    const newNode: EditorNodes = node as EditorNodes;
-                    newNode.is_visible = true;
+                this.nodesTruck!.forEach(node => {
+                    if (this.nodesList.some(el => el.grp_id == node.grp_id)) {
+                        const newNode: EditorNodes = node as EditorNodes;
+                        newNode.is_visible = true;
 
-                    this.nodesList
-                        .filter(el => el.grp_id == node.grp_id)[0]
-                        .nodes.push(newNode);
-                }
-            });
+                        this.nodesList
+                            .filter(el => el.grp_id == node.grp_id)[0]
+                            .nodes.push(newNode);
+                    }
+                });
+            }
         }
 
         //Select first node
         if (this.selectedNode.idEditor == -1) {
+            let index = 0;
+
+            if (this.nodesList[index].nodes.length == 0) {
+                index++;
+            }
+
             this.setNodeEditor(
-                this.nodesList[0].grp_id,
-                this.nodesList[0].nodes[0].idEditor
+                this.nodesList[index].grp_id,
+                this.nodesList[index].nodes[0].idEditor
             );
         } else {
             //we update the current selected node.
@@ -605,6 +648,7 @@ export default class Editor extends Vue {
         let lastGrp = -1;
 
         this.beamsList = [];
+
         this.beamsList.push({
             grp_id: -1,
             is_visible: true,
@@ -637,16 +681,26 @@ export default class Editor extends Vue {
 
         //Select first beam
         if (this.selectedBeam.id == -1) {
+            let index = 0;
+
+            if (this.beamsList[index].beams.length == 0) {
+                index++;
+            }
+
             this.setBeamEditor(
-                this.beamsList[0].grp_id,
-                this.beamsList[0].beams[0].id
+                this.beamsList[index].grp_id,
+                this.beamsList[index].beams[0].id
             );
         }
         // we don't need to update the selected beams data as it is no affected by the editor.
     }
 
+    created() {
+        this.EditorObj = new TruckEditor.default();
+    }
+
     mounted() {
-        this.EditorObj = new TruckEditor.default(this.renders);
+        this.EditorObj.setRenders(this.renders);
         this.$store.dispatch("setEditor", this.EditorObj);
 
         document.addEventListener("keydown", e => this.EditorObj.keyDown(e));
@@ -747,11 +801,12 @@ export default class Editor extends Vue {
         this.EditorObj.toggleBlueprint();
     }
 
+    toggleMeshWireframe() {
+        this.EditorObj.toggleMeshWireframe();
+    }
+
     getGrpName(grp: number) {
         if (grp == -1) return;
-
-        console.log(grp);
-        //this.currGroupId = grp;
 
         const title = this.groups?.filter(el => el.grp_id == grp)[0].title;
         return "grp: " + title;
@@ -800,7 +855,17 @@ export default class Editor extends Vue {
                 new MenuItem({
                     label: "Rename group",
                     click: () => {
-                        this.renameGrp(e.target?.id);
+                        this.renameGrp(
+                            parseInt(e.target?.id.replace("grp-", ""))
+                        );
+                    }
+                })
+            );
+            menu.append(
+                new MenuItem({
+                    label: "Delete group",
+                    click: () => {
+                        console.log("delete group");
                     }
                 })
             );
@@ -811,7 +876,37 @@ export default class Editor extends Vue {
     }
 
     renameGrp(grp_id: number) {
-        console.log(grp_id);
+        this.renameGrpId = grp_id;
+        this.renameGrpTitle = this.groups.filter(
+            el => el.grp_id == grp_id
+        )[0].title;
+
+        this.$bvModal.show("modal-renameGrp");
+    }
+
+    addGrp_node(el: TruckEditor.MouseEvent2) {
+        /**
+         * FIX: For some reasons, typescript does not recognize parentNode from mouse Target.
+         * we should find a correct solution as I'm just bypassing the "error" here.
+         */
+
+        // @ts-ignore
+        this.addGrpNodeId = parseInt(el.target.parentNode.dataset.nodeId);
+
+        this.$bvModal.show("modal-addGrp");
+    }
+
+    addGrp_beam(el: TruckEditor.MouseEvent2) {
+        /**
+         * FIX: For some reasons, typescript does not recognize parentNode from mouse Target.
+         * we should find a correct solution as I'm just bypassing the "error" here.
+         */
+
+        // @ts-ignore
+        this.addGrpBeamId = parseInt(el.target.parentNode.dataset.beamId);
+        console.log(this.addGrpBeamId);
+
+        this.$bvModal.show("modal-addGrpBeam");
     }
 
     onNodeMouseDown(e: TruckEditor.MouseEvent2) {
@@ -831,7 +926,7 @@ export default class Editor extends Vue {
                     new MenuItem({
                         label: "Add new group before node",
                         click: () => {
-                            this.renameGrp(e.target?.id);
+                            this.addGrp_node(e);
                         }
                     })
                 );
@@ -840,7 +935,7 @@ export default class Editor extends Vue {
                     new MenuItem({
                         label: "Delete node",
                         click: () => {
-                            this.renameGrp(e.target?.id);
+                            console.log("delete node!");
                         }
                     })
                 );
@@ -862,28 +957,27 @@ export default class Editor extends Vue {
         if (e.button == 0) {
             this.setBeamEditor(data.grpId, data.beamId);
         } else if (e.button == 2) {
-            /*
             const menu = new Menu();
             if (e.button == 2) {
                 menu.append(
                     new MenuItem({
-                        label: "Add new group before node",
+                        label: "Add new group before beam",
                         click: () => {
-                            this.renameGrp(e.target?.id);
+                            this.addGrp_beam(e);
                         }
                     })
                 );
                 menu.append(new MenuItem({ type: "separator" }));
                 menu.append(
                     new MenuItem({
-                        label: "Delete node",
+                        label: "Delete beam",
                         click: () => {
-                            this.renameGrp(e.target?.id);
+                            console.log("delete beam!");
                         }
                     })
                 );
                 menu.popup({ window: remote.getCurrentWindow() });
-            }*/
+            }
         }
     }
 
@@ -952,6 +1046,10 @@ export default class Editor extends Vue {
         document
             .getElementById("editorViews")!
             .removeEventListener("mousemove", this.resize);
+    }
+
+    toggleWheelsVisibility() {
+        this.EditorObj.toggleWheelsVisibility();
     }
 }
 </script>

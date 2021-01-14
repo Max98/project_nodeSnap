@@ -122,7 +122,6 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch, PropSync } from "vue-property-decorator";
 
-import EditorComponent from "./class";
 import * as TRUCK from "../../components/Editor/ts/TruckFileParser";
 import { watch } from "fs";
 
@@ -130,7 +129,11 @@ import { watch } from "fs";
     name: "",
     components: {}
 })
-export default class ConfigCameras extends EditorComponent {
+export default class ConfigCameras extends Vue {
+    private get getTruckData() {
+        return this.$store.getters.getTruckData;
+    }
+
     /**
      * Init some stuff if new truck
      */
@@ -155,7 +158,6 @@ export default class ConfigCameras extends EditorComponent {
     };
 
     created() {
-        this.init();
         this.load();
     }
 

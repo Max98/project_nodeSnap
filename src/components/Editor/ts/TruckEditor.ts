@@ -16,7 +16,7 @@ import fs from "fs";
 import store from "@/store/index";
 
 const remote = require("electron").remote;
-const { Menu, MenuItem } = remote;
+const { Menu, MenuItem, dialog } = remote;
 
 import OgreLoader from "../ts/OgreLoader";
 
@@ -44,7 +44,7 @@ interface DragControlEvents extends THREE.Event {
  * This is a quick fix
  */
 interface Target extends EventTarget {
-    id: number;
+    id: string;
     getBoundingClientRect(): {
         bottom: number;
         height: number;
@@ -56,6 +56,7 @@ interface Target extends EventTarget {
         y: number;
     };
 }
+
 export interface MouseEvent2 extends MouseEvent {
     path: any[];
     target: Target;
@@ -174,7 +175,11 @@ export default class TruckEditor {
      *
      */
 
-    constructor(renders: RenderInterface[]) {
+    constructor() {
+        console.log("EditorObj");
+    }
+
+    public setRenders(renders: RenderInterface[]) {
         this.rendersArray = renders;
 
         this.scene = new THREE.Scene();
@@ -486,7 +491,9 @@ export default class TruckEditor {
                                 }
                             })
                         );
-                        menu.popup({ window: remote.getCurrentWindow() });
+                        menu.popup({
+                            window: remote.getCurrentWindow()
+                        });
                     }
                 });
             }
@@ -1151,6 +1158,14 @@ export default class TruckEditor {
         });
     }
 
+    public toggleWheelsVisibility() {
+        this.wheelsMeshArray.forEach(element => {
+            element.visible = !element.visible;
+        });
+
+        this.requestAllRendersUpdate();
+    }
+
     /**
      *
      * Some help from
@@ -1514,6 +1529,16 @@ export default class TruckEditor {
         );
     }
 
+    public removeMeshWireframe() {
+        this.ogreLoader.remove();
+    }
+
+    public toggleMeshWireframe() {
+        if (this.ogreLoader) {
+            this.ogreLoader.toggleVisibility();
+        }
+    }
+
     /**
      *
      * Blueprint stuff
@@ -1540,7 +1565,9 @@ export default class TruckEditor {
         this.rendersArray.forEach(render => {
             if (render.type == "full") return;
 
-            const material = new THREE.MeshBasicMaterial({ map: texture });
+            const material = new THREE.MeshBasicMaterial({
+                map: texture
+            });
             const geometryPlane = new THREE.PlaneGeometry(
                 dimensions.w,
                 dimensions.h
@@ -1599,6 +1626,13 @@ export default class TruckEditor {
         this.requestAllRendersUpdate();
     }
 
+    public toggleBlueprint() {
+        this.bluePrintArray.forEach(bluPrt => {
+            bluPrt.visible = !bluPrt.visible;
+        });
+        this.requestAllRendersUpdate();
+    }
+
     private getImageDimensions(file: string): { w: number; h: number } | any {
         return new Promise(function(resolved, rejected) {
             const i = new Image();
@@ -1626,11 +1660,6 @@ export default class TruckEditor {
 
         this.buildBeamsLines();
         this.requestAllRendersUpdate();
-    }
-
-    public requestSave() {
-        const truckParser = new Parser.default();
-        truckParser.saveFile(store.getters.getTruckFilePath);
     }
 
     public setGridFactor(f: number) {
@@ -1661,12 +1690,6 @@ export default class TruckEditor {
         this.nodeSpriteScale = f * 4;
         this.LoadTruckJson();
         this.requestAllRendersUpdate();
-    }
-
-    public toggleBlueprint() {
-        if (this.ogreLoader) {
-            this.ogreLoader.toggleVisibility();
-        }
     }
 
     /**
@@ -1729,5 +1752,144 @@ export default class TruckEditor {
         this.LoadTruckJson();
         this.buildBeamsLines();
         this.requestAllRendersUpdate();
+    }
+
+    public requestSave() {
+        const truckParser = new Parser.default();
+        let filePath: string | undefined = store.getters.getTruckFilePath;
+
+        if (filePath == "") {
+            filePath = dialog.showSaveDialogSync(remote.getCurrentWindow(), {
+                defaultPath: "newTruck",
+                filters: [
+                    {
+                        name: "Truck file",
+                        extensions: [
+                            "truck",
+                            "car",
+                            "airplane",
+                            "load",
+                            "boat",
+                            "train",
+                            "machine",
+                            "trailer",
+                            "fixed"
+                        ]
+                    }
+                ]
+            });
+        }
+
+        if (filePath == undefined) {
+            return;
+        }
+
+        truckParser.saveFile(filePath);
+    }
+
+    public renameGrp(grp_id: number, grpTitle: string) {
+        if (this.truckFileData.groups) {
+            this.truckFileData.groups.filter(
+                el => el.grp_id == grp_id
+            )[0].title = grpTitle;
+        }
+        store.dispatch("setTruckData", this.truckFileData);
+    }
+
+    public addGr_node(nodeId: number, title: string) {
+        console.log("addGrp_node");
+
+        if (this.truckFileData.groups == undefined) {
+            this.truckFileData.groups = [];
+        }
+
+        /**
+         * we check that there is actually no group assigned to the node and all nodes after it
+         * or it is assigned to the last group available
+         */
+        const currNode = this.nodesTruck.filter(el => el.idEditor == nodeId)[0];
+        const grpLength = this.truckFileData.groups.length;
+
+        if (currNode.grp_id == grpLength - 1) {
+            this.truckFileData.groups.push({
+                grp_id: grpLength,
+                title: title
+            });
+
+            /** from now on grpLength is the new grp_id */
+
+            this.nodesTruck.forEach(el => {
+                if (el.idEditor >= nodeId) {
+                    el.grp_id = grpLength;
+                }
+            });
+        } else {
+            const ex_grp_id = JSON.parse(JSON.stringify(currNode.grp_id));
+
+            this.truckFileData.groups.push({
+                grp_id: grpLength,
+                title: title
+            });
+
+            this.nodesTruck.forEach(el => {
+                if (el.idEditor >= nodeId) {
+                    console.log(ex_grp_id);
+                    if (el.grp_id == ex_grp_id) {
+                        el.grp_id = grpLength;
+                    }
+                }
+            });
+        }
+
+        console.log(this.truckFileData);
+        store.dispatch("setTruckData", this.truckFileData);
+    }
+
+    public addGrp_beam(beamId: number, title: string) {
+        console.log("addGrp_beam");
+
+        if (this.truckFileData.groups == undefined) {
+            this.truckFileData.groups = [];
+        }
+
+        /**
+         * we check that there is actually no group assigned to the node and all nodes after it
+         * or it is assigned to the last group available
+         */
+        const currBeam = this.beamsTruck.filter(el => el.id == beamId)[0];
+        const grpLength = this.truckFileData.groups.length;
+
+        if (currBeam.grp_id == grpLength - 1) {
+            this.truckFileData.groups.push({
+                grp_id: grpLength,
+                title: title
+            });
+
+            /** from now on grpLength is the new grp_id */
+
+            this.beamsTruck.forEach(el => {
+                if (el.id >= beamId) {
+                    el.grp_id = grpLength;
+                }
+            });
+        } else {
+            const ex_grp_id = JSON.parse(JSON.stringify(currBeam.grp_id));
+
+            this.truckFileData.groups.push({
+                grp_id: grpLength,
+                title: title
+            });
+
+            this.beamsTruck.forEach(el => {
+                if (el.id >= beamId) {
+                    console.log(ex_grp_id);
+                    if (el.grp_id == ex_grp_id) {
+                        el.grp_id = grpLength;
+                    }
+                }
+            });
+        }
+        console.log(this.truckFileData);
+        store.dispatch("setTruckData", this.truckFileData);
     }
 }

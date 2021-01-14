@@ -126,8 +126,14 @@ export default class OgreLoader {
         this.scene.add(this.mesh);
         this.truckEditorInstance.requestAllRendersUpdate();
     }
+
     toggleVisibility() {
         this.mesh.visible = !this.mesh.visible;
+        this.truckEditorInstance.requestAllRendersUpdate();
+    }
+
+    remove() {
+        this.scene.remove(this.mesh);
         this.truckEditorInstance.requestAllRendersUpdate();
     }
 }

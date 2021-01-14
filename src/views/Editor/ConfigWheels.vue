@@ -123,14 +123,19 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
-import EditorComponent from "./class";
 import * as TRUCK from "../../components/Editor/ts/TruckFileParser";
+import * as TruckEditor from "../../components/Editor/ts/TruckEditor";
 
 @Component({
     name: "",
     components: {}
 })
-export default class ConfigWheels extends EditorComponent {
+export default class ConfigWheels extends Vue {
+    private get getTruckData() {
+        return this.$store.getters.getTruckData;
+    }
+    @Prop(TruckEditor.default) readonly EditorObj!: TruckEditor.default;
+
     private selectedWheel: TRUCK.TruckFileWheels | null = null;
 
     private wheels: TRUCK.TruckFileWheels[] = [];
@@ -145,7 +150,6 @@ export default class ConfigWheels extends EditorComponent {
     }
 
     created() {
-        this.init();
         this.load();
     }
 
