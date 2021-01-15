@@ -11,7 +11,7 @@ import {
 import * as rorEditor from "@/components/Editor/ts/TruckEditor";
 
 const state = {
-    truckData: { info: { title: "" } } as TruckFileInterface,
+    truckData: {} as TruckFileInterface,
     parserSettings: { sectionsKeywordOrder: [] },
     Editor: {} as rorEditor.default,
     truckFilePath: ""
@@ -61,6 +61,10 @@ const actions = {
             dryMass: number;
             cargoMass: number;
             material: string;
+            comment_id: number;
+            grp_id: number;
+            sbd_preset_id: number;
+            snd_preset_id: number;
         }
     ) => {
         context.commit("setTruckInfo", truckData);
@@ -122,14 +126,22 @@ const mutations = {
             dryMass: number;
             cargoMass: number;
             material: string;
+            comment_id: number;
+            grp_id: number;
+            sbd_preset_id: number;
+            snd_preset_id: number;
         }
     ) {
         state.truckData.globals = {
             dryMass: truckData.dryMass,
             cargoMass: truckData.cargoMass,
-            material: truckData.material
+            material: truckData.material,
+            comment_id: truckData.comment_id,
+            grp_id: truckData.grp_id,
+            sbd_preset_id: truckData.sbd_preset_id,
+            snd_preset_id: truckData.snd_preset_id
         };
-        state.truckData.info.title = truckData.title;
+        state.truckData.title = truckData.title;
         state.truckData = JSON.parse(JSON.stringify(state.truckData));
     },
     setTruckNB(

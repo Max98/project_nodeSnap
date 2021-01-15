@@ -676,8 +676,16 @@ export default class TruckFileParser {
         this.parserLog.info("Requesting file save to: " + path);
 
         this.truckFile = store.getters.getTruckData;
+
         this.sectionsKeywordOrder =
             store.getters.getParserSettings.sectionsKeywordOrder;
+
+        if (this.sectionsKeywordOrder.length == 0) {
+            this.sectionsKeywordOrder.push(Keyword.KEYWORD_GLOBALS);
+            this.sectionsKeywordOrder.push(Keyword.KEYWORD_FILEINFO);
+            this.sectionsKeywordOrder.push(Keyword.KEYWORD_NODES);
+            this.sectionsKeywordOrder.push(Keyword.KEYWORD_BEAMS);
+        }
 
         let fileStr = "";
 
@@ -778,7 +786,10 @@ export default class TruckFileParser {
          */
         this.parserLog.info("Making a backup: " + path + ".bak");
 
-        fs.copyFileSync(path, path + ".bak");
+        if (fs.existsSync(path)) {
+            fs.copyFileSync(path, path + ".bak");
+        }
+
         fs.writeFileSync(path, fileStr);
 
         this.parserLog.info("Done saving file.");

@@ -1778,6 +1778,7 @@ export default class TruckEditor {
                     }
                 ]
             });
+            store.dispatch("setTruckFilePath", filePath);
         }
 
         if (filePath == undefined) {

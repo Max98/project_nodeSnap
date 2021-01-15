@@ -681,6 +681,8 @@ export default class Editor extends Vue {
 
         //Select first beam
         if (this.selectedBeam.id == -1) {
+            if (this.beamsList[0].beams.length == 0) return;
+
             let index = 0;
 
             if (this.beamsList[index].beams.length == 0) {

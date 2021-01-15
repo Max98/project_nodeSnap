@@ -142,7 +142,12 @@ export default class ComponentName extends Vue {
             title: this.truckTitle,
             cargoMass: this.cargoMass,
             dryMass: this.dryMass,
-            material: ""
+            comment_id: -1,
+            grp_id: -1,
+            sbd_preset_id: -1,
+            snd_preset_id: -1,
+
+            material: "tracks/semi"
         });
 
         this.$router.push("/editor");
