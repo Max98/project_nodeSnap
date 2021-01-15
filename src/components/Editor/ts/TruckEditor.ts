@@ -138,7 +138,10 @@ export default class TruckEditor {
      */
 
     private dragControl?: DragControls[] = [];
-    private truckFileData!: TRUCK.TruckFileInterface;
+
+    private truckFileData: TRUCK.TruckFileInterface =
+        store.getters.getTruckData;
+
     private nodesTruck: TRUCK.TruckFileNodes[] = [];
     private beamsTruck: TRUCK.TruckFileBeams[] = [];
     private nodeObject: THREE.Sprite[] = [];
@@ -905,11 +908,14 @@ export default class TruckEditor {
         }
 
         const nodeId = this.getLastNodeId() + 1;
+        const grpNodes = this.truckFileData.groups!.filter(
+            el => el.type == "node"
+        );
 
         this.nodesTruck.push({
             sbd_preset_id: -1,
             snd_preset_id: -1,
-            grp_id: -1,
+            grp_id: grpNodes[grpNodes.length - 1].grp_id,
             comment_id: -1,
 
             id: nodeId.toString(),
@@ -1255,11 +1261,14 @@ export default class TruckEditor {
         }
 
         const beamId = this.getLastBeamId() + 1;
+        const grpBeams = this.truckFileData.groups!.filter(
+            el => el.type == "beam"
+        );
 
         this.beamsTruck.push({
             sbd_preset_id: -1,
             snd_preset_id: -1,
-            grp_id: -1,
+            grp_id: grpBeams[grpBeams.length - 1].grp_id,
             comment_id: -1,
             options: "v",
 
@@ -1581,15 +1590,15 @@ export default class TruckEditor {
 
             switch (render.type) {
                 case "top":
-                    bluePrintPlanes[render.id].position.setX(-8001);
+                    bluePrintPlanes[render.id].position.setX(-12201);
                     bluePrintPlanes[render.id].rotateY(Math.PI / 2);
                     break;
                 case "side":
-                    bluePrintPlanes[render.id].position.setZ(-8001);
+                    bluePrintPlanes[render.id].position.setZ(-12501);
                     break;
                 case "front":
                     bluePrintPlanes[render.id].rotateX(-Math.PI / 2);
-                    bluePrintPlanes[render.id].position.setY(-8001);
+                    bluePrintPlanes[render.id].position.setY(-12201);
                     break;
                 default:
                     break;
@@ -1814,7 +1823,8 @@ export default class TruckEditor {
         if (currNode.grp_id == grpLength - 1) {
             this.truckFileData.groups.push({
                 grp_id: grpLength,
-                title: title
+                title: title,
+                type: "node"
             });
 
             /** from now on grpLength is the new grp_id */
@@ -1829,7 +1839,8 @@ export default class TruckEditor {
 
             this.truckFileData.groups.push({
                 grp_id: grpLength,
-                title: title
+                title: title,
+                type: "node"
             });
 
             this.nodesTruck.forEach(el => {
@@ -1863,7 +1874,8 @@ export default class TruckEditor {
         if (currBeam.grp_id == grpLength - 1) {
             this.truckFileData.groups.push({
                 grp_id: grpLength,
-                title: title
+                title: title,
+                type: "beam"
             });
 
             /** from now on grpLength is the new grp_id */
@@ -1878,7 +1890,8 @@ export default class TruckEditor {
 
             this.truckFileData.groups.push({
                 grp_id: grpLength,
-                title: title
+                title: title,
+                type: "beam"
             });
 
             this.beamsTruck.forEach(el => {

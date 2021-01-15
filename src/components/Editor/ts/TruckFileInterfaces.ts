@@ -41,6 +41,7 @@ export interface TruckFileDetacherGroup {
 export interface TruckFileGroup {
     grp_id: number;
     title: string;
+    type: string;
 }
 
 /**

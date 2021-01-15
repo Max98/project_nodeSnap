@@ -306,9 +306,18 @@ export default class TruckFileParser {
 
         this.currGroupId = this.truckFile.groups.length;
 
+        let grpType = "none";
+
+        if (this.currSection == Section.SECTION_NODES) {
+            grpType = "node";
+        } else if (this.currSection == Section.SECTION_BEAMS) {
+            grpType = "beam";
+        }
+
         const groups: TruckSectionsInterface.TruckFileGroup = {
             grp_id: this.truckFile.groups.length,
-            title: this.currLine.substr(5)
+            title: this.currLine.substr(5),
+            type: grpType
         };
 
         this.truckFile.groups.push(groups);
