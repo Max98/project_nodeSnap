@@ -428,7 +428,9 @@ import * as TruckEditor from "../components/Editor/ts/TruckEditor";
 import {
     TruckFileNodes,
     TruckFileBeams,
-    TruckFileGroup
+    TruckFileGroup,
+    RenderInterface,
+    MouseEvent2
 } from "../components/Editor/ts/TruckFileInterfaces";
 
 import LoadBluePrintsModal from "./Editor/LoadBluePrintsModal.vue";
@@ -467,6 +469,7 @@ interface EditorBeams extends TruckFileBeams {
     }
 })
 export default class Editor extends Vue {
+    // @ts-ignore
     public EditorObj!: TruckEditor.default;
 
     public addGrpNodeId = -1;
@@ -542,7 +545,7 @@ export default class Editor extends Vue {
     width = 810;
     height = 450;
 
-    private renders: TruckEditor.RenderInterface[] = [
+    private renders: RenderInterface[] = [
         {
             id: 0,
             canvas: "myRender",
@@ -697,8 +700,13 @@ export default class Editor extends Vue {
         // we don't need to update the selected beams data as it is no affected by the editor.
     }
 
-    created() {
+    private created(): void {
         this.EditorObj = new TruckEditor.default();
+
+        console.log(this.EditorObj);
+
+        // @ts-ignore
+        console.log(this.$appName);
     }
 
     mounted() {
@@ -734,7 +742,7 @@ export default class Editor extends Vue {
         requestAnimationFrame(this.mainLoop);
     }
 
-    onMouseDown(event: TruckEditor.MouseEvent2) {
+    onMouseDown(event: MouseEvent2) {
         this.EditorObj.onMouseDown(event);
     }
 
@@ -789,7 +797,7 @@ export default class Editor extends Vue {
     setBeamEditor(grp_id: number, beamId: number) {
         if (grp_id == undefined) return;
 
-        if (this.nodesList) {
+        if (this.beamsList) {
             Object.assign(
                 this.selectedBeam,
                 this.beamsList
@@ -850,7 +858,7 @@ export default class Editor extends Vue {
         }
     }
 
-    onGrpMouseDown(e: TruckEditor.MouseEvent2) {
+    onGrpMouseDown(e: MouseEvent2) {
         const menu = new Menu();
         if (e.button == 2) {
             menu.append(
@@ -886,7 +894,7 @@ export default class Editor extends Vue {
         this.$bvModal.show("modal-renameGrp");
     }
 
-    addGrp_node(el: TruckEditor.MouseEvent2) {
+    addGrp_node(el: MouseEvent2) {
         /**
          * FIX: For some reasons, typescript does not recognize parentNode from mouse Target.
          * we should find a correct solution as I'm just bypassing the "error" here.
@@ -898,7 +906,7 @@ export default class Editor extends Vue {
         this.$bvModal.show("modal-addGrp");
     }
 
-    addGrp_beam(el: TruckEditor.MouseEvent2) {
+    addGrp_beam(el: MouseEvent2) {
         /**
          * FIX: For some reasons, typescript does not recognize parentNode from mouse Target.
          * we should find a correct solution as I'm just bypassing the "error" here.
@@ -911,7 +919,7 @@ export default class Editor extends Vue {
         this.$bvModal.show("modal-addGrpBeam");
     }
 
-    onNodeMouseDown(e: TruckEditor.MouseEvent2) {
+    onNodeMouseDown(e: MouseEvent2) {
         let data;
         if (e.path[0].dataset.length == 3) {
             data = e.path[0].dataset;
@@ -948,7 +956,7 @@ export default class Editor extends Vue {
         }
     }
 
-    onBeamMouseDown(e: TruckEditor.MouseEvent2) {
+    onBeamMouseDown(e: MouseEvent2) {
         let data;
         if (e.path[0].dataset.length == 3) {
             data = e.path[0].dataset;
@@ -987,7 +995,7 @@ export default class Editor extends Vue {
         console.log("hai der: " + id);
     }
 
-    OnResizeViews(e: TruckEditor.MouseEvent2) {
+    OnResizeViews(e: MouseEvent2) {
         e.preventDefault();
         console.log("OnResizeViews");
 

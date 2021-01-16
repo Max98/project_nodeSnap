@@ -457,3 +457,43 @@ export interface TruckFileInterface {
     hydros?: TruckFileHydros[];
     animators?: TruckFileAnimators[];*/
 }
+
+import { OrbitControls } from "../js/EditorOrbitCamera.js";
+
+export interface RenderInterface {
+    readonly id: number;
+    readonly canvas: string;
+    readonly type: string;
+    width: number;
+    height: number;
+    worker?: THREE.WebGLRenderer;
+    cameraOrtho?: THREE.OrthographicCamera;
+    cameraPersp?: THREE.PerspectiveCamera;
+    controls?: OrbitControls;
+    mouse?: THREE.Vector2;
+    raycaster?: THREE.Raycaster;
+    debugStats?: any;
+}
+
+/**
+ * Typescript's library is missing the 'path' proprety
+ * This is a quick fix
+ */
+interface Target extends EventTarget {
+    id: string;
+    getBoundingClientRect(): {
+        bottom: number;
+        height: number;
+        left: number;
+        right: number;
+        top: number;
+        width: number;
+        x: number;
+        y: number;
+    };
+}
+
+export interface MouseEvent2 extends MouseEvent {
+    path: any[];
+    target: Target;
+}

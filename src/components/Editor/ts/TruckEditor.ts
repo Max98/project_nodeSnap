@@ -20,46 +20,8 @@ const { Menu, MenuItem, dialog } = remote;
 
 import OgreLoader from "../ts/OgreLoader";
 
-export interface RenderInterface {
-    readonly id: number;
-    readonly canvas: string;
-    readonly type: string;
-    width: number;
-    height: number;
-    worker?: THREE.WebGLRenderer;
-    cameraOrtho?: THREE.OrthographicCamera;
-    cameraPersp?: THREE.PerspectiveCamera;
-    controls?: OrbitControls;
-    mouse?: THREE.Vector2;
-    raycaster?: THREE.Raycaster;
-    debugStats?: any;
-}
-
 interface DragControlEvents extends THREE.Event {
     object?: THREE.Mesh;
-}
-
-/**
- * Typescript's library is missing the 'path' proprety
- * This is a quick fix
- */
-interface Target extends EventTarget {
-    id: string;
-    getBoundingClientRect(): {
-        bottom: number;
-        height: number;
-        left: number;
-        right: number;
-        top: number;
-        width: number;
-        x: number;
-        y: number;
-    };
-}
-
-export interface MouseEvent2 extends MouseEvent {
-    path: any[];
-    target: Target;
 }
 
 interface WheelWireFrame {
@@ -84,7 +46,7 @@ export default class TruckEditor {
      *
      */
     private scene!: THREE.Scene;
-    private rendersArray!: RenderInterface[];
+    private rendersArray!: TRUCK.RenderInterface[];
     private currActiveRenderId = -1;
 
     private clock!: THREE.Clock;
@@ -182,7 +144,7 @@ export default class TruckEditor {
         console.log("EditorObj");
     }
 
-    public setRenders(renders: RenderInterface[]) {
+    public setRenders(renders: TRUCK.RenderInterface[]) {
         this.rendersArray = renders;
 
         this.scene = new THREE.Scene();
@@ -427,7 +389,7 @@ export default class TruckEditor {
      *
      */
     private isMouseMove = false;
-    public onMouseDown(event: MouseEvent2) {
+    public onMouseDown(event: TRUCK.MouseEvent2) {
         this.setRender(event.path[1].id);
 
         this.isMouseMove = false;
@@ -445,7 +407,7 @@ export default class TruckEditor {
             });
         }
     }
-    public onMouseUp(event: MouseEvent2) {
+    public onMouseUp(event: TRUCK.MouseEvent2) {
         /**
          *
          * we enable them again
@@ -545,7 +507,7 @@ export default class TruckEditor {
         this.requestAllRendersUpdate();
     }
 
-    public onMouseMove(event: MouseEvent2) {
+    public onMouseMove(event: TRUCK.MouseEvent2) {
         if (this.currActiveRenderId == undefined) return;
         this.isMouseMove = true;
 
@@ -660,7 +622,7 @@ export default class TruckEditor {
         this.requestAllRendersUpdate();
     }
 
-    public onDblClick(event: MouseEvent2) {
+    public onDblClick(event: TRUCK.MouseEvent2) {
         this.rendersArray.forEach(render => {
             if (event.target == null) return;
 
@@ -908,6 +870,11 @@ export default class TruckEditor {
         }
 
         const nodeId = this.getLastNodeId() + 1;
+
+        if (this.truckFileData.groups == undefined) {
+            this.truckFileData.groups = [];
+        }
+
         const grpNodes = this.truckFileData.groups!.filter(
             el => el.type == "node"
         );
@@ -915,7 +882,10 @@ export default class TruckEditor {
         this.nodesTruck.push({
             sbd_preset_id: -1,
             snd_preset_id: -1,
-            grp_id: grpNodes[grpNodes.length - 1].grp_id,
+            grp_id:
+                this.truckFileData.groups.length != 0
+                    ? grpNodes[grpNodes.length - 1].grp_id
+                    : -1,
             comment_id: -1,
 
             id: nodeId.toString(),
@@ -1260,6 +1230,10 @@ export default class TruckEditor {
             return;
         }
 
+        if (this.truckFileData.groups == undefined) {
+            this.truckFileData.groups = [];
+        }
+
         const beamId = this.getLastBeamId() + 1;
         const grpBeams = this.truckFileData.groups!.filter(
             el => el.type == "beam"
@@ -1268,7 +1242,10 @@ export default class TruckEditor {
         this.beamsTruck.push({
             sbd_preset_id: -1,
             snd_preset_id: -1,
-            grp_id: grpBeams[grpBeams.length - 1].grp_id,
+            grp_id:
+                this.truckFileData.groups.length != 0
+                    ? grpBeams[grpBeams.length - 1].grp_id
+                    : -1,
             comment_id: -1,
             options: "v",
 
@@ -1345,7 +1322,7 @@ export default class TruckEditor {
     private selectedNode?: THREE.Mesh = undefined;
     private isNodeDrag = false;
 
-    private createDragNodes(render: RenderInterface) {
+    private createDragNodes(render: TRUCK.RenderInterface) {
         // if (render.type == "full") return;
         if (this.dragControl == undefined) {
             return;
