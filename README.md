@@ -1,6 +1,6 @@
 # project_nodeSnap
 
-Open source Rigs of rods truck file editor.
+**Open source Rigs of rods truck file editor.**  
 Support for BeamNG is comming soon.
 
 Based on the old rorEditozer.  
