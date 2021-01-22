@@ -11,15 +11,6 @@ export interface SECTION {
 }
 
 /**
- * Truck file header
- */
-export interface TruckFileAuthors {
-    type: string;
-    author_id: number;
-    author_name: string;
-    email?: string;
-}
-/**
  * Globals
  */
 export interface TruckFileGlobals extends SECTION {
@@ -29,7 +20,7 @@ export interface TruckFileGlobals extends SECTION {
 }
 
 /**
- * group
+ * Detacher group
  */
 export interface TruckFileDetacherGroup {
     detacher_id: number;
@@ -83,116 +74,6 @@ export interface TruckFileSetBeamDefaults {
 }
 
 /**
- * flexbodies
- */
-export interface TruckFileFlexbodies {
-    refNode: string;
-    xNode: string;
-    yNode: string;
-    offsetX: number;
-    offsetY: number;
-    offsetZ: number;
-    rotX: number;
-    rotY: number;
-    rotZ: number;
-    meshName: string;
-    forset: string;
-    disableFlexbodyShadow?: boolean;
-    flexbodyCameraMode?: number;
-}
-
-/**
- * Animators
- */
-export interface TruckFileAnimators {
-    node1: string;
-    node2: string;
-    factor: number;
-    option: string;
-}
-
-/**
- * Shocks
- */
-export interface TruckFileShocks {
-    node1: string;
-    node2: string;
-    springRate: number;
-    damping: number;
-    maxContraction: number;
-    maxExtention: number;
-    preCompression: number;
-    options?: string;
-}
-
-/**
- * Hydros
- */
-export interface TruckFileHydros {
-    node1: string;
-    node2: string;
-    lengtheningFactor: number;
-    options?: string;
-    startDelay?: number;
-    stopDelay?: number;
-    startFunction?: string;
-    stopFunction?: string;
-}
-
-/**
- * Commands
- */
-export interface TruckFileCommands {
-    node1: string;
-    node2: string;
-    rateFactor: number;
-    maxContraction: number;
-    maxExtention: number;
-
-    contractionKey: number;
-    extentionKey: number;
-
-    option?: string;
-    description?: string;
-}
-
-/**
- * Commands2
- */
-export interface TruckFileCommands2 {
-    node1: string;
-    node2: string;
-    contractionRateFactor: number;
-    extentionRateFactor: number;
-
-    maxContraction: number;
-    maxExtention: number;
-
-    contractionKey: number;
-    extentionKey: number;
-
-    option?: string;
-    description?: string;
-
-    startDelay?: number;
-    stopDelay?: number;
-    startFunction?: string;
-    stropFunction?: string;
-
-    affectEngine?: number;
-    needEngine?: boolean;
-}
-
-/**
- * Slidenodes
- */
-export interface TruckFileSlideNodes {
-    node1: string;
-    node2: string;
-    node3: string;
-}
-
-/**
  * Wheels
  * rorEditor will use this as default wheels
  */
@@ -214,165 +95,17 @@ export interface TruckFileWheels extends SECTION {
 }
 
 /**
- * Wheels2
- *
- */
-export interface TruckFileWheels2 {
-    rimRadius: number;
-    tyreRadius: number;
-    width: number;
-    numRays: number;
-    node1: string;
-    node2: string;
-    rigNode: string;
-    braking: number;
-    drive: number;
-    refArmNode: string;
-    mass: number;
-    rimSpringness: number;
-    rimDamping: number;
-    tyreSpringness: number;
-    tyreDamping: number;
-    material: string;
-}
-
-/**
- * Wings
- */
-
-export interface TruckFileWings {
-    /**
-     * Nodes
-     */
-    nodeA: string;
-    nodeB: string;
-    nodeC: string;
-    nodeD: string;
-    nodeE: string;
-    nodeF: string;
-    nodeG: string;
-    nodeH: string;
-
-    /**
-     * texture coordinates
-     */
-    frontLeftX: number;
-    frontLeftY: number;
-    frontRightX: number;
-    frontRightY: number;
-    backLeftX: number;
-    backLeftY: number;
-    backRightX: number;
-    backRightY: number;
-
-    /**
-     * Wing specific stuff
-     */
-    controlType: string;
-    chordControlStart: number;
-    minDeflection: number;
-    maxDeflection: number;
-    airfoil: string;
-    coeff?: number;
-}
-
-/**
- * Fusedrag
- */
-
-export interface TruckFileFuseDrag {
-    frontNode: string;
-    backNode: string;
-    fuselageWidth: number;
-    airfoil: string;
-}
-
-/**
- * Pistonprop
- */
-
-export interface TruckFilePistonProp {
-    refNode: string;
-    axisNode: string;
-    nodeBlade1: string;
-    nodeBlade2: string;
-    nodeBlade3: string;
-    nodeBlade4: string;
-    coupleNode: string;
-    enginePower: number;
-    pitch: number;
-    airfoil: string;
-}
-
-/**
- * Truboprop
- */
-
-export interface TruckFileTurboProp {
-    refNode: string;
-    axisNode: string;
-    nodeBlade1: string;
-    nodeBlade2: string;
-    nodeBlade3: string;
-    nodeBlade4: string;
-    turbinePower: number;
-    airfoil: string;
-}
-
-/**
- * Trubojets
- */
-
-export interface TruckFileTurboJets {
-    frontNode: string;
-    backNode: string;
-    sideNode: string;
-    isReversable: boolean;
-    dryThrust: number;
-    wetThrust: number;
-    frontDiameter: number;
-    backDiameter: number;
-    nozzleLenght: number;
-}
-
-/**
- * cameras
- */
-
-export interface TruckFileCameras {
-    centerNode: string;
-    backNode: string;
-    leftNode: string;
-}
-
-/**
- * Cinecam
- */
-
-export interface TruckFileCineCam {
-    x: number;
-    y: number;
-    z: number;
-    node1: string;
-    node2: string;
-    node3: string;
-    node4: string;
-    node5: string;
-    node6: string;
-    node7: string;
-    node8: string;
-    spring?: number;
-    damping?: number;
-    nodeWeight?: number;
-}
-
-/**
  * Nodes
  */
+export enum nodeType {
+    DEFAULT,
+    NAMED
+}
 
-export interface TruckFileNodes extends SECTION {
-    id: string; //we parse as string
-    idEditor: number;
+interface TruckFileNode extends SECTION {
+    id: number; //we parse as string
+    name: string;
+    type: nodeType;
     x: number;
     y: number;
     z: number;
@@ -383,9 +116,9 @@ export interface TruckFileNodes extends SECTION {
 /**
  * Beams
  */
-export interface TruckFileBeams extends SECTION {
-    node1: string;
-    node2: string;
+interface TruckFileBeam extends SECTION {
+    node1: number;
+    node2: number;
     options?: string;
     /**
      * We use id here to keep stuff in order
@@ -427,12 +160,12 @@ export interface TruckFileInterface {
     fileformat?: TruckFileFormat;
     fileinfo?: TruckFileInfo;
     globals: TruckFileGlobals;
-    nodes: TruckFileNodes[];
-    beams: TruckFileBeams[];
+    nodes: EditorNode[];
+    beams: EditorBeam[];
 
     setNodesDefaults?: TruckFileSetNodesDefaults[];
     setBeamDefaults?: TruckFileSetBeamDefaults[];
-    groups?: TruckFileGroup[];
+    groups?: EditorGroup[];
     comments?: TruckFileComment[];
     detacher_group?: TruckFileDetacherGroup[];
 
@@ -446,8 +179,8 @@ export interface TruckFileInterface {
     turboProp?: TruckFileTurboProp[];
     pistonProp?: TruckFilePistonProp[];
     wings?: TruckFileWings[];
-*/
-    wheels2?: TruckFileWheels2[];
+
+    wheels2?: TruckFileWheels2[];*/
     wheels?: TruckFileWheels[];
     /*
     slidenodes?: TruckFileSlideNodes[];
@@ -458,42 +191,15 @@ export interface TruckFileInterface {
     animators?: TruckFileAnimators[];*/
 }
 
-import { OrbitControls } from "../js/EditorOrbitCamera.js";
-
-export interface RenderInterface {
-    readonly id: number;
-    readonly canvas: string;
-    readonly type: string;
-    width: number;
-    height: number;
-    worker?: THREE.WebGLRenderer;
-    cameraOrtho?: THREE.OrthographicCamera;
-    cameraPersp?: THREE.PerspectiveCamera;
-    controls?: OrbitControls;
-    mouse?: THREE.Vector2;
-    raycaster?: THREE.Raycaster;
-    debugStats?: any;
-}
-
 /**
- * Typescript's library is missing the 'path' proprety
- * This is a quick fix
+ * Editor specific
  */
-interface Target extends EventTarget {
-    id: string;
-    getBoundingClientRect(): {
-        bottom: number;
-        height: number;
-        left: number;
-        right: number;
-        top: number;
-        width: number;
-        x: number;
-        y: number;
-    };
+export interface EditorNode extends TruckFileNode {
+    isVisible: boolean;
 }
-
-export interface MouseEvent2 extends MouseEvent {
-    path: any[];
-    target: Target;
+export interface EditorBeam extends TruckFileBeam {
+    isVisible: boolean;
+}
+export interface EditorGroup extends TruckFileGroup {
+    isVisible: boolean;
 }

@@ -5,10 +5,9 @@
         "strict": true,
         "jsx": "preserve",
         "importHelpers": true,
-        "allowJs": false,
-        "checkJs": false,
         "moduleResolution": "node",
         "experimentalDecorators": true,
+        "skipLibCheck": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "sourceMap": true,
@@ -24,7 +23,8 @@
         "src/**/*.tsx",
         "src/**/*.vue",
         "tests/**/*.ts",
-        "tests/**/*.tsx"
-    ],
+        "tests/**/*.tsx",
+        "src/vuex.d.ts."
+, "src/store/plugins/promiseAction.js", "src/components/Editor/ts/Worker/commit.js"    ],
     "exclude": ["node_modules"]
 }

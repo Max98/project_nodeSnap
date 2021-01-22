@@ -1,14 +1,20 @@
-import * as TruckSectionsInterface from "./TruckFileInterfaces";
+import * as TruckSectionsInterface from "../../TruckFileInterfaces";
 import { Section, Keyword } from "./TruckFileParserSections";
 
 import fs from "fs";
 import * as Logger from "electron-log";
 
 import store from "@/store/index";
-import { TruckFileInfo } from "./TruckFileParser";
-//import { TruckFileInfo, TruckFileInterface } from "./TruckFileParser";
 
-export default class TruckFileParser {
+/**
+ * Note:
+ * RoR has inversed axis
+ *
+ * RoR =>    Z X Y
+ * editor => X Y Z
+ */
+
+export default class TruckFileImporter {
     private FileBuffer: string[] | null;
     private truckFile: TruckSectionsInterface.TruckFileInterface;
 
@@ -33,7 +39,7 @@ export default class TruckFileParser {
     private sectionsKeywordOrder: any[] = [];
 
     constructor() {
-        this.parserLog = Logger.default.scope("Parser");
+        this.parserLog = Logger.default.scope("TruckFileImporter");
         this.parserLog.info("init");
 
         this.FileBuffer = null;
@@ -67,6 +73,7 @@ export default class TruckFileParser {
     /**
      * Load a truck file
      * @param filePatch path to file to be loaded
+     * @returns truckTitle
      */
     loadFile(filePatch: string) {
         this.parserLog.info("Loading file: " + filePatch);
@@ -96,15 +103,16 @@ export default class TruckFileParser {
         console.log(this.truckFile);
         console.log(this.sectionsKeywordOrder);
 
-        /**
-         * Push data to vuex memory
-         */
-        store.dispatch("setTruckData", this.getTruckFileObject());
         store.dispatch("setParserSettings", {
             sectionsKeywordOrder: this.sectionsKeywordOrder
         });
 
-        return true;
+        /**
+         * Push data to vuex memory
+         */
+        store.dispatch("setTruckData", this.truckFile);
+
+        return this.truckFile.title;
     }
 
     /**
@@ -129,15 +137,17 @@ export default class TruckFileParser {
     private ParseBeams() {
         if (!this.CheckNumArguments(2)) return;
 
-        const beamArray: TruckSectionsInterface.TruckFileBeams = {
+        const beamArray: TruckSectionsInterface.EditorBeam = {
             sbd_preset_id: this.currPresetBeamId,
             snd_preset_id: this.currPresetNodeId,
             grp_id: this.currGroupId,
             comment_id: this.currCommentId,
 
             id: this.beamIndex,
-            node1: this.currArgs[0],
-            node2: this.currArgs[1]
+            node1: this.getNodeIdFromName(this.currArgs[0]),
+            node2: this.getNodeIdFromName(this.currArgs[1]),
+
+            isVisible: true
         };
 
         if (this.currArgs[2]) {
@@ -156,17 +166,25 @@ export default class TruckFileParser {
     private ParseNodesUnified() {
         if (!this.CheckNumArguments(4)) return;
 
-        const nodeParams: TruckSectionsInterface.TruckFileNodes = {
+        const nodeParams: TruckSectionsInterface.EditorNode = {
             sbd_preset_id: this.currPresetBeamId,
             snd_preset_id: this.currPresetNodeId,
             grp_id: this.currGroupId,
             comment_id: this.currCommentId,
 
-            idEditor: this.nodeIndex,
-            id: this.currArgs[0],
-            x: parseFloat(this.currArgs[1]),
-            y: parseFloat(this.currArgs[2]),
-            z: parseFloat(this.currArgs[3])
+            id: this.nodeIndex,
+            name: this.currArgs[0],
+
+            /**
+             * TODO: support nodes2
+             */
+            type: TruckSectionsInterface.nodeType.DEFAULT,
+
+            x: parseFloat(this.currArgs[3]), //y
+            y: parseFloat(this.currArgs[1]), //z
+            z: parseFloat(this.currArgs[2]), //x
+
+            isVisible: true
         };
 
         if (this.currArgs[4]) {
@@ -314,10 +332,11 @@ export default class TruckFileParser {
             grpType = "beam";
         }
 
-        const groups: TruckSectionsInterface.TruckFileGroup = {
+        const groups: TruckSectionsInterface.EditorGroup = {
             grp_id: this.truckFile.groups.length,
             title: this.currLine.substr(5),
-            type: grpType
+            type: grpType,
+            isVisible: true
         };
 
         this.truckFile.groups.push(groups);
@@ -677,442 +696,9 @@ export default class TruckFileParser {
     }
 
     /**
-     * dump data from memory to file
-     * @param path path where the file will be saved
-     * TODO: backups
+     * Utils
      */
-    public saveFile(path: string) {
-        this.parserLog.info("Requesting file save to: " + path);
-
-        this.truckFile = store.getters.getTruckData;
-
-        this.sectionsKeywordOrder =
-            store.getters.getParserSettings.sectionsKeywordOrder;
-
-        if (this.sectionsKeywordOrder.length == 0) {
-            this.sectionsKeywordOrder.push(Keyword.KEYWORD_GLOBALS);
-            this.sectionsKeywordOrder.push(Keyword.KEYWORD_FILEINFO);
-            this.sectionsKeywordOrder.push(Keyword.KEYWORD_NODES);
-            this.sectionsKeywordOrder.push(Keyword.KEYWORD_BEAMS);
-        }
-
-        let fileStr = "";
-
-        fileStr += this.truckFile.title;
-
-        fileStr += "\n" + "\n"; //extra line breaks
-
-        let lastUnkownIndex = 0;
-
-        /**
-         * post truck name unknown sections
-         */
-        if (this.truckFile.unknown) {
-            for (
-                ;
-                lastUnkownIndex < this.truckFile.unknown.length;
-                lastUnkownIndex++
-            ) {
-                const element = this.truckFile.unknown[lastUnkownIndex];
-                const afterKeyword: string = element.after_section;
-
-                console.log("lol: ", afterKeyword.substr(8));
-
-                if (afterKeyword.substr(8) == "TRUCK_NAME") {
-                    fileStr += this.onSaveProcessComments(element);
-                    fileStr += this.onSaveProcessSetBeamDefaults(element);
-                    fileStr += element.data;
-                } else {
-                    break;
-                }
-            }
-        }
-
-        /**
-         * Restore sections in the order they were parsed
-         */
-        for (let i = 0; i < this.sectionsKeywordOrder.length; i++) {
-            const keywordSection: Keyword = this.sectionsKeywordOrder[i]; //Keyword[this.sectionsKeywordOrder[i]];
-            fileStr += "\n";
-
-            switch (keywordSection) {
-                case Keyword.KEYWORD_NODES:
-                    fileStr += this.onSaveProcessNodes();
-                    break;
-
-                case Keyword.KEYWORD_BEAMS:
-                    fileStr += this.onSaveProcessBeams();
-                    break;
-
-                case Keyword.KEYWORD_WHEELS:
-                    fileStr += this.onSaveProcessWheels();
-                    break;
-
-                case Keyword.KEYWORD_GLOBALS:
-                    fileStr += this.onSaveProcessGlobals();
-                    break;
-
-                /**
-                 * FIX: this does not get back into the order it is supposed to be
-                 */
-                case Keyword.KEYWORD_FILEINFO:
-                    fileStr += this.onSaveProcessFileinfo();
-                    break;
-
-                default:
-                    break;
-            }
-
-            if (this.truckFile.unknown) {
-                fileStr += "\n"; //extra line breaks
-                for (
-                    ;
-                    lastUnkownIndex < this.truckFile.unknown.length;
-                    lastUnkownIndex++
-                ) {
-                    const element = this.truckFile.unknown[lastUnkownIndex];
-                    const afterKeyword: string = element.after_section;
-
-                    if (
-                        afterKeyword.substr(8) ==
-                        Keyword[keywordSection].substr(8)
-                    ) {
-                        fileStr += this.onSaveProcessComments(element);
-                        fileStr += this.onSaveProcessSetBeamDefaults(element);
-                        fileStr += element.data;
-                    } else {
-                        break;
-                    }
-                }
-                fileStr += "\n"; //extra line breaks
-            }
-        }
-
-        fileStr += "end";
-
-        /**
-         * TODO: backup system with more than just one backup
-         */
-        this.parserLog.info("Making a backup: " + path + ".bak");
-
-        if (fs.existsSync(path)) {
-            fs.copyFileSync(path, path + ".bak");
-        }
-
-        fs.writeFileSync(path, fileStr);
-
-        this.parserLog.info("Done saving file.");
-    }
-
-    private onSaveProcessWheels() {
-        let fileStr = "";
-
-        if (this.truckFile.wheels) {
-            fileStr += "wheels" + "\n";
-            for (let i = 0; i < this.truckFile.wheels.length; i++) {
-                const currWheel = this.truckFile.wheels[i];
-
-                fileStr += this.onSaveProcessComments(currWheel);
-                fileStr +=
-                    currWheel.radius +
-                    ", " +
-                    currWheel.width +
-                    ", " +
-                    currWheel.numRays +
-                    ", " +
-                    this.getNodeRealId(currWheel.node1) +
-                    ", " +
-                    this.getNodeRealId(currWheel.node2) +
-                    ", " +
-                    currWheel.rigNode +
-                    ", " +
-                    currWheel.braking +
-                    ", " +
-                    currWheel.drive +
-                    ", " +
-                    currWheel.refArmNode +
-                    ", " +
-                    currWheel.mass +
-                    ", " +
-                    currWheel.springness +
-                    ", " +
-                    currWheel.damping +
-                    ", " +
-                    currWheel.face_material_name +
-                    ", " +
-                    currWheel.band_material_name +
-                    "\n";
-            }
-        }
-        return fileStr;
-    }
-
-    private onSaveProcessNodes() {
-        /**
-         * nodes
-         * order ->
-         * 1 group
-         * 2 set_nodes_default
-         * 3 Set_default_minimass
-         * 4 comments
-         */
-        let fileStr = "";
-        if (this.truckFile.nodes.length != 0) {
-            fileStr += "nodes" + "\n";
-
-            for (let i = 0; i < this.truckFile.nodes.length; i++) {
-                const el = this.truckFile.nodes[i];
-
-                fileStr += this.onSaveProcessGroups(el);
-
-                fileStr += this.onSaveProcessSetNodeDefaults(el);
-
-                fileStr += this.onSaveProcessComments(el);
-
-                fileStr += el.id + ", " + el.x + ", " + el.y + ", " + el.z;
-
-                if (el.options) {
-                    fileStr += ", " + el.options;
-                }
-
-                fileStr += "\n";
-            }
-        } else {
-            this.parserLog.error("No nodes found, truck file invalid!");
-        }
-
-        return fileStr;
-    }
-
-    private onSaveProcessBeams() {
-        /**
-         * Beams
-         *
-         * order ->
-         * 1 group
-         * 2 set_beam_default
-         * 3 detacher_group
-         * 4 comments
-         */
-        let fileStr = "";
-
-        if (this.truckFile.beams.length != 0) {
-            fileStr += "beams" + "\n";
-
-            for (let i = 0; i < this.truckFile.beams.length; i++) {
-                const el = this.truckFile.beams[i];
-
-                fileStr += this.onSaveProcessGroups(el);
-                fileStr += this.onSaveProcessSetBeamDefaults(el);
-                fileStr += this.onSaveProcessDetacherGroups(el);
-                fileStr += this.onSaveProcessComments(el);
-
-                fileStr +=
-                    this.getNodeRealId(el.node1) +
-                    ", " +
-                    this.getNodeRealId(el.node2);
-
-                if (el.options) {
-                    fileStr += ", " + el.options;
-                }
-
-                fileStr += "\n";
-            }
-        } else {
-            this.parserLog.error("No beams found, truck file invalid!");
-        }
-        return fileStr;
-    }
-
-    private onSaveProcessGroups(el: TruckSectionsInterface.SECTION): string {
-        let fileStr = "";
-
-        if (el.grp_id != -1) {
-            if (this.currGroupId != el.grp_id) {
-                this.currGroupId = el.grp_id;
-                fileStr +=
-                    "\n" +
-                    ";grp:" +
-                    this.truckFile.groups?.filter(
-                        el => el.grp_id == this.currGroupId
-                    )[0].title +
-                    "\n";
-            }
-        } else {
-            this.currGroupId = -1;
-        }
-
-        return fileStr;
-    }
-
-    private onSaveProcessComments(el: TruckSectionsInterface.SECTION): string {
-        let fileStr = "";
-
-        if (el.comment_id != -1) {
-            if (this.currCommentId != el.comment_id) {
-                this.currCommentId = el.comment_id;
-                fileStr +=
-                    "\n" +
-                    this.truckFile.comments?.filter(
-                        el => el.comment_id == this.currCommentId
-                    )[0].text +
-                    "\n";
-            }
-        } else {
-            this.currCommentId = -1;
-        }
-
-        return fileStr;
-    }
-
-    /**
-     * This section is specific to beams
-     * @param el
-     * @param lineBreak
-     */
-    private onSaveProcessDetacherGroups(
-        el: TruckSectionsInterface.TruckFileBeams
-    ): string {
-        let fileStr = "";
-
-        if (el.detacher_group_id && el.detacher_group_id != -1) {
-            if (this.beamDetacherGroup != el.detacher_group_id) {
-                this.beamDetacherGroup = el.detacher_group_id;
-                fileStr += "detacher_group " + el.detacher_group_id + "\n";
-            }
-        } else {
-            this.beamDetacherGroup = -1;
-        }
-
-        return fileStr;
-    }
-
-    private onSaveProcessSetBeamDefaults(
-        el: TruckSectionsInterface.SECTION
-    ): string {
-        let fileStr = "";
-
-        if (el.sbd_preset_id != -1) {
-            if (this.currPresetBeamId != el.sbd_preset_id) {
-                this.currPresetBeamId = el.sbd_preset_id;
-
-                const sbd = this.truckFile.setBeamDefaults?.filter(
-                    el => el.preset_id == this.currPresetBeamId
-                )[0];
-
-                fileStr += "\n" + "set_beam_defaults " + sbd?.springiness;
-
-                if (sbd?.dampingConstant) {
-                    fileStr += ", " + sbd?.dampingConstant;
-                    if (sbd?.deformationThresholdConstant) {
-                        fileStr += ", " + sbd?.deformationThresholdConstant;
-                        if (sbd?.breakingThresholdConstant) {
-                            fileStr += ", " + sbd?.breakingThresholdConstant;
-                            if (sbd?.beamDiameter) {
-                                fileStr += ", " + sbd?.beamDiameter;
-                                if (sbd?.beamMaterial) {
-                                    fileStr += ", " + sbd?.beamMaterial;
-                                    if (sbd?.plasticDeformationCoef) {
-                                        fileStr +=
-                                            ", " + sbd?.plasticDeformationCoef;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                fileStr += "\n";
-            }
-        }
-        return fileStr;
-    }
-
-    private onSaveProcessSetNodeDefaults(
-        el: TruckSectionsInterface.SECTION
-    ): string {
-        let fileStr = "";
-
-        if (el.snd_preset_id != -1) {
-            if (this.currPresetNodeId != el.snd_preset_id) {
-                this.currPresetNodeId = el.snd_preset_id;
-
-                const snd = this.truckFile.setNodesDefaults?.filter(
-                    el => el.preset_id == this.currPresetNodeId
-                )[0];
-
-                fileStr += "\n" + "set_node_defaults " + snd?.loadWeight;
-
-                if (snd?.friction) {
-                    fileStr += ", " + snd?.friction;
-                    if (snd?.volume) {
-                        fileStr += ", " + snd?.volume;
-                        if (snd?.surface) {
-                            fileStr += ", " + snd?.surface;
-                            if (snd?.options) {
-                                fileStr += ", " + snd?.options;
-                            }
-                        }
-                    }
-                }
-
-                fileStr += "\n";
-            }
-        }
-        return fileStr;
-    }
-
-    private onSaveProcessGlobals() {
-        let fileStr = "";
-
-        if (this.truckFile.globals) {
-            fileStr += "globals" + "\n";
-            fileStr += this.onSaveProcessComments(this.truckFile.globals);
-            fileStr +=
-                this.truckFile.globals.dryMass +
-                "," +
-                this.truckFile.globals.cargoMass +
-                "," +
-                this.truckFile.globals.material +
-                "\n";
-        }
-
-        return fileStr;
-    }
-
-    private onSaveProcessFileinfo() {
-        let fileStr = "";
-
-        if (this.truckFile.fileinfo) {
-            const fileInfo: TruckSectionsInterface.TruckFileInfo = this
-                .truckFile.fileinfo;
-
-            fileStr = "fileinfo " + fileInfo.uniqueId;
-
-            if (fileInfo.categoryId) {
-                fileStr += ", " + fileInfo.categoryId;
-
-                if (fileInfo.fileVersion) {
-                    fileStr += ", " + fileInfo.fileVersion;
-                }
-            }
-        }
-
-        return fileStr;
-    }
-
-    public getTruckFileObject() {
-        return this.truckFile;
-    }
-
-    /**
-     * converts node editor id into real node name for the game
-     * @param str node_name
-     */
-    private getNodeRealId(str: string): string {
-        //console.log(str);
-        return this.truckFile.nodes?.filter(
-            currNode => currNode.idEditor == parseInt(str)
-        )[0].id!;
+    private getNodeIdFromName(str: string): number {
+        return this.truckFile.nodes.filter(el => el.name == str)[0].id;
     }
 }

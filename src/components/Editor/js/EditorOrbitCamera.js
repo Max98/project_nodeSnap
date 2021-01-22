@@ -76,6 +76,7 @@ var OrbitControls = function(object, domElement) {
     // Set to false to disable rotating
     this.enableRotate = true;
     this.rotateSpeed = 1.0;
+    this.rotateCtrl = false;
 
     // Set to false to disable panning
     this.enablePan = true;
@@ -724,11 +725,23 @@ var OrbitControls = function(object, domElement) {
 
                     state = STATE.PAN;
                 } else {*/
-                if (scope.enableRotate === false) return;
 
-                handleMouseDownRotate(event);
+                if (scope.rotateCtrl) {
+                    if (event.ctrlKey) {
+                        if (scope.enableRotate === false) return;
 
-                state = STATE.ROTATE;
+                        handleMouseDownRotate(event);
+
+                        state = STATE.ROTATE;
+                    }
+                } else {
+                    if (scope.enableRotate === false) return;
+
+                    handleMouseDownRotate(event);
+
+                    state = STATE.ROTATE;
+                }
+
                 //}
 
                 break;

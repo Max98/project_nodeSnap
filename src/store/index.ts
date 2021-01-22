@@ -1,9 +1,9 @@
-import Vue from "vue";
-import Vuex from "vuex";
+import { createStore, createLogger } from "vuex";
+
 import truckFile from "./modules/truckFile";
+import settings from "./modules/settings";
 
-Vue.use(Vuex);
-
-export default new Vuex.Store({
-    modules: { truckFile }
+export default createStore({
+    modules: { truckFile, settings },
+    plugins: [createLogger()]
 });

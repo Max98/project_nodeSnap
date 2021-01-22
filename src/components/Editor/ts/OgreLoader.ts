@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import fs from "fs";
 import xml2js from "xml2js";
-import TruckEditor from "./TruckEditor";
+import TruckEditor from "./TruckEditorRenderer";
 
 export default class OgreLoader {
     private scene: THREE.Scene;
@@ -18,10 +18,6 @@ export default class OgreLoader {
         this.scene = scene;
         this.scale = scale;
         this.truckEditorInstance = truckEditorInstance;
-
-        console.log("hi");
-
-        console.log(file.path);
 
         const dataURI = fs.readFileSync(file.path, "utf8");
 
@@ -124,16 +120,13 @@ export default class OgreLoader {
         console.log("Done");
 
         this.scene.add(this.mesh);
-        this.truckEditorInstance.requestAllRendersUpdate();
     }
 
     toggleVisibility() {
         this.mesh.visible = !this.mesh.visible;
-        this.truckEditorInstance.requestAllRendersUpdate();
     }
 
     remove() {
         this.scene.remove(this.mesh);
-        this.truckEditorInstance.requestAllRendersUpdate();
     }
 }

@@ -1,12 +1,16 @@
-import Vue from "vue";
-import VueRouter, { RouteConfig } from "vue-router";
-import Projects from "../views/Projects.vue";
-import Editor from "../views/Editor.vue";
-import InitProject from "../views/InitProject.vue";
+import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 
-Vue.use(VueRouter);
+import Projects from "../views/Main/Projects.vue";
+import Editor from "../views/Main/Editor.vue";
+import Modals from "../views/Modals/Modals.vue";
+import Settings from "../views/Modals/Settings.vue";
+import RenameGrp from "../views/Modals/Groups/RenameGrp.vue";
+import AddGrp from "../views/Modals/Groups/AddGrp.vue";
 
-const routes: Array<RouteConfig> = [
+const routes: Array<RouteRecordRaw> = [
+    /**
+     * Main pages
+     */
     {
         path: "/",
         name: "Projects",
@@ -17,14 +21,33 @@ const routes: Array<RouteConfig> = [
         name: "Editor",
         component: Editor
     },
+
+    /**
+     * Modals, that will be open in an other renderer page using electron
+     */
     {
-        path: "/new/:step",
-        name: "newProject",
-        component: InitProject
+        path: "/Modals",
+        name: "Modals",
+        component: Modals,
+        children: [
+            {
+                path: "Settings",
+                component: Settings
+            },
+            {
+                path: "Groups/Rename",
+                component: RenameGrp
+            },
+            {
+                path: "Groups/Add",
+                component: AddGrp
+            }
+        ]
     }
 ];
 
-const router = new VueRouter({
+const router = createRouter({
+    history: createWebHashHistory(),
     routes
 });
 

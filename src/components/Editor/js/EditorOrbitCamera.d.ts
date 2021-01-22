@@ -33,6 +33,7 @@ export class OrbitControls {
 
     enableRotate: boolean;
     rotateSpeed: number;
+    rotateCtrl: boolean;
 
     enablePan: boolean;
     panSpeed: number;

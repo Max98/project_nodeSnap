@@ -7,8 +7,12 @@ $border-radius: 0;
 $border-radius-sm: 0;
 $border-radius-lg: 0;
 
+$editorFont: "Segoe UI", -apple-system, BlinkMacSystemFont;
+$editorFontSize: 0.85rem;
+
 //default dark color, slightly brighter than bg
 $dark: #282828;
+$darker: #1b1b1b;
 $card-bg: $dark;
 
 //
@@ -16,7 +20,10 @@ $card-bg: $dark;
 //
 $primary: #226699;
 $secondary: #18486d;
-$danger: #c80000;
+$danger: #a30000;
+$success: #198754;
+$info: #0993ae;
+$warning: #e0a800;
 
 $alert-bg-level: 0;
 $alert-border-level: -1;

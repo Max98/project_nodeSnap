@@ -13,7 +13,9 @@ export class LatestProjects {
         this.store = new Store();
 
         if (this.store.get("projects.latestProjects"))
-            this.latestProjects = this.store.get("projects.latestProjects");
+            this.latestProjects = this.store.get(
+                "projects.latestProjects"
+            ) as LatestProjectsArray[];
     }
 
     /**

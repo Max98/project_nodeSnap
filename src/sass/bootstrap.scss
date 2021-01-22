@@ -3,13 +3,10 @@
 //
 //Font sizes
 //
-@import "./font.scss";
 
-$font-family-sans-serif: "Source Sans Pro", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol";
+$font-family-sans-serif: $editorFont;
 
-$font-size-base: 1rem; // Assumes the browser default, typically `16px`
+$font-size-base: $editorFontSize; // Assumes the browser default, typically `16px`
 $font-size-sm: $font-size-base * 0.795;
 $font-size-lg: $font-size-base * 1.15;
 
@@ -76,7 +73,7 @@ $list-group-action-active-bg: $gray-200;
 $b-sidebar-header-padding-y: 10px;
 $b-sidebar-width: 265px;
 
-@import "node_modules/bootstrap-vue/src/index.scss";
+//@import "node_modules/bootstrap-vue/src/index.scss";
 
 .side_bar_col {
     flex: 0 0 $b-sidebar-width !important;
@@ -87,6 +84,7 @@ $b-sidebar-width: 265px;
     border: none;
     .nav-link {
         border: none;
+        transition: none;
     }
 }
 
@@ -99,6 +97,7 @@ $b-sidebar-width: 265px;
 
 .nav-tabs .nav-link.active {
     background-color: $secondary;
+    border: none;
 
     color: white;
 }
@@ -124,10 +123,6 @@ a {
 .sidebar_menu_card > .nav > .nav-item {
     &:hover {
         background-color: $gray-800;
-        border-radius: 5px;
-    }
-    .active {
-        border-radius: 5px;
     }
 }
 
@@ -173,4 +168,8 @@ a {
 
 .custom-file-label::after {
     background-color: $secondary;
+}
+
+a {
+    text-decoration: none;
 }
