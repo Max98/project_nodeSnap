@@ -7,6 +7,7 @@ interface Settings {
         gridSize: number;
         displayNodesName: boolean;
     };
+    isSaved: boolean;
 }
 
 const state: Settings = {
@@ -14,7 +15,8 @@ const state: Settings = {
         nodesSpriteScale: 1,
         gridSize: 1,
         displayNodesName: false
-    }
+    },
+    isSaved: false
 };
 
 const getters = {

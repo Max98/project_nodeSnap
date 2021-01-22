@@ -137,14 +137,15 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import { Watch } from "@/components/vue-decorator";
+import { Watch, Prop } from "@/components/vue-decorator";
 
 import {
     EditorBeam,
-    TruckFileGroup
+    EditorGroup
 } from "@/components/Editor/ts/TruckFileInterfaces";
 
 import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
+import { TruckFileInterface } from "@/components/Editor/ts/TruckFileInterfaces";
 
 import { ipcRenderer } from "electron";
 const remote = require("electron").remote;
@@ -154,6 +155,9 @@ const { Menu, MenuItem } = remote;
     components: {}
 })
 export default class EditorBeamsTab extends Vue {
+    @Prop() readonly truckDataBeams!: EditorBeam[];
+    @Prop() readonly truckDataGroups!: EditorGroup[];
+
     private beamsList: {
         grp_id: number;
         beams: EditorBeam[];
@@ -165,13 +169,6 @@ export default class EditorBeamsTab extends Vue {
             beams: []
         }
     ];
-
-    get beamsTruck(): EditorBeam[] {
-        return this.$store.getters.getTruckData.beams;
-    }
-    get groups(): TruckFileGroup[] {
-        return this.$store.getters.getTruckData.groups;
-    }
 
     private selectedBeam: EditorBeam = {
         node1: -1,
@@ -192,7 +189,7 @@ export default class EditorBeamsTab extends Vue {
         { value: "cmd", text: "Command" }
     ];
 
-    @Watch("beamsTruck")
+    @Watch("truckData")
     updateBeamsData() {
         let lastGrp = -1;
 
@@ -204,8 +201,8 @@ export default class EditorBeamsTab extends Vue {
             beams: []
         });
 
-        if (Array.isArray(this.beamsTruck)) {
-            this.beamsTruck!.forEach(beam => {
+        if (Array.isArray(this.truckDataBeams)) {
+            this.truckDataBeams.forEach(beam => {
                 if (beam.grp_id != lastGrp) {
                     this.beamsList.push({
                         grp_id: beam.grp_id,
@@ -216,7 +213,7 @@ export default class EditorBeamsTab extends Vue {
                 }
             });
 
-            this.beamsTruck!.forEach(beam => {
+            this.truckDataBeams.forEach(beam => {
                 if (this.beamsList.some(el => el.grp_id == beam.grp_id)) {
                     const newBeam: EditorBeam = beam as EditorBeam;
                     newBeam.isVisible = true;
@@ -261,7 +258,8 @@ export default class EditorBeamsTab extends Vue {
     getGrpName(grp: number) {
         if (grp == -1) return;
 
-        const title = this.groups?.filter(el => el.grp_id == grp)[0].title;
+        const title = this.truckDataGroups.filter(el => el.grp_id == grp)[0]
+            .title;
         return title;
     }
 

@@ -109,18 +109,20 @@ export default class Projects extends Vue {
     latestProjectsArray: LatestProjectsArray[] = [];
     private currProject: CurrentProject = { title: "" };
 
-    get truckData() {
-        return this.$store.getters.getTruckData;
-    }
-
     created() {
         this.latestProjects = new LatestProjects();
         this.latestProjectsArray = this.latestProjects.getLatestProjects();
     }
 
     mounted() {
-        if (this.truckData.title) {
-            this.currProject.title = this.truckData.title;
+        if (
+            TruckEditorManager.getInstance()
+                .getEditorObj()
+                .getData().title
+        ) {
+            this.currProject.title = TruckEditorManager.getInstance()
+                .getEditorObj()
+                .getData().title;
         }
     }
 
@@ -191,7 +193,7 @@ export default class Projects extends Vue {
                 ]
             })
             .then((data: { canceled: boolean; filePaths: string[] }) => {
-                this.loadProject({ title: "", path: data.filePaths[0] });
+                this.loadProject({ title: "newFile", path: data.filePaths[0] });
             });
     }
 
@@ -212,14 +214,7 @@ export default class Projects extends Vue {
 
         if (this.checkBeforeOpen() == false) return;
 
-        const split = project.path.split(".");
-        const fileExt = split[split.length - 1].toLowerCase();
-
-        if (!fileExt.startsWith("truck") && !fileExt.startsWith("airplane")) {
-            dialog.showErrorBox("Error", "File format incorrect");
-            return;
-        }
-
+        console.log(project.path);
         const data = TruckEditorManager.getInstance().loadFile(project.path);
 
         this.$store.dispatch("setTruckFilePath", project.path);

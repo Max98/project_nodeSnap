@@ -137,7 +137,7 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import { Watch } from "@/components/vue-decorator";
+import { Watch, Prop } from "@/components/vue-decorator";
 
 import {
     EditorNode,
@@ -146,15 +146,20 @@ import {
 } from "@/components/Editor/ts/TruckFileInterfaces";
 
 import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
+import { TruckFileInterface } from "@/components/Editor/ts/TruckFileInterfaces";
 
 import { ipcRenderer } from "electron";
 const remote = require("electron").remote;
 const { Menu, MenuItem } = remote;
 
 @Options({
+    name: "EditorNodesTab",
     components: {}
 })
 export default class EditorNodesTab extends Vue {
+    @Prop() readonly truckDataNodes!: EditorNode[];
+    @Prop() readonly truckDataGroups!: EditorGroup[];
+
     private nodesList: {
         grp_id: number;
         nodes: EditorNode[];
@@ -183,14 +188,7 @@ export default class EditorNodesTab extends Vue {
         isVisible: true
     };
 
-    get nodesTruck(): EditorNode[] {
-        return this.$store.getters.getTruckData.nodes;
-    }
-    get groups(): EditorGroup[] {
-        return this.$store.getters.getTruckData.groups;
-    }
-
-    @Watch("nodesTruck")
+    @Watch("truckDataNodes")
     updateNodesData() {
         let lastGrp = -1;
 
@@ -201,12 +199,14 @@ export default class EditorNodesTab extends Vue {
             nodes: []
         });
 
-        if (Array.isArray(this.nodesTruck)) {
-            this.nodesTruck!.forEach(node => {
+        if (Array.isArray(this.truckDataNodes)) {
+            this.truckDataNodes.forEach(node => {
                 if (node.grp_id != lastGrp) {
+                    if (this.truckDataGroups == undefined) return; //shouldn't happen
+
                     this.nodesList.push({
                         grp_id: node.grp_id,
-                        isVisible: this.groups.find(
+                        isVisible: this.truckDataGroups.find(
                             el => el.grp_id == node.grp_id
                         )!.isVisible,
                         nodes: []
@@ -215,7 +215,7 @@ export default class EditorNodesTab extends Vue {
                 }
             });
 
-            this.nodesTruck!.forEach(node => {
+            this.truckDataNodes.forEach(node => {
                 if (this.nodesList.some(el => el.grp_id == node.grp_id)) {
                     const newNode = node;
 
@@ -241,12 +241,13 @@ export default class EditorNodesTab extends Vue {
     getGrpName(grp: number) {
         if (grp == -1) return;
 
-        const title = this.groups?.filter(el => el.grp_id == grp)[0].title;
+        const title = this.truckDataGroups?.filter(el => el.grp_id == grp)[0]
+            .title;
         return title;
     }
 
     setNodeEditor(nodeId: number) {
-        const currNode = this.nodesTruck.find(el => el.id == nodeId);
+        const currNode = this.truckDataNodes.find(el => el.id == nodeId);
         if (currNode != undefined) {
             this.selectedNode = currNode;
         }
@@ -334,11 +335,11 @@ export default class EditorNodesTab extends Vue {
                     label: "Show only this",
                     click: () => {
                         const currGrp = data.grpId;
-                        this.groups.forEach(el => {
+                        this.truckDataGroups!.forEach(el => {
                             if (el.grp_id == currGrp) {
                                 this.onChangeGroupVisibility(currGrp, true);
                                 return;
-                            };
+                            }
 
                             this.onChangeGroupVisibility(el.grp_id, false);
                         });
@@ -349,7 +350,7 @@ export default class EditorNodesTab extends Vue {
                 new MenuItem({
                     label: "Show all",
                     click: () => {
-                        this.groups.forEach(el => {
+                        this.truckDataGroups!.forEach(el => {
                             this.onChangeGroupVisibility(el.grp_id, true);
                         });
                     }

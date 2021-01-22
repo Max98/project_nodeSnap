@@ -47,7 +47,11 @@ export default class TruckEditorManager {
      * @returns truck title
      */
     public loadFile(path: string) {
-        return new TruckFileImporter().loadFile(path);
+        const truckData = new TruckFileImporter().loadFile(path);
+
+        this.editorObj.loadData(truckData);
+
+        return truckData.title;
     }
 
     public saveFile() {

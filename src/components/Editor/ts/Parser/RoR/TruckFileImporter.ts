@@ -43,6 +43,10 @@ export default class TruckFileImporter {
         this.parserLog.info("init");
 
         this.FileBuffer = null;
+
+        /**
+         * TODO: Get from TruckEditor.ts
+         */
         this.truckFile = {
             title: "New Truck",
             globals: {
@@ -55,7 +59,8 @@ export default class TruckFileImporter {
                 comment_id: -1
             },
             nodes: [],
-            beams: []
+            beams: [],
+            groups: []
         };
 
         this.currArgs = [];
@@ -110,9 +115,9 @@ export default class TruckFileImporter {
         /**
          * Push data to vuex memory
          */
-        store.dispatch("setTruckData", this.truckFile);
+        //store.dispatch("setTruckData", this.truckFile);
 
-        return this.truckFile.title;
+        return this.truckFile;
     }
 
     /**

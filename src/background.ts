@@ -5,9 +5,7 @@ const path = require("path");
 const os = require("os");
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 const isDevelopment = process.env.NODE_ENV !== "production";
-import store from "./store"; //nope this is not a mistake
 import ModalsManager from "./components/Modals/Modals";
-import TruckEditorManager from "./components/Editor/ts/TruckEditorManagaer";
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -35,11 +33,17 @@ async function createWindow() {
         // Load the url of the dev server if in development mode
         await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string);
         if (!process.env.IS_TEST) win.webContents.openDevTools();
+
+        win.webContents.send("setId", { id: "Main" });
     } else {
         createProtocol("app");
         // Load the index.html when not in development
         win.loadURL("app://./index.html");
     }
+
+    win.webContents.on("did-finish-load", () => {
+        win.webContents.send("setId", { id: "Main" });
+    });
 
     /**
      * Init

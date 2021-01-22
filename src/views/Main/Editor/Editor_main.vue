@@ -80,9 +80,6 @@ import {
     viewCameraType
 } from "@/components/Editor/ts/TruckEditorInterfaces";
 
-const remote = require("electron").remote;
-const { dialog } = remote;
-
 @Options({
     components: {}
 })
@@ -121,8 +118,6 @@ export default class EditorMain extends Vue {
 
         editorRenderer.createViews(this.canvasArray);
 
-        console.log(this.$store.getters.getTruckData);
-
         TruckEditorManager.getInstance()
             .getEditorObj()
             .loadTruckData();
@@ -134,7 +129,6 @@ export default class EditorMain extends Vue {
 
     OnResizeViews(e: MouseEvent) {
         e.preventDefault();
-        console.log("OnResizeViews");
 
         document
             .getElementById("editorViews")!

@@ -4,15 +4,8 @@
 
 <script lang="ts">
 import { Vue } from "vue-class-component";
-import { ipcRenderer } from "electron";
 
-export default class Modals extends Vue {
-    mounted() {
-        /* ipcRenderer.on("SET_NAME", (event, arg) => {
-            console.log(arg.name);
-        });*/
-    }
-}
+export default class Modals extends Vue {}
 </script>
 
 <style></style>

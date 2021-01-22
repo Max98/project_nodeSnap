@@ -165,7 +165,7 @@ export interface TruckFileInterface {
 
     setNodesDefaults?: TruckFileSetNodesDefaults[];
     setBeamDefaults?: TruckFileSetBeamDefaults[];
-    groups?: EditorGroup[];
+    groups: EditorGroup[];
     comments?: TruckFileComment[];
     detacher_group?: TruckFileDetacherGroup[];
 

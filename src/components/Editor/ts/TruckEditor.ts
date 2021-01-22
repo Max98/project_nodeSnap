@@ -31,20 +31,46 @@ export default class TruckEditor {
         this.Log.info("init");
 
         /**
-         * Base structure is already stored in getTruckData (store/modules/truckFile.ts)
+         * Base structure
          */
-        this.truckData = store.getters.getTruckData;
+        this.truckData = {
+            title: "",
+            globals: {
+                cargoMass: 500,
+                dryMass: 3000,
+                material: "",
+                sbd_preset_id: -1,
+                snd_preset_id: -1,
+                grp_id: -1,
+                comment_id: -1
+            },
+            nodes: [],
+            beams: [],
+            groups: []
+        };
+
         this.renderInstance = TruckEditorManager.getInstance().getRendererObj();
     }
 
     /**
-     * Fetch and load truck data
+     * fetch data
+     */
+    public loadData(data: TruckFileInterface) {
+        this.truckData = data;
+    }
+
+    public getData() {
+        return this.truckData;
+    }
+
+    /**
+     * load truck data
      */
     public loadTruckData() {
         this.renderInstance.getSceneController().reset();
 
         //Fetch the data again
-        this.truckData = store.getters.getTruckData;
+        //this.truckData = store.getters.getTruckData;
 
         console.log(this.truckData);
 
@@ -401,7 +427,8 @@ export default class TruckEditor {
      */
     private async sendUpdate() {
         //This is a performance hit on large data
-        store.dispatch("setTruckData", this.truckData);
+        //store.dispatch("setTruckData", this.truckData);
+        document.dispatchEvent(new Event("truckDataUpdate"));
     }
 
     /**

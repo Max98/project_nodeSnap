@@ -1,14 +1,14 @@
 import { createApp } from "vue";
-import App from "./App.vue";
+import MainApp from "./views/Main/App.vue";
+import ModalApp from "./views/Modals/App.vue";
 import router from "./router";
 import store from "./store";
+import { ipcRenderer } from "electron";
 
 import "bootstrap";
 import "./sass/bootstrap.scss";
 import { BootstrapIconsPlugin } from "bootstrap-icons-vue";
 import TruckEditorManager from "./components/Editor/ts/TruckEditorManagaer";
-
-new TruckEditorManager();
 
 /**
  * Toast
@@ -35,9 +35,24 @@ const options: PluginOptions = {
 /**
  * Init UI
  */
-const app = createApp(App)
-    .use(store)
-    .use(router)
-    .use(BootstrapIconsPlugin)
-    .use(Toast, options)
-    .mount("#app");
+
+ipcRenderer.on("setId", (e, arg) => {
+    console.log("setId");
+    if (arg.id == "Main") {
+        const app = createApp(MainApp);
+        new TruckEditorManager();
+
+        app.use(router);
+        app.use(BootstrapIconsPlugin);
+        app.use(Toast, options);
+        app.use(store);
+        app.mount("#app");
+    } else if (arg.id == "Modal") {
+        console.log("Hai der");
+        //Modals stuff
+        const app = createApp(ModalApp);
+        app.use(router);
+        app.use(BootstrapIconsPlugin);
+        app.mount("#app");
+    }
+});

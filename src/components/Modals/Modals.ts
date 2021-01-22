@@ -70,15 +70,23 @@ export default class ModalsManager {
                 resizable: false,
                 maximizable: false,
                 webPreferences: {
+                    webSecurity: true,
+                    allowRunningInsecureContent: true,
                     enableRemoteModule: true,
-                    nodeIntegration: true
+                    nodeIntegration: (process.env
+                        .ELECTRON_NODE_INTEGRATION as unknown) as boolean
                 }
             })
         });
 
         const currWin = this.winArray[this.winArray.length - 1].win;
 
+        //currWin.webContents.openDevTools();
         currWin.loadURL(url);
+
+        currWin.webContents.on("did-finish-load", () => {
+            currWin.webContents.send("setId", { id: "Modal" });
+        });
 
         currWin.on("close", event => {
             event.preventDefault();

@@ -4,9 +4,12 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import TruckEditorManager from "./components/Editor/ts/TruckEditorManagaer";
-import { Watch } from "./components/vue-decorator";
+import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
+import { Watch } from "@/components/vue-decorator";
 import { ipcRenderer } from "electron";
+
+const remote = require("electron").remote;
+const { dialog } = remote;
 
 export default class Main extends Vue {
     get settings() {
@@ -26,6 +29,7 @@ export default class Main extends Vue {
             .getSceneController()
             .setNodesNameVisibility(this.settings.displayNodesName);
 
+        //grid factor
         tM.getRendererObj().setGridFactor(this.settings.gridSize);
     }
 
@@ -47,13 +51,31 @@ export default class Main extends Vue {
                         arg.data.id,
                         arg.data.title,
                         arg.data.type
-                    ); //TODO: investigate why JSON changes grpId to id.
+                    );
                     break;
 
                 default:
                     break;
             }
         });
+
+        /*window.onbeforeunload = (e: Event) => {
+            if (!this.settings.isSaved) {
+                const bl = dialog.showMessageBoxSync({
+                    title: "Confirmation",
+                    type: "warning",
+                    buttons: ["Yes", "Cancel"],
+                    defaultId: 1,
+                    cancelId: 1,
+                    message:
+                        "You have an open project, did you save it? You will lose all your work if you continue. \nAre you sure?"
+                });
+
+                if (bl == 1) {
+                    e.returnValue = false;
+                }
+            }
+        };*/
     }
 }
 </script>
