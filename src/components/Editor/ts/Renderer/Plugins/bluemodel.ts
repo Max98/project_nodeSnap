@@ -24,13 +24,15 @@ export default class BluemodelPlugin {
 
         this.defaultOpacity = opacity;
 
+        const fileStr = filePath.split(".");
+        const type = fileStr[fileStr.length - 1];
+
         //TODO: convert mesh files to mesh.xml using OgreConverter
-        if (filePath.endsWith(".ogre.xml")) {
+        if (type == "xml") {
             const loader = new OgreLoader(filePath);
             this.blueModel = loader.getMesh();
         } else {
-            const type = filePath.split(".");
-            useToast().error("Unsupported file type: " + type[type.length - 1]);
+            useToast().error("Unsupported file type: " + type);
         }
 
         if (this.blueModel == undefined) {
