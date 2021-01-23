@@ -1,5 +1,6 @@
 "use strict";
 
+import { Modal } from "bootstrap";
 import { app, protocol, BrowserWindow, ipcMain } from "electron";
 const path = require("path");
 const os = require("os");
@@ -43,6 +44,14 @@ async function createWindow() {
 
     win.webContents.on("did-finish-load", () => {
         win.webContents.send("setId", { id: "Main" });
+    });
+
+    win.on("close", () => {
+        ModalsManager.getInstance().dispose();
+    });
+
+    win.on("closed", () => {
+        app.quit();
     });
 
     /**
@@ -112,10 +121,27 @@ ipcMain.on("hideAllModals", (event, arg) => {
     ModalsManager.getInstance().hideAllModals();
 });
 
+/**
+ * Settings
+ */
 ipcMain.on("set-settings", (event, arg) => {
     win.webContents.send("set-settings", arg);
 });
 
+/**
+ * Groups
+ */
 ipcMain.on("grpEdit", (event, arg) => {
     win.webContents.send("grpEdit", arg);
+});
+
+/**
+ * Blueprints
+ */
+ipcMain.on("blueprintEdit", (event, arg) => {
+    win.webContents.send("blueprintEdit", arg);
+});
+
+ipcMain.on("modelEdit", (event, arg) => {
+    win.webContents.send("modelEdit", arg);
 });

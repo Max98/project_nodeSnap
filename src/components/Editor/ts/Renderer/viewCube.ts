@@ -100,8 +100,10 @@ export default class NavCube {
         this.params.canvas.onclick = (event: MouseEvent) => {
             this.onClick(event);
         };
+    }
 
-        this.render();
+    public dispose() {
+        this.renderer.dispose();
     }
 
     private onSideCliked(mesh: THREE.Mesh, normal: Vector3) {

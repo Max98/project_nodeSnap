@@ -13,6 +13,7 @@ interface WinInfo {
 export default class ModalsManager {
     private winArray: WinInfo[];
     private static instance: ModalsManager;
+    private canDispose = false;
 
     constructor() {
         ModalsManager.instance = this;
@@ -37,6 +38,20 @@ export default class ModalsManager {
             "http://localhost:8081/#/Modals/Groups/Add",
             { width: 600, height: 230 }
         );
+
+        this.createModal(
+            "Blueprint",
+            "http://localhost:8081/#/Modals/Blueprint",
+            { width: 600, height: 300 }
+        );
+    }
+
+    public dispose() {
+        this.canDispose = true;
+
+        this.winArray.forEach(el => {
+            el.win.close();
+        });
     }
 
     /**
@@ -88,10 +103,14 @@ export default class ModalsManager {
             currWin.webContents.send("setId", { id: "Modal" });
         });
 
-        currWin.on("close", event => {
+        currWin.on("close", event => this.preventClose(currWin, event));
+    }
+
+    private preventClose(currWin: BrowserWindow, event: Electron.Event) {
+        if (!this.canDispose) {
             event.preventDefault();
             currWin.hide();
-        });
+        }
     }
 
     /**

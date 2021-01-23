@@ -12,6 +12,7 @@
     "main": "background.js",
     "dependencies": {
         "@types/bootstrap": "^5.0.4",
+        "@types/mime-types": "^2.1.0",
         "@types/xml2js": "^0.4.7",
         "bootstrap": "^5.0.0-beta1",
         "bootstrap-icons-vue": "^0.5.0",
@@ -19,6 +20,7 @@
         "electron-log": "^4.3.1",
         "electron-promise-ipc": "^2.2.4",
         "electron-store": "^6.0.1",
+        "mime-types": "^2.1.28",
         "three": "^0.124.0",
         "vue": "^3.0.0",
         "vue-class-component": "^8.0.0-0",

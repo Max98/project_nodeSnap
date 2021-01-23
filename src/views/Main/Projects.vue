@@ -201,6 +201,9 @@ export default class Projects extends Vue {
         if (this.checkBeforeOpen() == false) return;
         else {
             this.$store.dispatch("reset");
+            TruckEditorManager.getInstance()
+                .getEditorObj()
+                .reset();
         }
 
         this.$router.push("/editor");
@@ -214,7 +217,6 @@ export default class Projects extends Vue {
 
         if (this.checkBeforeOpen() == false) return;
 
-        console.log(project.path);
         const data = TruckEditorManager.getInstance().loadFile(project.path);
 
         this.$store.dispatch("setTruckFilePath", project.path);

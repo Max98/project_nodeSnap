@@ -166,8 +166,14 @@ a {
     background: #555;
 }
 
-.custom-file-label::after {
-    background-color: $secondary;
+.form-control {
+    //Thanks bootstrap for being a pita!
+    &::-webkit-file-upload-button {
+        background-color: $secondary;
+    }
+    &:hover:not(:disabled):not([readonly])::-webkit-file-upload-button {
+        background-color: $primary;
+    }
 }
 
 a {

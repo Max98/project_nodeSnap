@@ -59,6 +59,81 @@ export default class Main extends Vue {
             }
         });
 
+        ipcRenderer.on("blueprintEdit", (event, arg) => {
+            const tM: TruckEditorManager = TruckEditorManager.getInstance();
+
+            switch (arg.func) {
+                case "add":
+                    tM.getRendererObj()
+                        .getSceneController()
+                        .getBlueprintSystem()
+                        .load(arg.data.filePath, arg.data.opacity);
+                    break;
+
+                case "remove":
+                    tM.getRendererObj()
+                        .getSceneController()
+                        .getBlueprintSystem()
+                        .remove();
+                    break;
+
+                case "toggle":
+                    tM.getRendererObj()
+                        .getSceneController()
+                        .getBlueprintSystem()
+                        .toggleVisibility();
+
+                    break;
+
+                case "set-opacity":
+                    tM.getRendererObj()
+                        .getSceneController()
+                        .getBlueprintSystem()
+                        .setOpacity(arg.data.opacity);
+                    break;
+
+                default:
+                    break;
+            }
+        });
+
+        ipcRenderer.on("modelEdit", (event, arg) => {
+            const tM: TruckEditorManager = TruckEditorManager.getInstance();
+
+            switch (arg.func) {
+                case "add":
+                    tM.getRendererObj()
+                        .getSceneController()
+                        .getBluemodelSystem()
+                        .load(arg.data.filePath, arg.data.opacity);
+                    break;
+
+                case "remove":
+                    tM.getRendererObj()
+                        .getSceneController()
+                        .getBluemodelSystem()
+                        .remove();
+                    break;
+
+                case "toggle":
+                    tM.getRendererObj()
+                        .getSceneController()
+                        .getBluemodelSystem()
+                        .toggleVisibility();
+                    break;
+
+                case "set-opacity":
+                    tM.getRendererObj()
+                        .getSceneController()
+                        .getBluemodelSystem()
+                        .setOpacity(arg.data.opacity);
+                    break;
+
+                default:
+                    break;
+            }
+        });
+
         /*window.onbeforeunload = (e: Event) => {
             if (!this.settings.isSaved) {
                 const bl = dialog.showMessageBoxSync({

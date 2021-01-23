@@ -28,7 +28,7 @@ const options: PluginOptions = {
     pauseOnHover: true,
     closeOnClick: false,
     closeButton: "button",
-    timeout: false,
+    timeout: 3000,
     icon: false
 };
 

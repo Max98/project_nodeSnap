@@ -63,6 +63,24 @@ export default class TruckEditor {
         return this.truckData;
     }
 
+    public reset() {
+        this.truckData = {
+            title: "",
+            globals: {
+                cargoMass: 500,
+                dryMass: 3000,
+                material: "",
+                sbd_preset_id: -1,
+                snd_preset_id: -1,
+                grp_id: -1,
+                comment_id: -1
+            },
+            nodes: [],
+            beams: [],
+            groups: []
+        };
+    }
+
     /**
      * load truck data
      */
@@ -258,6 +276,16 @@ export default class TruckEditor {
             return;
         }
 
+        if (beam.node1 == beam.node2) {
+            useToast().error(
+                "Failed to add new beam: zero-length beam detected."
+            );
+            this.Log.error(
+                "Failed to add new beam: zero-length beam detected."
+            );
+            return;
+        }
+
         this.truckData.beams.push({
             node1: beam.node1,
             node2: beam.node2,
@@ -359,6 +387,9 @@ export default class TruckEditor {
                         if (el.id >= id) {
                             if (el.grp_id == exGrpId) {
                                 el.grp_id = newGrpId;
+                                this.renderInstance
+                                    .getSceneController()
+                                    .updateNodeSpriteGrp(el.id, el.grp_id);
                             }
                         }
                     });

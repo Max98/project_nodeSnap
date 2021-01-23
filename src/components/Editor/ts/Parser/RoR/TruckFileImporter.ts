@@ -124,8 +124,10 @@ export default class TruckFileImporter {
      * Truck title
      */
     private ParseActorNameLine() {
-        this.truckFile.title = this.currLine;
-        this.ChangeSection(Section.SECTION_NONE);
+        if (!this.currLine.startsWith(";")) {
+            this.truckFile.title = this.currLine;
+            this.ChangeSection(Section.SECTION_NONE);
+        }
     }
 
     /**
@@ -133,6 +135,8 @@ export default class TruckFileImporter {
      */
     private parseTruckFileRawLine() {
         this.currLine = this.currLine.trim();
+        if (this.currLine.length == 0) return;
+
         this.parseTruckFileLine();
     }
 
@@ -614,6 +618,8 @@ export default class TruckFileImporter {
      */
     private IdentifyKeywordInCurrentLine(): Keyword {
         if (this.currLineIndex == 0) return Keyword.KEYWORD_INVALID;
+        if (this.currSection == Section.SECTION_TRUCK_NAME)
+            return Keyword.KEYWORD_INVALID;
 
         // Quick check - keyword always starts with ASCII letter
         const c = this.currLine.charAt(0).toLowerCase();

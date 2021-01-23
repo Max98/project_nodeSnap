@@ -189,7 +189,7 @@ export default class EditorBeamsTab extends Vue {
         { value: "cmd", text: "Command" }
     ];
 
-    @Watch("truckData")
+    @Watch("truckDataBeams")
     updateBeamsData() {
         let lastGrp = -1;
 

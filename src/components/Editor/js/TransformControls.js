@@ -1,9 +1,5 @@
 /* eslint-disable */
 
-/**
- * @author arodic / https://github.com/arodic
- */
-
 import {
     BoxBufferGeometry,
     BufferGeometry,
@@ -79,7 +75,7 @@ var TransformControls = function(camera, domElement) {
     function intersectObjectWithRay(object, raycaster, includeInvisible) {
         var allIntersections = raycaster.intersectObject(object, true);
 
-        for (var i = allIntersections.length; i--; ) {
+        for (var i = 0; i < allIntersections.length; i++) {
             if (allIntersections[i].object.visible || includeInvisible) {
                 return allIntersections[i];
             }
@@ -144,28 +140,26 @@ var TransformControls = function(camera, domElement) {
     defineProperty("eye", eye);
 
     {
-        domElement.addEventListener("mousedown", onPointerDown, false);
-        domElement.addEventListener("touchstart", onPointerDown, false);
-        domElement.addEventListener("mousemove", onPointerHover, false);
-        domElement.addEventListener("touchmove", onPointerHover, false);
-        domElement.addEventListener("touchmove", onPointerMove, false);
-        document.addEventListener("mouseup", onPointerUp, false);
-        domElement.addEventListener("touchend", onPointerUp, false);
-        domElement.addEventListener("touchcancel", onPointerUp, false);
-        domElement.addEventListener("touchleave", onPointerUp, false);
+        domElement.addEventListener("pointerdown", onPointerDown, false);
+        domElement.addEventListener("pointermove", onPointerHover, false);
+        scope.domElement.ownerDocument.addEventListener(
+            "pointerup",
+            onPointerUp,
+            false
+        );
     }
 
     this.dispose = function() {
-        domElement.removeEventListener("mousedown", onPointerDown);
-        domElement.removeEventListener("touchstart", onPointerDown);
-        domElement.removeEventListener("mousemove", onPointerHover);
-        document.removeEventListener("mousemove", onPointerMove);
-        domElement.removeEventListener("touchmove", onPointerHover);
-        domElement.removeEventListener("touchmove", onPointerMove);
-        document.removeEventListener("mouseup", onPointerUp);
-        domElement.removeEventListener("touchend", onPointerUp);
-        domElement.removeEventListener("touchcancel", onPointerUp);
-        domElement.removeEventListener("touchleave", onPointerUp);
+        domElement.removeEventListener("pointerdown", onPointerDown);
+        domElement.removeEventListener("pointermove", onPointerHover);
+        scope.domElement.ownerDocument.removeEventListener(
+            "pointermove",
+            onPointerMove
+        );
+        scope.domElement.ownerDocument.removeEventListener(
+            "pointerup",
+            onPointerUp
+        );
 
         this.traverse(function(child) {
             if (child.geometry) child.geometry.dispose();
@@ -242,8 +236,8 @@ var TransformControls = function(camera, domElement) {
                 worldScale
             );
 
-            parentQuaternionInv.copy(parentQuaternion).inverse();
-            worldQuaternionInv.copy(worldQuaternion).inverse();
+            parentQuaternionInv.copy(parentQuaternion).invert();
+            worldQuaternionInv.copy(worldQuaternion).invert();
         }
 
         this.camera.updateMatrixWorld();
@@ -261,12 +255,7 @@ var TransformControls = function(camera, domElement) {
     };
 
     this.pointerHover = function(pointer) {
-        if (
-            this.object === undefined ||
-            this.dragging === true ||
-            (pointer.button !== undefined && pointer.button !== 0)
-        )
-            return;
+        if (this.object === undefined || this.dragging === true) return;
 
         raycaster.setFromCamera(pointer, this.camera);
 
@@ -286,14 +275,11 @@ var TransformControls = function(camera, domElement) {
         if (
             this.object === undefined ||
             this.dragging === true ||
-            (pointer.button !== undefined && pointer.button !== 0)
+            pointer.button !== 0
         )
             return;
 
-        if (
-            (pointer.button === 0 || pointer.button === undefined) &&
-            this.axis !== null
-        ) {
+        if (this.axis !== null) {
             raycaster.setFromCamera(pointer, this.camera);
 
             var planeIntersect = intersectObjectWithRay(
@@ -367,7 +353,7 @@ var TransformControls = function(camera, domElement) {
             object === undefined ||
             axis === null ||
             this.dragging === false ||
-            (pointer.button !== undefined && pointer.button !== 0)
+            pointer.button !== -1
         )
             return;
 
@@ -405,7 +391,7 @@ var TransformControls = function(camera, domElement) {
             if (this.translationSnap) {
                 if (space === "local") {
                     object.position.applyQuaternion(
-                        _tempQuaternion.copy(quaternionStart).inverse()
+                        _tempQuaternion.copy(quaternionStart).invert()
                     );
 
                     if (axis.search("X") !== -1) {
@@ -599,7 +585,7 @@ var TransformControls = function(camera, domElement) {
     };
 
     this.pointerUp = function(pointer) {
-        if (pointer.button !== undefined && pointer.button !== 0) return;
+        if (pointer.button !== 0) return;
 
         if (this.dragging && this.axis !== null) {
             mouseUpEvent.mode = this.mode;
@@ -607,14 +593,13 @@ var TransformControls = function(camera, domElement) {
         }
 
         this.dragging = false;
-
-        if (pointer.button === undefined) this.axis = null;
+        this.axis = null;
     };
 
     // normalize mouse / touch pointer and remap {x,y} to view space.
 
     function getPointer(event) {
-        if (document.pointerLockElement) {
+        if (scope.domElement.ownerDocument.pointerLockElement) {
             return {
                 x: 0,
                 y: 0,
@@ -640,13 +625,23 @@ var TransformControls = function(camera, domElement) {
     function onPointerHover(event) {
         if (!scope.enabled) return;
 
-        scope.pointerHover(getPointer(event));
+        switch (event.pointerType) {
+            case "mouse":
+            case "pen":
+                scope.pointerHover(getPointer(event));
+                break;
+        }
     }
 
     function onPointerDown(event) {
         if (!scope.enabled) return;
 
-        document.addEventListener("mousemove", onPointerMove, false);
+        scope.domElement.style.touchAction = "none"; // disable touch scroll
+        scope.domElement.ownerDocument.addEventListener(
+            "pointermove",
+            onPointerMove,
+            false
+        );
 
         scope.pointerHover(getPointer(event));
         scope.pointerDown(getPointer(event));
@@ -661,7 +656,12 @@ var TransformControls = function(camera, domElement) {
     function onPointerUp(event) {
         if (!scope.enabled) return;
 
-        document.removeEventListener("mousemove", onPointerMove, false);
+        scope.domElement.style.touchAction = "";
+        scope.domElement.ownerDocument.removeEventListener(
+            "pointermove",
+            onPointerMove,
+            false
+        );
 
         scope.pointerUp(getPointer(event));
     }
@@ -686,6 +686,13 @@ var TransformControls = function(camera, domElement) {
 
     this.setScaleSnap = function(scaleSnap) {
         scope.scaleSnap = scaleSnap;
+    };
+
+    this.setLayer = function(id) {
+        /*_gizmo.picker["translate"].layers.set(id);
+        _gizmo.picker["rotate"].layers.set(id);
+        _gizmo.picker["scale"].layers.set(id);*/
+        _gizmo.layers.set(id);
     };
 
     this.setSize = function(size) {
@@ -723,7 +730,8 @@ var TransformControlsGizmo = function() {
         depthWrite: false,
         transparent: true,
         side: DoubleSide,
-        fog: false
+        fog: false,
+        toneMapped: false
     });
 
     var gizmoLineMaterial = new LineBasicMaterial({
@@ -731,7 +739,8 @@ var TransformControlsGizmo = function() {
         depthWrite: false,
         transparent: true,
         linewidth: 1,
-        fog: false
+        fog: false,
+        toneMapped: false
     });
 
     // Make unique material for each axis/color
@@ -1654,7 +1663,7 @@ var TransformControlsGizmo = function() {
                         .sub(this.worldPosition)
                         .multiplyScalar(-1);
                     tempVector.applyQuaternion(
-                        this.worldQuaternionStart.clone().inverse()
+                        this.worldQuaternionStart.clone().invert()
                     );
                     handle.scale.copy(tempVector);
                     handle.visible = this.dragging;
@@ -1829,7 +1838,7 @@ var TransformControlsGizmo = function() {
                 tempQuaternion2.copy(quaternion);
                 alignVector
                     .copy(this.eye)
-                    .applyQuaternion(tempQuaternion.copy(quaternion).inverse());
+                    .applyQuaternion(tempQuaternion.copy(quaternion).invert());
 
                 if (handle.name.search("E") !== -1) {
                     handle.quaternion.setFromRotationMatrix(
@@ -1944,7 +1953,8 @@ var TransformControlsPlane = function() {
             wireframe: true,
             side: DoubleSide,
             transparent: true,
-            opacity: 0.1
+            opacity: 0.1,
+            toneMapped: false
         })
     );
 

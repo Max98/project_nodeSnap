@@ -5,6 +5,9 @@ import { DragControls } from "../../js/DragControls.js";
 import TruckEditorManager from "../TruckEditorManagaer";
 import { rendererViewType } from "../TruckEditorInterfaces";
 import { ConeBufferGeometry, Vector3 } from "three";
+import BlueprintPlugin from "./Plugins/blueprint";
+import BluemodelPlugin from "./Plugins/bluemodel";
+import { useToast } from "vue-toastification";
 
 const remote = require("electron").remote;
 const { Menu, MenuItem, dialog } = remote;
@@ -15,6 +18,11 @@ const { Menu, MenuItem, dialog } = remote;
 interface EditorBeam {
     node1: number;
     node2: number;
+}
+
+enum ControlMode {
+    TRUCK,
+    BLUEPRINT
 }
 
 export default class SceneController {
@@ -50,10 +58,20 @@ export default class SceneController {
     private nodesSpriteScale = 4;
     private nodesPosRenderScale = 60;
 
+    /**
+     * Editor mode
+     */
+    private controlMode: ControlMode = ControlMode.TRUCK;
+    private blueprintSystem: BlueprintPlugin;
+    private bluemodelSystem: BluemodelPlugin;
+
     constructor(scene: THREE.Scene) {
         this.scene = scene;
 
         this.editorScene = new THREE.Object3D();
+
+        this.blueprintSystem = new BlueprintPlugin(this.scene);
+        this.bluemodelSystem = new BluemodelPlugin(this.scene);
     }
 
     public dispose() {
@@ -178,8 +196,6 @@ export default class SceneController {
         position: { x: number; y: number; z: number }
     ) {
         const sprite = this.nodesSpriteArray.find(el => el.userData.id == id);
-
-        console.log(sprite);
 
         if (sprite != undefined) {
             sprite.position.x = position.x * this.nodesPosRenderScale;
@@ -350,11 +366,24 @@ export default class SceneController {
     }
 
     /**
+     * Update sprite data
+     * @param id nodeId
+     * @param grpId grpId
+     */
+    public updateNodeSpriteGrp(id: number, grpId: number) {
+        this.nodesSpriteArray.find(
+            el => el.userData.id == id
+        )!.userData.grp_id = grpId;
+    }
+
+    /**
      * sets a group's visibility
      * @param id groupId
      * @param state
      */
     public setGroupVisibility(id: number, state: boolean) {
+        console.log(id);
+
         const nodesArray = this.nodesSpriteArray.filter(
             el => el.userData.grp_id == id
         );
@@ -555,7 +584,6 @@ export default class SceneController {
                 el => el.userData.id == this.makeBeamPt[0]
             );
             if (firstNode == undefined) {
-                console.log("ERROR");
                 return;
             }
 
@@ -590,8 +618,6 @@ export default class SceneController {
     }
 
     private onNodeDragStart(event: any) {
-        console.log("OnDragStart");
-
         if (event.object) {
             const currObj = event.object as THREE.Object3D;
             if (this.makeBeam) {
@@ -641,7 +667,7 @@ export default class SceneController {
     }
 
     public onMouseDown(event: MouseEvent, camera: THREE.Camera) {
-        console.log("MouseDown + " + event.button);
+        if (this.controlMode != ControlMode.TRUCK) return;
 
         this.nodesDragControl.forEach(el => {
             el.activate();
@@ -649,6 +675,8 @@ export default class SceneController {
     }
 
     public onMouseUp(event: any, camera: THREE.Camera) {
+        if (this.controlMode != ControlMode.TRUCK) return;
+
         if (event.button == 2) {
             const raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(this.mouse, camera);
@@ -704,12 +732,12 @@ export default class SceneController {
         camera: THREE.Camera,
         view: rendererViewType
     ) {
+        if (this.controlMode != ControlMode.TRUCK) return;
+
         //Project mouse to 3D scene
         const mousePos = new THREE.Vector3();
         mousePos.set(this.mouse.x, this.mouse.y, 0);
         mousePos.unproject(camera);
-
-        console.log(mousePos);
 
         let nodePos = new THREE.Vector3();
 
@@ -745,28 +773,45 @@ export default class SceneController {
             case "Z":
             case "z":
                 if (e.ctrlKey) {
-                    console.log("UNDO!");
-                    TruckEditorManager.getInstance()
-                        .getEditorObj()
-                        .requestUndo();
+                    if (this.controlMode == ControlMode.TRUCK) {
+                        TruckEditorManager.getInstance()
+                            .getEditorObj()
+                            .requestUndo();
+                    }
                 }
                 break;
-            default:
+
+            case "B":
+            case "b":
                 if (e.ctrlKey) {
-                    this.snapEnable = true;
+                    this.switchEditorMode(ControlMode.BLUEPRINT);
+                    useToast().info("Switching to blueprint edit");
                 }
-                if (e.shiftKey) {
-                    this.makeBeam = true;
+                break;
 
-                    console.log(this.makeBeamPt);
+            case "N":
+            case "n":
+                if (e.ctrlKey) {
+                    this.switchEditorMode(ControlMode.TRUCK);
+                    useToast().info("Switching to truck edit");
+                }
+                break;
 
-                    if (this.makeBeamPt.length > 1) {
-                        console.log("add beam!");
-                        this.addBeam({
-                            node1: this.makeBeamPt[0],
-                            node2: this.makeBeamPt[1]
-                        });
-                        this.makeBeamPt = [];
+            default:
+                if (this.controlMode == ControlMode.TRUCK) {
+                    if (e.ctrlKey) {
+                        this.snapEnable = true;
+                    }
+                    if (e.shiftKey) {
+                        this.makeBeam = true;
+
+                        if (this.makeBeamPt.length > 1) {
+                            this.addBeam({
+                                node1: this.makeBeamPt[0],
+                                node2: this.makeBeamPt[1]
+                            });
+                            this.makeBeamPt = [];
+                        }
                     }
                 }
                 break;
@@ -776,10 +821,45 @@ export default class SceneController {
     public onKeyUp(e: KeyboardEvent) {
         switch (e.key) {
             default:
-                this.snapEnable = false;
-                this.makeBeam = false;
+                if (this.controlMode == ControlMode.TRUCK) {
+                    this.snapEnable = false;
+                    this.makeBeam = false;
+                }
 
                 break;
+        }
+    }
+
+    public getBlueprintSystem() {
+        return this.blueprintSystem;
+    }
+
+    public getBluemodelSystem() {
+        return this.bluemodelSystem;
+    }
+
+    /**
+     * Editor modes
+     */
+    public switchEditorMode(control: ControlMode) {
+        this.controlMode = control;
+
+        if (control != ControlMode.TRUCK) {
+            this.nodesDragControl.forEach(el => {
+                el.enabled = false;
+            });
+        } else {
+            this.nodesDragControl.forEach(el => {
+                el.enabled = true;
+            });
+        }
+
+        if (control != ControlMode.BLUEPRINT) {
+            this.blueprintSystem.setControlState(false);
+            this.bluemodelSystem.setControlState(false);
+        } else {
+            this.blueprintSystem.setControlState(true);
+            this.bluemodelSystem.setControlState(true);
         }
     }
 }

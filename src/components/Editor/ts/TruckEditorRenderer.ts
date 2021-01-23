@@ -86,9 +86,10 @@ class View {
 
         if (this.type == rendererViewType.VIEW_TOP) {
             this.camera.position.set(0, 0, 500);
-            this.controls.minPolarAngle = -Math.PI;
-            this.controls.maxPolarAngle = -Math.PI;
-            this.controls.rotateCtrl = true;
+            // this.controls.minPolarAngle = -Math.PI;
+            // this.controls.maxPolarAngle = -Math.PI;
+            this.controls.enableRotate = false;
+            // this.controls.rotateCtrl = true;
             this.camera.layers.enable(10);
         } else if (this.type == rendererViewType.VIEW_SIDE) {
             this.camera.position.set(-500, 0, 0);
@@ -156,7 +157,26 @@ class View {
      * Dispose
      */
     public dispose() {
-        console.log("onViewDispose");
+        if (this.viewCube != undefined) this.viewCube.dispose();
+        if (this.canvasContext) this.canvasContext = null;
+
+        this.controls.dispose();
+
+        this.canvas.removeEventListener("mouseup", e =>
+            this.onMouseUp(e, this.camera)
+        );
+        this.canvas.removeEventListener("mousedown", e =>
+            this.onMouseDown(e, this.camera)
+        );
+        this.canvas.removeEventListener("dblclick", e =>
+            this.onMouseDblClick(e, this.camera)
+        );
+        this.canvas.removeEventListener("mousemove", e =>
+            this.onMouseMove(e, this.camera)
+        );
+
+        this.canvas.removeEventListener("keydown", e => this.onKeyDown(e));
+        this.canvas.removeEventListener("keyup", e => this.onKeyUp(e));
     }
 
     public render() {
@@ -190,6 +210,13 @@ class View {
             return this.camera as THREE.PerspectiveCamera;
 
         return this.camera as THREE.OrthographicCamera;
+    }
+
+    /**
+     * Returns camera control system
+     */
+    public getCameraControl(): OrbitControls {
+        return this.controls;
     }
 
     /**
@@ -310,10 +337,12 @@ export default class TruckEditorRenderer {
 
         //TODO: different scene controllers
         this.SceneController = new SceneController(this.scene);
+
+        window.addEventListener("resize", () => this.onWindowResize());
     }
 
     public dispose() {
-        this.views = [];
+        this.views.length = 0;
         this.scene.clear();
 
         window.removeEventListener("resize", () => this.onWindowResize());
@@ -332,9 +361,9 @@ export default class TruckEditorRenderer {
             return;
         }
 
-        //reset
-        //TODO: Dispose everything
-        this.views = [];
+        this.views.forEach(el => el.dispose());
+
+        this.views.length = 0;
 
         for (let i = 0; i < canvasArray.length; i++) {
             this.views.push(
@@ -344,8 +373,6 @@ export default class TruckEditorRenderer {
                 })
             );
         }
-
-        window.addEventListener("resize", () => this.onWindowResize());
 
         this.populateScene();
         this.update();
@@ -361,15 +388,15 @@ export default class TruckEditorRenderer {
     private populateScene() {
         this.scene.clear();
 
-        this.gridTop = new THREE.GridHelper(
+        this.gridFront = new THREE.GridHelper(
             this.gridSize,
             this.gridDivisions,
             0x4f4f4f,
             0x272727
         );
-        this.gridTop.position.set(0, 12200, 0);
-        this.gridTop.layers.set(12);
-        this.scene.add(this.gridTop);
+        this.gridFront.position.set(0, 12200, 0);
+        this.gridFront.layers.set(12);
+        this.scene.add(this.gridFront);
 
         this.gridSide = new THREE.GridHelper(
             this.gridSize,
@@ -382,16 +409,16 @@ export default class TruckEditorRenderer {
         this.gridSide.layers.set(11);
         this.scene.add(this.gridSide);
 
-        this.gridFront = new THREE.GridHelper(
+        this.gridTop = new THREE.GridHelper(
             this.gridSize,
             this.gridDivisions,
             0x4f4f4f,
             0x272727
         );
-        this.gridFront.position.set(0, 0, -12500);
-        this.gridFront.rotateX(Math.PI / 2);
-        this.gridFront.layers.set(10);
-        this.scene.add(this.gridFront);
+        this.gridTop.position.set(0, 0, -12500);
+        this.gridTop.rotateX(Math.PI / 2);
+        this.gridTop.layers.set(10);
+        this.scene.add(this.gridTop);
 
         const gridSpace = new THREE.GridHelper(
             this.gridSize,
@@ -404,9 +431,9 @@ export default class TruckEditorRenderer {
         gridSpace.rotateX(-Math.PI / 2);
         this.scene.add(gridSpace);
 
-        const axesHelper = new THREE.AxesHelper(100);
+        /*const axesHelper = new THREE.AxesHelper(100);
         axesHelper.position.set(-60.75, -60.75, 60.75);
-        this.scene.add(axesHelper);
+        this.scene.add(axesHelper);*/
     }
 
     public async setGridFactor(factor: number): Promise<boolean> {
