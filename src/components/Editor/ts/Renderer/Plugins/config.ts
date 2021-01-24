@@ -241,6 +241,22 @@ export default class Config {
                         this.projectConfig.data.blueprint!.pos3[2]
                     );
 
+                    bluePrintsArray[0].control.position.set(
+                        this.projectConfig.data.blueprint!.pos1[0],
+                        this.projectConfig.data.blueprint!.pos1[1],
+                        this.projectConfig.data.blueprint!.pos1[2]
+                    );
+                    bluePrintsArray[1].control.position.set(
+                        this.projectConfig.data.blueprint!.pos2[0],
+                        this.projectConfig.data.blueprint!.pos2[1],
+                        this.projectConfig.data.blueprint!.pos2[2]
+                    );
+                    bluePrintsArray[2].control.position.set(
+                        this.projectConfig.data.blueprint!.pos3[0],
+                        this.projectConfig.data.blueprint!.pos3[1],
+                        this.projectConfig.data.blueprint!.pos3[2]
+                    );
+
                     /**
                      * Rotation
                      */
