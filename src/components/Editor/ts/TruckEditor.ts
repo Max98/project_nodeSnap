@@ -622,6 +622,18 @@ export default class TruckEditor {
                 nodesArray[i].z = currVert.z;
                 nodesArray[i].grp_id = this.getLastGroupId("node");
 
+                if (
+                    this.truckData.nodes.filter(
+                        el =>
+                            el.x == currVert.x &&
+                            el.y == currVert.y &&
+                            el.z == currVert.z
+                    ).length != 0
+                ) {
+                    useToast().error("Overlap detected.");
+                    return;
+                }
+
                 this.truckData.nodes.push(nodesArray[i]);
                 this.renderInstance
                     .getSceneController()
@@ -648,8 +660,6 @@ export default class TruckEditor {
         }
 
         this.sendUpdate();
-
-        console.log(nodesArray);
     }
 
     /**
