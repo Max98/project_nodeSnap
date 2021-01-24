@@ -199,14 +199,8 @@ export default class Projects extends Vue {
 
     newFile() {
         if (this.checkBeforeOpen() == false) return;
-        else {
-            this.$store.dispatch("reset");
-            TruckEditorManager.getInstance()
-                .getEditorObj()
-                .reset();
-        }
 
-        this.$router.push("/editor");
+        this.$router.push("/New");
     }
 
     loadProject(project: LatestProjectsArray) {

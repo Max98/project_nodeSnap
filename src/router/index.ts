@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 
 import Projects from "../views/Main/Projects.vue";
+import NewProject from "../views/Main/NewProject.vue";
 import Editor from "../views/Main/Editor.vue";
 import Modals from "../views/Modals/Modals.vue";
 import Settings from "../views/Modals/Settings.vue";
@@ -16,6 +17,11 @@ const routes: Array<RouteRecordRaw> = [
         path: "/",
         name: "Projects",
         component: Projects
+    },
+    {
+        path: "/New",
+        name: "NewProject",
+        component: NewProject
     },
     {
         path: "/Editor",

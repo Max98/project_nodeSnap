@@ -60,10 +60,17 @@ export default class TruckEditor {
         this.truckData = data;
     }
 
-    public getData() {
+    /**
+     * get all truck data
+     */
+    public getData(): TruckFileInterface {
         return this.truckData;
     }
 
+    /**
+     * Reset truck data
+     * Warning: deletes everything
+     */
     public reset() {
         this.truckData = {
             title: "",
@@ -80,6 +87,19 @@ export default class TruckEditor {
             beams: [],
             groups: []
         };
+    }
+
+    /**
+     * Init a new file
+     * @param title truck title
+     * @param dryMass
+     * @param cargoMass
+     */
+    public create(title: string, dryMass: number, cargoMass: number) {
+        this.reset();
+        this.truckData.title = title;
+        this.truckData.globals.dryMass = dryMass;
+        this.truckData.globals.cargoMass = cargoMass;
     }
 
     /**
