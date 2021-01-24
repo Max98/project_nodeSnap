@@ -7,6 +7,7 @@ import Modals from "../views/Modals/Modals.vue";
 import Settings from "../views/Modals/Settings.vue";
 import RenameGrp from "../views/Modals/Groups/RenameGrp.vue";
 import AddGrp from "../views/Modals/Groups/AddGrp.vue";
+import DuplicateGrp from "../views/Modals/Groups/DuplicateGrp.vue";
 import Blueprint from "../views/Modals/Blueprint.vue";
 
 const routes: Array<RouteRecordRaw> = [
@@ -54,6 +55,10 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: "Groups/Add",
                 component: AddGrp
+            },
+            {
+                path: "Groups/Duplicate",
+                component: DuplicateGrp
             },
             /**
              * Blueprint

@@ -54,6 +54,15 @@ export default class Main extends Vue {
                     );
                     break;
 
+                case "duplicate":
+                    tM.getEditorObj().duplicateGrp(
+                        arg.data.id,
+                        arg.data.type,
+                        arg.data.axis,
+                        arg.data.grpTitle
+                    );
+                    break;
+
                 default:
                     break;
             }

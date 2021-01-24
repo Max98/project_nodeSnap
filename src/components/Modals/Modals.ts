@@ -40,6 +40,12 @@ export default class ModalsManager {
         );
 
         this.createModal(
+            "duplicateGrp",
+            "http://localhost:8081/#/Modals/Groups/Duplicate",
+            { width: 600, height: 300 }
+        );
+
+        this.createModal(
             "Blueprint",
             "http://localhost:8081/#/Modals/Blueprint",
             { width: 600, height: 300 }

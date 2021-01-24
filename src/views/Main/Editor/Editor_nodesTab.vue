@@ -330,6 +330,22 @@ export default class EditorNodesTab extends Vue {
             menu.append(new MenuItem({ type: "separator" }));
             menu.append(
                 new MenuItem({
+                    label: "Duplicate",
+                    click: () => {
+                        ipcRenderer.send("setModalVisibility", {
+                            name: "duplicateGrp",
+                            state: true,
+                            data: {
+                                id: data.grpId,
+                                title: this.getGrpName(data.grpId)
+                            }
+                        });
+                    }
+                })
+            );
+            menu.append(new MenuItem({ type: "separator" }));
+            menu.append(
+                new MenuItem({
                     label: "Show only this",
                     click: () => {
                         const currGrp = data.grpId;
