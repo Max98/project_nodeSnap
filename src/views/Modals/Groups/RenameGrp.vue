@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="container" style="padding-top: 5px;">
         <div class="mb-3">
             <label for="grpName" class="form-label">Group title:</label>
             <input type="text" class="form-control" v-model="grpData.title" />

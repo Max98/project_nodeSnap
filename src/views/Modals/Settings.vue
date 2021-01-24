@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="container" style="padding-top: 5px;">
         <label class="form-label">Grid size: {{ gridSize }}</label>
         <div class="input-group mb-3">
             <input
