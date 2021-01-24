@@ -317,12 +317,13 @@ export default class SceneController {
      * @param scaleFactor
      */
     public scaleNodeSprites(scaleFactor: number) {
+        this.nodesSpriteScale = scaleFactor * 4;
         for (let i = 0, n = this.nodesSpriteArray.length; i < n; i++) {
             const currSprite = this.nodesSpriteArray[i];
 
             currSprite.scale.set(
-                this.nodesSpriteScale * scaleFactor,
-                this.nodesSpriteScale * scaleFactor,
+                this.nodesSpriteScale,
+                this.nodesSpriteScale,
                 1.0
             );
         }
