@@ -1,14 +1,13 @@
 <template>
     <div class="node-table">
         <div class="accordion-item">
-            <h2 class="accordion-header" id="headingOne">
+            <h2 class="accordion-header">
                 <button
                     class="accordion-button"
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#beamsCollapse"
                     aria-expanded="true"
-                    aria-controls="beamsCollapse"
                 >
                     Beams
                 </button>
@@ -16,8 +15,7 @@
             <div
                 id="beamsCollapse"
                 class="accordion-collapse collapse show"
-                aria-labelledby="headingOne"
-                data-bs-parent="#accordionExample"
+                data-bs-parent="#beamsCollapse"
             >
                 <div v-if="beamsList[0].beams.length == 0 && !beamsList[1]">
                     <div class="row">
@@ -65,66 +63,56 @@
     </div>
     <div class="card bg-secondary sidebar-editor">
         <div class="card-body">
-            <div class="row">
-                <div class="col-3">
-                    <label>Node1</label>
+            <div style="min-height: 105px;">
+                <div class="row">
+                    <div class="col-3">
+                        <label>Node1:</label>
+                    </div>
+                    <div class="col">
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="selectedBeam.node1"
+                            :disabled="selectedBeam.node1 == -1"
+                        />
+                    </div>
                 </div>
-                <div class="col">
-                    <input
-                        type="text"
-                        class="form-control form-control-sm"
-                        v-model="selectedBeam.node1"
-                    />
+                <div class="row">
+                    <div class="col-3">
+                        <label>Node2:</label>
+                    </div>
+                    <div class="col">
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="selectedBeam.node2"
+                            :disabled="selectedBeam.node1 == -1"
+                        />
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                    <label>Node2:</label>
-                </div>
-                <div class="col">
-                    <input
-                        type="text"
-                        class="form-control form-control-sm"
-                        v-model="selectedBeam.node2"
-                    />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                    <label>Option:</label>
-                </div>
-                <div class="col">
-                    <input
-                        type="text"
-                        class="form-control form-control-sm"
-                        v-model="selectedBeam.options"
-                    />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                    <label>Type:</label>
-                </div>
-                <div class="col">
-                    <select
-                        class="form-select form-select-sm"
-                        v-model="selectedBeamType"
-                    >
-                        <option
-                            v-for="(type, idx) in beamTypes"
-                            v-bind:key="idx"
-                            v-bind:value="type.value"
-                            >{{ type.text }}</option
-                        >
-                    </select>
+                <div class="row">
+                    <div class="col-3">
+                        <label>Option:</label>
+                    </div>
+                    <div class="col">
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="selectedBeam.options"
+                            :disabled="selectedBeam.node1 == -1"
+                        />
+                    </div>
                 </div>
             </div>
+
             <div class="row">
                 <div class="col">
                     <div class="d-grid gap-2 mx-auto">
                         <button
                             type="button"
                             class="btn btn-primary btn-sm me-0"
+                            :disabled="selectedBeam.node1 == -1"
+                            @click="applyBeamData()"
                         >
                             Apply
                         </button>
@@ -181,14 +169,6 @@ export default class EditorBeamsTab extends Vue {
         snd_preset_id: -1
     };
 
-    private selectedBeamType = null;
-    private beamTypes = [
-        { value: null, text: "Beam" },
-        { value: "shock", text: "Shock" },
-        { value: "hydro", text: "Hydro" },
-        { value: "cmd", text: "Command" }
-    ];
-
     @Watch("truckDataBeams")
     updateBeamsData() {
         let lastGrp = -1;
@@ -224,34 +204,12 @@ export default class EditorBeamsTab extends Vue {
                 }
             });
         }
-
-        //Select first beam
-        if (this.selectedBeam.id == -1) {
-            if (this.beamsList[0].beams.length == 0) return;
-
-            let index = 0;
-
-            if (this.beamsList[index].beams.length == 0) {
-                index++;
-            }
-
-            this.setBeamEditor(
-                this.beamsList[index].grp_id,
-                this.beamsList[index].beams[0].id
-            );
-        }
-        // we don't need to update the selected beams data as it is no affected by the editor.
     }
-    setBeamEditor(grp_id: number, beamId: number) {
-        if (grp_id == undefined) return;
 
-        if (this.beamsList) {
-            Object.assign(
-                this.selectedBeam,
-                this.beamsList
-                    .filter(el => el.grp_id == grp_id)[0]
-                    .beams.filter(el => el.id == beamId)[0]
-            );
+    setBeamEditor(beamId: number) {
+        const currBeam = this.truckDataBeams.find(el => el.id == beamId);
+        if (currBeam != undefined) {
+            this.selectedBeam = currBeam;
         }
     }
 
@@ -261,18 +219,6 @@ export default class EditorBeamsTab extends Vue {
         const title = this.truckDataGroups.filter(el => el.grp_id == grp)[0]
             .title;
         return title;
-    }
-
-    addGrp_beam(el: MouseEvent) {
-        /**
-         * FIX: For some reasons, typescript does not recognize parentNode from mouse Target.
-         * we should find a correct solution as I'm just bypassing the "error" here.
-         */
-        // @ts-ignore
-        /*this.addGrpBeamId = parseInt(el.target.parentNode.dataset.beamId);
-        console.log(this.addGrpBeamId);
-
-        this.$bvModal.show("modal-addGrpBeam");*/
     }
 
     deleteBeam(currBeamId: number) {
@@ -290,7 +236,7 @@ export default class EditorBeamsTab extends Vue {
             data = e.path[1].dataset;
         }
 
-        this.setBeamEditor(data.grpId, data.beamId);
+        this.setBeamEditor(data.beamId);
 
         const menu = new Menu();
         if (e.button == 2) {
@@ -363,8 +309,15 @@ export default class EditorBeamsTab extends Vue {
         }
     }
 
+    applyBeamData() {
+        TruckEditorManager.getInstance()
+            .getEditorObj()
+            .setBeamData(this.selectedBeam);
+    }
+
     mounted() {
         this.updateBeamsData();
+        this.setBeamEditor(0);
     }
 }
 </script>

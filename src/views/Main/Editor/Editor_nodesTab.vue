@@ -71,60 +71,69 @@
     </div>
     <div class="card bg-secondary sidebar-editor">
         <div class="card-body">
-            <div class="row">
-                <div class="col-3">
-                    <label>x:</label>
+            <div style="min-height: 105px;">
+                <div class="row">
+                    <div class="col-3">
+                        <label>x:</label>
+                    </div>
+                    <div class="col">
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="selectedNode.x"
+                            :disabled="selectedNode.id == -1"
+                        />
+                    </div>
                 </div>
-                <div class="col">
-                    <input
-                        type="text"
-                        class="form-control form-control-sm"
-                        v-model="selectedNode.x"
-                    />
+                <div class="row">
+                    <div class="col-3">
+                        <label>y:</label>
+                    </div>
+                    <div class="col">
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="selectedNode.y"
+                            :disabled="selectedNode.id == -1"
+                        />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3">
+                        <label>z:</label>
+                    </div>
+                    <div class="col">
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="selectedNode.z"
+                            :disabled="selectedNode.id == -1"
+                        />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3">
+                        <label>Option:</label>
+                    </div>
+                    <div class="col">
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="selectedNode.options"
+                            :disabled="selectedNode.id == -1"
+                        />
+                    </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-3">
-                    <label>y:</label>
-                </div>
-                <div class="col">
-                    <input
-                        type="text"
-                        class="form-control form-control-sm"
-                        v-model="selectedNode.y"
-                    />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                    <label>z:</label>
-                </div>
-                <div class="col">
-                    <input
-                        type="text"
-                        class="form-control form-control-sm"
-                        v-model="selectedNode.z"
-                    />
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                    <label>Option:</label>
-                </div>
-                <div class="col">
-                    <input
-                        type="text"
-                        class="form-control form-control-sm"
-                        v-model="selectedNode.options"
-                    />
-                </div>
-            </div>
+
             <div class="row">
                 <div class="col">
                     <div class="d-grid gap-2 mx-auto">
                         <button
                             type="button"
                             class="btn btn-primary btn-sm me-0"
+                            :disabled="selectedNode.id == -1"
+                            @click="applySeletedNode()"
                         >
                             Apply
                         </button>
@@ -225,17 +234,6 @@ export default class EditorNodesTab extends Vue {
                 }
             });
         }
-
-        //Select first node
-        if (this.selectedNode.id == -1) {
-            if (this.nodesList[0].nodes.length == 0) return;
-
-            let index = 0;
-
-            if (this.nodesList[index].nodes.length == 0) {
-                index++;
-            }
-        }
     }
 
     getGrpName(grp: number) {
@@ -249,7 +247,7 @@ export default class EditorNodesTab extends Vue {
     setNodeEditor(nodeId: number) {
         const currNode = this.truckDataNodes.find(el => el.id == nodeId);
         if (currNode != undefined) {
-            this.selectedNode = currNode;
+            this.selectedNode = { ...currNode };
         }
     }
 
@@ -382,6 +380,12 @@ export default class EditorNodesTab extends Vue {
                 el.nodes.forEach(el => (el.isVisible = state));
             }
         });
+    }
+
+    applySeletedNode() {
+        TruckEditorManager.getInstance()
+            .getEditorObj()
+            .setNodeData(this.selectedNode);
     }
 
     mounted() {

@@ -230,7 +230,7 @@ export default class Editor extends Vue {
 }
 
 .sidebar-editor {
-    font-size: 14px;
+    min-height: 148.81px;
     .card-body {
         padding: 0.5rem 1rem 0.5rem 1rem;
     }

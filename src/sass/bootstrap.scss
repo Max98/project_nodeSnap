@@ -174,8 +174,17 @@ a {
     &:hover:not(:disabled):not([readonly])::-webkit-file-upload-button {
         background-color: $primary;
     }
+
+    &:disabled {
+        background-color: $gray-900;
+        color: $gray-600;
+    }
 }
 
 a {
     text-decoration: none;
+}
+
+.form-check-input {
+    background-color: $secondary;
 }

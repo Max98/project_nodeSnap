@@ -3,7 +3,8 @@ import store from "@/store/index";
 import {
     TruckFileInterface,
     EditorNode,
-    nodeType
+    nodeType,
+    EditorBeam
 } from "./TruckFileInterfaces";
 import TruckEditorRenderer from "./TruckEditorRenderer";
 import TruckEditorManager from "./TruckEditorManagaer";
@@ -256,6 +257,31 @@ export default class TruckEditor {
     }
 
     /**
+     * Set a specific node to specific data
+     * @param node
+     */
+    public setNodeData(node: EditorNode) {
+        const currNode = this.truckData.nodes.find(el => el.id == node.id);
+
+        if (currNode == undefined) {
+            //case where select last node, then delete the node
+            useToast().warning("Could not find node: " + node.id);
+            return;
+        }
+
+        Object.assign(currNode, node);
+
+        this.renderInstance.getSceneController().moveNodeSprite(currNode.id, {
+            x: currNode.x,
+            y: currNode.y,
+            z: currNode.z
+        });
+
+        this.renderInstance.getSceneController().buildBeamLines();
+        this.sendUpdate();
+    }
+
+    /**
      * add a new beam
      * @param beam beam data
      */
@@ -295,7 +321,8 @@ export default class TruckEditor {
             sbd_preset_id: -1,
             snd_preset_id: -1,
             grp_id: lastGrpId,
-            comment_id: -1
+            comment_id: -1,
+            options: "v" //TODO: set this from editor config
         });
 
         const historyData: HistorySystem = {
@@ -337,6 +364,20 @@ export default class TruckEditor {
         }
 
         this.renderInstance.getSceneController().buildBeamLines();
+        this.sendUpdate();
+    }
+
+    public setBeamData(beam: EditorBeam) {
+        const currBeam = this.truckData.beams.find(el => el.id == beam.id);
+
+        if (currBeam == undefined) {
+            //case where select last node, then delete the node
+            useToast().warning("Could not find node: " + beam.id);
+            return;
+        }
+
+        Object.assign(currBeam, beam);
+
         this.sendUpdate();
     }
 
