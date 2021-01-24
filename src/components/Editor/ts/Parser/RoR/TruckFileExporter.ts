@@ -2,9 +2,11 @@ import * as TruckSectionsInterface from "../../TruckFileInterfaces";
 import { Keyword } from "./TruckFileParserSections";
 
 import fs from "fs";
+import path from "path";
 import * as Logger from "electron-log";
 
 import store from "@/store/index";
+import TruckEditorManager from "../../TruckEditorManagaer";
 
 const remote = require("electron").remote;
 const { Menu, MenuItem, dialog } = remote;
@@ -37,7 +39,9 @@ export default class TruckFileExporter {
         this.parserLog = Logger.default.scope("TruckFileExporter");
         this.parserLog.info("init");
 
-        this.truckFile = store.getters.getTruckData;
+        this.truckFile = TruckEditorManager.getInstance()
+            .getEditorObj()
+            .getData();
     }
 
     /**
@@ -45,7 +49,7 @@ export default class TruckFileExporter {
      * @param path path where the file will be saved
      * TODO: backups
      */
-    public saveFile() {
+    public saveFile(): string {
         let filePath: string | undefined = store.getters.getTruckFilePath;
 
         if (filePath == "") {
@@ -73,7 +77,7 @@ export default class TruckFileExporter {
 
         if (filePath == undefined) {
             this.parserLog.info("File path not found! " + filePath);
-            return;
+            return "";
         }
 
         this.parserLog.info("Requesting file save to: " + filePath);
@@ -187,13 +191,34 @@ export default class TruckFileExporter {
          */
 
         if (fs.existsSync(filePath)) {
-            this.parserLog.info("Making a backup: " + filePath + ".bak");
-            fs.copyFileSync(filePath, filePath + ".bak");
+            this.parserLog.info(
+                "Making a backup: " + filePath + Date.now() + ".bak"
+            );
+
+            const split = filePath.split("\\");
+            const folderPath = filePath
+                .replace(split[split.length - 1], "")
+                .slice(0, -1);
+
+            if (!fs.existsSync(folderPath + "/.nodeSnap")) {
+                fs.mkdirSync(path.join(folderPath, ".nodeSnap"));
+            }
+
+            fs.copyFileSync(
+                filePath,
+                folderPath +
+                    "/.nodeSnap/" +
+                    split[split.length - 1] +
+                    "." +
+                    Date.now() +
+                    ".bak"
+            );
         }
 
         fs.writeFileSync(filePath, fileStr);
 
         this.parserLog.info("Done saving file.");
+        return filePath;
     }
 
     private onSaveProcessWheels() {

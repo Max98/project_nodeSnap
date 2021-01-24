@@ -133,6 +133,7 @@ export default class TruckEditor {
 
         this.renderInstance.getSceneController().buildBeamLines();
         this.renderInstance.getSceneController().postCalc();
+        this.renderInstance.getSceneController().loadConfig();
     }
 
     /**

@@ -12,6 +12,7 @@ export default class BluemodelPlugin {
     private scene: THREE.Scene;
     private defaultOpacity = 1;
 
+    private blueModelFilePath = "";
     private blueModel: THREE.Mesh | undefined;
     private control: TransformControls | undefined;
 
@@ -19,10 +20,15 @@ export default class BluemodelPlugin {
         this.scene = scene;
     }
 
+    public getBlueModelFilePath() {
+        return this.blueModelFilePath;
+    }
+
     public load(filePath: string, opacity: number) {
         this.remove();
 
         this.defaultOpacity = opacity;
+        this.blueModelFilePath = filePath;
 
         const fileStr = filePath.split(".");
         const type = fileStr[fileStr.length - 1];
@@ -77,12 +83,19 @@ export default class BluemodelPlugin {
         if (this.control) this.scene.add(this.control);
 
         this.setControlState(false);
+
+        return;
+    }
+
+    public getBlueModel(): THREE.Mesh | undefined {
+        return this.blueModel;
     }
 
     public remove() {
         if (!this.blueModel) return;
 
         this.scene.remove(this.blueModel);
+        this.blueModel = undefined;
     }
 
     public toggleVisibility() {

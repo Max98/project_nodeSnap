@@ -8,6 +8,7 @@ import { ConeBufferGeometry, Vector3 } from "three";
 import BlueprintPlugin from "./Plugins/blueprint";
 import BluemodelPlugin from "./Plugins/bluemodel";
 import { useToast } from "vue-toastification";
+import Config from "./Plugins/config";
 
 const remote = require("electron").remote;
 const { Menu, MenuItem, dialog } = remote;
@@ -65,6 +66,11 @@ export default class SceneController {
     private blueprintSystem: BlueprintPlugin;
     private bluemodelSystem: BluemodelPlugin;
 
+    /**
+     * Config system
+     */
+    private projectConfig: Config;
+
     constructor(scene: THREE.Scene) {
         this.scene = scene;
 
@@ -72,6 +78,8 @@ export default class SceneController {
 
         this.blueprintSystem = new BlueprintPlugin(this.scene);
         this.bluemodelSystem = new BluemodelPlugin(this.scene);
+
+        this.projectConfig = new Config();
     }
 
     public dispose() {
@@ -862,5 +870,16 @@ export default class SceneController {
             this.blueprintSystem.setControlState(true);
             this.bluemodelSystem.setControlState(true);
         }
+    }
+
+    /**
+     * Load user preference for this specific project
+     */
+    public loadConfig() {
+        this.projectConfig.loadConfig();
+    }
+
+    public saveConfig() {
+        this.projectConfig.saveConfig();
     }
 }

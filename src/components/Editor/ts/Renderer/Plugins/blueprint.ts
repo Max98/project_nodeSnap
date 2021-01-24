@@ -5,11 +5,14 @@ import TruckEditorManager from "../../TruckEditorManagaer";
 import mime from "mime-types";
 import { TransformControls } from "@/components/Editor/js/TransformControls";
 
+interface Blueprints {
+    model: THREE.Mesh;
+    control: TransformControls;
+}
+
 export default class BlueprintPlugin {
-    private bluePrintArray: {
-        model: THREE.Mesh;
-        control: TransformControls;
-    }[] = [];
+    private bluePrintFilePath = "";
+    private bluePrintArray: Blueprints[] = [];
     private scene: THREE.Scene;
     private defaultOpacity = 1;
 
@@ -27,10 +30,22 @@ export default class BlueprintPlugin {
         });
     }
 
-    public async load(filePath: string, opacity: number) {
+    public getBlueprintFilePath(): string {
+        return this.bluePrintFilePath;
+    }
+
+    public getBlueprints(): Blueprints[] {
+        return this.bluePrintArray;
+    }
+
+    public async load(
+        filePath: string,
+        opacity: number
+    ): Promise<Blueprints[]> {
         this.remove(); //we remove anything old
 
         this.defaultOpacity = opacity;
+        this.bluePrintFilePath = filePath;
 
         const dataURI = fs.readFileSync(filePath, "base64");
 
@@ -116,6 +131,8 @@ export default class BlueprintPlugin {
             });
         });
         this.setControlState(false);
+
+        return this.bluePrintArray;
     }
 
     public remove() {

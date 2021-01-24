@@ -55,7 +55,11 @@ export default class TruckEditorManager {
     }
 
     public saveFile() {
-        return new TruckFileExporter().saveFile();
+        new TruckFileExporter().saveFile().split("\\");
+
+        this.getRendererObj()
+            .getSceneController()
+            .saveConfig();
     }
 
     public getRendererObj(): TruckEditorRenderer {
