@@ -621,7 +621,28 @@ export default class TruckEditor {
             for (let i = 0; i < nodesArray.length; i++) {
                 const el = nodesArray[i];
 
-                el.id = i + nodeIndex;
+                const newNodeId = i + nodeIndex;
+
+                let beam = beamsArray.filter(
+                    currBeam => currBeam.node1 == el.id
+                );
+                if (beam.length != 0) {
+                    console.log("found");
+                    beam.forEach(b => {
+                        b.node1 = newNodeId;
+                    });
+                }
+                beam = [];
+
+                beam = beamsArray.filter(currBeam => currBeam.node2 == el.id);
+                if (beam.length != 0) {
+                    beam.forEach(b => {
+                        b.node2 = newNodeId;
+                    });
+                }
+                beam = [];
+
+                el.id = newNodeId;
                 el.name = el.id.toString();
                 el.grp_id = this.getLastGroupId("node");
 
@@ -712,8 +733,10 @@ export default class TruckEditor {
 
                 for (let i = 0; i < beamsArray.length; i++) {
                     const el = beamsArray[i];
-                    el.node1 = el.node1 + nodeIndex;
-                    el.node2 = el.node2 + nodeIndex;
+                    /*el.node1 = el.node1 + nodeIndex - el.node1;
+
+                    el.node2 = el.node2 + nodeIndex - el.node2;*/
+
                     el.id = i + beamIndex;
                     el.grp_id = this.getLastGroupId("beam");
 
