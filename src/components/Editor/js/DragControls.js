@@ -105,6 +105,8 @@ var DragControls = function(_objects, _camera, _domElement) {
         if (_intersections.length > 0) {
             var object = _intersections[0].object;
 
+            if (!object.visible) return;
+
             _plane.setFromNormalAndCoplanarPoint(
                 _camera.getWorldDirection(_plane.normal),
                 _worldPosition.setFromMatrixPosition(object.matrixWorld)
@@ -143,10 +145,15 @@ var DragControls = function(_objects, _camera, _domElement) {
         _raycaster.intersectObjects(_objects, true, _intersections);
 
         if (_intersections.length > 0) {
-            _selected =
-                scope.transformGroup === true
-                    ? _objects[0]
-                    : _intersections[0].object;
+            if (_intersections[0].object.visible) {
+                _selected =
+                    scope.transformGroup === true
+                        ? _objects[0]
+                        : _intersections[0].object;
+            } else {
+                _selected = null;
+                return;
+            }
 
             if (_raycaster.ray.intersectPlane(_plane, _intersection)) {
                 _inverseMatrix.copy(_selected.parent.matrixWorld).invert();

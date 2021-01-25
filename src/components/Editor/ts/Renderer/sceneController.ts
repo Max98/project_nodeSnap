@@ -148,6 +148,13 @@ export default class SceneController {
             spritey.layers.set(0);
         }
 
+        this.nodesDragControl.forEach(el => {
+            const obj = el.getObjects();
+            obj.push(this.nodesSpriteArray[nodeData.id]);
+        });
+
+        /*       this.nodesDraggableSpriteArray.push(this.nodesSpriteArray[nodeData.id]);
+        console.log(this.nodesDraggableSpriteArray);*/
         this.editorScene.add(this.nodesSpriteArray[nodeData.id]);
     }
 
@@ -240,7 +247,7 @@ export default class SceneController {
             .getViews()
             .forEach(el => {
                 const dragControl = new DragControls(
-                    this.nodesSpriteArray,
+                    [...this.nodesSpriteArray],
                     el.getCamera(),
                     el.getCanvas()
                 );
@@ -357,21 +364,32 @@ export default class SceneController {
      * @param id nodeId
      * @param state
      */
-    public async setNodeVisibility(id: number, state: boolean) {
+    public setNodeVisibility(id: number, state: boolean) {
         const currNode = this.nodesSpriteArray.filter(
             el => el.userData.id == id
         )[0];
 
         currNode.visible = state;
 
-        if (!state) this.invisibleNodesArray.push(currNode.userData.id);
-        else {
+        if (!state) {
+            this.invisibleNodesArray.push(currNode.userData.id);
+
+            this.nodesDragControl.forEach(el => {
+                let obj = el.getObjects();
+                obj = obj.filter(el => el != currNode);
+            });
+        } else {
             this.invisibleNodesArray = this.invisibleNodesArray.filter(
                 el => el != currNode.userData.id
             );
+
+            this.nodesDragControl.forEach(el => {
+                const obj = el.getObjects();
+                obj.push(currNode);
+            });
         }
 
-        await this.buildBeamLines();
+        this.buildBeamLines();
     }
 
     /**
