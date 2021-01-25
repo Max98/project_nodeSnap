@@ -57,6 +57,12 @@ export default class Config {
     }
 
     saveConfig() {
+        this.folderPath = store.getters.getTruckFilePath;
+        const split = this.folderPath.split("\\");
+        this.folderPath = this.folderPath
+            .replace(split[split.length - 1], "") //remove .truck file and get folder path
+            .slice(0, -1); //remove the last \
+
         let configData: ConfigData[];
 
         if (fs.existsSync(this.folderPath + "/.nodeSnap/config.json")) {

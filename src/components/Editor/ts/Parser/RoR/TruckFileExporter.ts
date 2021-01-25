@@ -218,6 +218,9 @@ export default class TruckFileExporter {
         fs.writeFileSync(filePath, fileStr);
 
         this.parserLog.info("Done saving file.");
+
+        store.dispatch("setTruckFilePath", filePath);
+
         return filePath;
     }
 
