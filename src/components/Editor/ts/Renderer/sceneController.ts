@@ -809,6 +809,10 @@ export default class SceneController {
             if (mainView != undefined) {
                 mainView.getCameraControl().enableRotate = false;
             }
+
+            this.nodesDragControl.forEach(el => {
+                el.enabled = false;
+            });
         }
 
         switch (e.key) {
@@ -868,6 +872,11 @@ export default class SceneController {
         if (mainView != undefined) {
             mainView.getCameraControl().enableRotate = true;
         }
+
+        this.nodesDragControl.forEach(el => {
+            el.enabled = true;
+        });
+
         switch (e.key) {
             default:
                 if (this.controlMode == ControlMode.TRUCK) {
