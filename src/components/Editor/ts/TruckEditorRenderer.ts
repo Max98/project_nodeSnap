@@ -315,7 +315,7 @@ export default class TruckEditorRenderer {
     /**
      * Scene stuff
      */
-    private gridSize = 9720;
+    private gridSize = 9600;
     private gridDivisions = 160;
     private gridTop?: THREE.GridHelper = undefined;
     private gridFront?: THREE.GridHelper = undefined;

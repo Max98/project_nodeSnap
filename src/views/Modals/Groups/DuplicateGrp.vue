@@ -3,41 +3,21 @@
         <p>
             You can use this function to duplicate the selected group
             <b style="color: white;">{{ grpData.title }}</b
-            >. You can do a simple axial symmetry, or copy and move them
-            relative to an axis.
+            >. You can do a simple offset duplication, a mirror, or a
+            non-flipping mirror
         </p>
         <hr />
         <div class="row">
             <div class="col-5">
-                <label style="margin-bottom: 5px;">Type:</label>
                 <div class="mb-3">
-                    <div class="form-check form-check-inline">
-                        <input
-                            class="form-check-input"
-                            type="radio"
-                            name="duplicateType"
-                            id="radioSimple"
-                            value="0"
-                            v-model="dupType"
-                        />
-                        <label class="form-check-label" for="radioSimple"
-                            >Simple</label
-                        >
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input
-                            class="form-check-input"
-                            type="radio"
-                            name="duplicateType"
-                            id="radioAxial"
-                            value="1"
-                            v-model="dupType"
-                        />
-                        <label class="form-check-label" for="radioAxial"
-                            >Axial symmetry</label
-                        >
-                    </div>
+                    <label class="form-label">Type</label>
+                    <select class="form-select" v-model="dupType">
+                        <option value="0">Offset</option>
+                        <option value="1">Mirror</option>
+                        <option value="2">Mirror (no-flip)</option>
+                    </select>
                 </div>
+
                 <div class="mb-3">
                     <label class="form-label">Axis</label>
                     <select class="form-select" v-model="selectedAxis">
@@ -48,22 +28,44 @@
                 </div>
             </div>
             <div class="col">
-                <div class="mb-3">
-                    <label class="form-label">Group title</label>
-                    <input
-                        type="text"
-                        class="form-control"
-                        v-model="newGrpTitle"
-                    />
-                    <div class="form-text">
-                        Duplicating will create a new group
+                <div style="min-height: 160px;">
+                    <div class="mb-3" v-if="dupType != 0">
+                        <label class="form-label">Group title</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            v-model="newGrpTitle"
+                        />
+                        <div class="form-text">
+                            Mirroring will create a new group
+                        </div>
+                    </div>
+                    <div v-if="dupType == 0">
+                        <div class="mb-3">
+                            <label class="form-label">Offset</label>
+                            <input
+                                type="number"
+                                class="form-control"
+                                v-model="offset"
+                            />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Times</label>
+                            <input
+                                type="number"
+                                class="form-control"
+                                v-model="times"
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="float-end">
-            <button class="btn btn-primary" @click="apply">Apply</button>
+                <div class="float-end">
+                    <button class="btn btn-primary" @click="apply">
+                        Apply
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -88,9 +90,11 @@ export default class AddGrp extends Vue {
         title: ""
     };
 
-    private dupType = 0;
+    private dupType = "0";
     private selectedAxis = "x";
     private newGrpTitle = "";
+    private offset = 1;
+    private times = 1;
 
     mounted() {
         ipcRenderer.on("data", (event, arg) => {
@@ -108,9 +112,11 @@ export default class AddGrp extends Vue {
             func: "duplicate",
             data: {
                 id: this.grpData.id,
-                type: this.dupType,
+                type: parseInt(this.dupType),
                 axis: this.selectedAxis,
-                grpTitle: this.newGrpTitle
+                grpTitle: this.newGrpTitle,
+                offset: this.offset,
+                times: this.times
             }
         });
         // remote.getCurrentWindow().hide();

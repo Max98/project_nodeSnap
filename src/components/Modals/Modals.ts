@@ -42,7 +42,7 @@ export default class ModalsManager {
         this.createModal(
             "duplicateGrp",
             "http://localhost:8081/#/Modals/Groups/Duplicate",
-            { width: 600, height: 300 }
+            { width: 600, height: 350 }
         );
 
         this.createModal(

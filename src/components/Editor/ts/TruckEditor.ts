@@ -504,20 +504,22 @@ export default class TruckEditor {
         id: number,
         type: number,
         axis: string,
-        newGrpTitle: string
+        newGrpTitle: string,
+        offset: number,
+        times: number
     ) {
         //for some reasons ... and object.assign did not work here
-        const nodesArray: EditorNode[] = JSON.parse(
+        let nodesArray: EditorNode[] = JSON.parse(
             JSON.stringify(this.truckData.nodes.filter(el => el.grp_id == id))
         );
 
-        //nodes are madatory, not the same for beams
+        //nodes are mandatory, not the same for beams
         if (nodesArray.length == 0) {
             useToast().error("Failed to duplicate!");
             return;
         }
 
-        const beamsArray: EditorBeam[] = [];
+        let beamsArray: EditorBeam[] = [];
 
         /**
          * TODO: i'm pretty sure there is an easier and faster way for this
@@ -549,12 +551,74 @@ export default class TruckEditor {
                 beamsArray.push(JSON.parse(JSON.stringify(currBeam)));
         });
 
-        const nodeIndex = this.getLastNodeId() + 1;
+        let nodeIndex = this.getLastNodeId() + 1;
         const beamIndex = this.getLastBeamId() + 1;
 
-        this.addGrp(-1, newGrpTitle, "node");
+        if (type == 0) {
+            if (times <= 0) {
+                useToast().error(
+                    "Failed duplicate! number of times cannot be under 1!"
+                );
+                return;
+            }
 
-        if (type == 1) {
+            if (offset == 0) {
+                useToast().warning(
+                    "Failed duplicate! offset cannot be equal to zero."
+                );
+                return;
+            }
+
+            for (let n = 0; n < times; n++) {
+                nodeIndex = this.getLastNodeId() + 1;
+                for (let i = 0; i < nodesArray.length; i++) {
+                    const el = nodesArray[i];
+
+                    el.id = i + nodeIndex;
+                    el.name = el.id.toString();
+                    el.grp_id = this.getLastGroupId("node");
+
+                    console.log(typeof offset);
+
+                    switch (axis) {
+                        case "x":
+                            el.x = el.x + offset;
+                            break;
+                        case "y":
+                            el.y = el.y + offset;
+                            break;
+                        case "z":
+                            el.z = el.z + offset;
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                    this.truckData.nodes.push(el);
+                    this.renderInstance.getSceneController().addNodeToScene(el);
+                }
+                nodesArray = JSON.parse(JSON.stringify(nodesArray));
+
+                if (beamIndex != 0) {
+                    for (let i = 0; i < beamsArray.length; i++) {
+                        const el = beamsArray[i];
+                        el.node1 = el.node1 + nodesArray.length;
+                        el.node2 = el.node2 + nodesArray.length;
+                        el.id = i + beamIndex;
+                        el.grp_id = this.getLastGroupId("beam");
+
+                        this.truckData.beams.push(el);
+                        this.renderInstance
+                            .getSceneController()
+                            .addBeamToScene(el.node1, el.node2);
+                    }
+                    this.renderInstance.getSceneController().buildBeamLines();
+                    beamsArray = JSON.parse(JSON.stringify(beamsArray));
+                }
+            }
+        } else if (type == 1) {
+            this.addGrp(-1, newGrpTitle, "node");
             for (let i = 0; i < nodesArray.length; i++) {
                 const el = nodesArray[i];
 
@@ -582,7 +646,8 @@ export default class TruckEditor {
                 this.truckData.nodes.push(el);
                 this.renderInstance.getSceneController().addNodeToScene(el);
             }
-        } else {
+        } else if (type == 2) {
+            this.addGrp(-1, newGrpTitle, "node");
             const geometry = new THREE.Geometry();
             nodesArray.forEach(el => {
                 geometry.vertices.push(new Vector3(el.x, el.y, el.z));
@@ -642,22 +707,24 @@ export default class TruckEditor {
             }
         }
 
-        if (beamIndex != 0) {
-            this.addGrp(-1, newGrpTitle, "beam");
+        if (type != 0) {
+            if (beamIndex != 0) {
+                this.addGrp(-1, newGrpTitle, "beam");
 
-            for (let i = 0; i < beamsArray.length; i++) {
-                const el = beamsArray[i];
-                el.node1 = el.node1 + nodeIndex;
-                el.node2 = el.node2 + nodeIndex;
-                el.id = i + beamIndex;
-                el.grp_id = this.getLastGroupId("beam");
+                for (let i = 0; i < beamsArray.length; i++) {
+                    const el = beamsArray[i];
+                    el.node1 = el.node1 + nodeIndex;
+                    el.node2 = el.node2 + nodeIndex;
+                    el.id = i + beamIndex;
+                    el.grp_id = this.getLastGroupId("beam");
 
-                this.truckData.beams.push(el);
-                this.renderInstance
-                    .getSceneController()
-                    .addBeamToScene(el.node1, el.node2);
+                    this.truckData.beams.push(el);
+                    this.renderInstance
+                        .getSceneController()
+                        .addBeamToScene(el.node1, el.node2);
+                }
+                this.renderInstance.getSceneController().buildBeamLines();
             }
-            this.renderInstance.getSceneController().buildBeamLines();
         }
 
         this.sendUpdate();

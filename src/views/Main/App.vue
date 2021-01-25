@@ -59,7 +59,9 @@ export default class Main extends Vue {
                         arg.data.id,
                         arg.data.type,
                         arg.data.axis,
-                        arg.data.grpTitle
+                        arg.data.grpTitle,
+                        parseInt(arg.data.offset),
+                        parseInt(arg.data.times)
                     );
                     break;
 

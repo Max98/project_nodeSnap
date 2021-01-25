@@ -46,7 +46,7 @@ export default class SceneController {
     private mouse: THREE.Vector2 = new THREE.Vector2(0, 0);
 
     private snapEnable = false;
-    private snapScale = 60.75; //TODO: This is = gridSize/gridDivision from TruckEditorRenderer.ts
+    private snapScale = 60; //TODO: This is = gridSize/gridDivision from TruckEditorRenderer.ts
     private snapScaleFactor = 1;
 
     private makeBeam = false;
