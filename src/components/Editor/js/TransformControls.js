@@ -56,6 +56,7 @@ var TransformControls = function(camera, domElement) {
     defineProperty("translationSnap", null);
     defineProperty("rotationSnap", null);
     defineProperty("scaleSnap", null);
+    defineProperty("scaleSpeed", 1);
     defineProperty("space", "world");
     defineProperty("size", 1);
     defineProperty("dragging", false);
@@ -460,6 +461,7 @@ var TransformControls = function(camera, domElement) {
         } else if (mode === "scale") {
             if (axis.search("XYZ") !== -1) {
                 var d = pointEnd.length() / pointStart.length();
+                d = (d - 1) * scope.scaleSpeed + 1;
 
                 if (pointEnd.dot(pointStart) < 0) d *= -1;
 
@@ -686,6 +688,10 @@ var TransformControls = function(camera, domElement) {
 
     this.setScaleSnap = function(scaleSnap) {
         scope.scaleSnap = scaleSnap;
+    };
+
+    this.setScaleSpeed = function(scaleSpeed) {
+        scope.scaleSpeed = scaleSpeed;
     };
 
     this.setLayer = function(id) {

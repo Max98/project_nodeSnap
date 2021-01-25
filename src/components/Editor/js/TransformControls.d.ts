@@ -34,6 +34,7 @@ export class TransformControls extends Object3D {
     setTranslationSnap(translationSnap: Number | null): void;
     setRotationSnap(rotationSnap: Number | null): void;
     setScaleSnap(scaleSnap: Number | null): void;
+    setScaleSpeed(scaleSpeed: Number | null): void;
     setLayer(id: Number): void;
     setSize(size: number): void;
     setSpace(space: string): void;

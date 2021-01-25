@@ -121,6 +121,8 @@ export default class BlueprintPlugin {
 
             control.attach(bluePrintPlane);
             control.setRotationSnap(THREE.MathUtils.degToRad(15));
+            control.setScaleSpeed(150);
+
             control.setScaleSnap(0.1);
 
             this.scene.add(control);

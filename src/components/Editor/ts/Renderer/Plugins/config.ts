@@ -20,6 +20,10 @@ interface ConfigData {
             rot1: number[];
             rot2: number[];
             rot3: number[];
+
+            scale1: number[];
+            scale2: number[];
+            scale3: number[];
         };
         bluemodel?: {
             filePath: string;
@@ -27,6 +31,7 @@ interface ConfigData {
             visible: boolean;
             pos: number[];
             rot: number[];
+            scale: number[];
         };
     };
 }
@@ -107,6 +112,11 @@ export default class Config {
                     bluePrintSystem.getBlueprints()[0].model.rotation.y,
                     bluePrintSystem.getBlueprints()[0].model.rotation.z
                 ],
+                scale1: [
+                    bluePrintSystem.getBlueprints()[0].model.scale.x,
+                    bluePrintSystem.getBlueprints()[0].model.scale.y,
+                    bluePrintSystem.getBlueprints()[0].model.scale.z
+                ],
 
                 pos2: [
                     bluePrintSystem.getBlueprints()[1].model.position.x,
@@ -118,6 +128,11 @@ export default class Config {
                     bluePrintSystem.getBlueprints()[1].model.rotation.y,
                     bluePrintSystem.getBlueprints()[1].model.rotation.z
                 ],
+                scale2: [
+                    bluePrintSystem.getBlueprints()[1].model.scale.x,
+                    bluePrintSystem.getBlueprints()[1].model.scale.y,
+                    bluePrintSystem.getBlueprints()[1].model.scale.z
+                ],
 
                 pos3: [
                     bluePrintSystem.getBlueprints()[2].model.position.x,
@@ -128,6 +143,11 @@ export default class Config {
                     bluePrintSystem.getBlueprints()[2].model.rotation.x,
                     bluePrintSystem.getBlueprints()[2].model.rotation.y,
                     bluePrintSystem.getBlueprints()[2].model.rotation.z
+                ],
+                scale3: [
+                    bluePrintSystem.getBlueprints()[2].model.scale.x,
+                    bluePrintSystem.getBlueprints()[2].model.scale.y,
+                    bluePrintSystem.getBlueprints()[2].model.scale.z
                 ]
             };
         }
@@ -145,7 +165,8 @@ export default class Config {
                 opacity: (model!.material as THREE.MeshBasicMaterial).opacity,
                 visible: model!.visible,
                 pos: [model!.position.x, model!.position.y, model!.position.z],
-                rot: [model!.rotation.x, model!.rotation.y, model!.rotation.z]
+                rot: [model!.rotation.x, model!.rotation.y, model!.rotation.z],
+                scale: [model!.scale.x, model!.scale.y, model!.scale.z]
             };
         }
 
@@ -275,6 +296,25 @@ export default class Config {
                         this.projectConfig.data.blueprint!.rot3[1],
                         this.projectConfig.data.blueprint!.rot3[2]
                     );
+
+                    /**
+                     * Scale
+                     */
+                    bluePrintsArray[0].model.scale.set(
+                        this.projectConfig.data.blueprint!.scale1[0],
+                        this.projectConfig.data.blueprint!.scale1[1],
+                        this.projectConfig.data.blueprint!.scale1[2]
+                    );
+                    bluePrintsArray[1].model.rotation.set(
+                        this.projectConfig.data.blueprint!.scale2[0],
+                        this.projectConfig.data.blueprint!.scale2[1],
+                        this.projectConfig.data.blueprint!.scale2[2]
+                    );
+                    bluePrintsArray[2].model.rotation.set(
+                        this.projectConfig.data.blueprint!.scale3[0],
+                        this.projectConfig.data.blueprint!.scale3[1],
+                        this.projectConfig.data.blueprint!.scale3[2]
+                    );
                 });
         }
 
@@ -311,6 +351,12 @@ export default class Config {
                     this.projectConfig.data.bluemodel.rot[0],
                     this.projectConfig.data.bluemodel.rot[1],
                     this.projectConfig.data.bluemodel.rot[2]
+                );
+
+                model.scale.set(
+                    this.projectConfig.data.bluemodel.scale[0],
+                    this.projectConfig.data.bluemodel.scale[1],
+                    this.projectConfig.data.bluemodel.scale[2]
                 );
             }
         }
