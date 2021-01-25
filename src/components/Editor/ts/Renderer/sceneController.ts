@@ -742,6 +742,11 @@ export default class SceneController {
         view: rendererViewType
     ) {
         if (this.controlMode != ControlMode.TRUCK) return;
+        if (
+            view ==
+            (rendererViewType.VIEW_MAIN || rendererViewType.VIEW_DEFAULT)
+        )
+            return;
 
         //Project mouse to 3D scene
         const mousePos = new THREE.Vector3();
@@ -778,6 +783,16 @@ export default class SceneController {
      */
 
     public onKeyDown(e: KeyboardEvent) {
+        if (e.shiftKey) {
+            const mainView = TruckEditorManager.getInstance()
+                .getRendererObj()
+                .getViews()
+                .find(el => el.getType() == rendererViewType.VIEW_MAIN);
+            if (mainView != undefined) {
+                mainView.getCameraControl().enableRotate = false;
+            }
+        }
+
         switch (e.key) {
             case "Z":
             case "z":
@@ -828,6 +843,13 @@ export default class SceneController {
     }
 
     public onKeyUp(e: KeyboardEvent) {
+        const mainView = TruckEditorManager.getInstance()
+            .getRendererObj()
+            .getViews()
+            .find(el => el.getType() == rendererViewType.VIEW_MAIN);
+        if (mainView != undefined) {
+            mainView.getCameraControl().enableRotate = true;
+        }
         switch (e.key) {
             default:
                 if (this.controlMode == ControlMode.TRUCK) {

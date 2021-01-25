@@ -119,7 +119,7 @@ export default class AddGrp extends Vue {
                 times: this.times
             }
         });
-        // remote.getCurrentWindow().hide();
+        remote.getCurrentWindow().hide();
     }
 }
 </script>

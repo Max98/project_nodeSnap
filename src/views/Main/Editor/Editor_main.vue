@@ -121,6 +121,11 @@ export default class EditorMain extends Vue {
         TruckEditorManager.getInstance()
             .getEditorObj()
             .loadTruckData();
+
+        TruckEditorManager.getInstance()
+            .getRendererObj()
+            .getSceneController()
+            .loadConfig();
     }
 
     /**
