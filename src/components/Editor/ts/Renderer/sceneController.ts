@@ -448,7 +448,7 @@ export default class SceneController {
                         this.snapScaleFactor
                 );
 
-                pos.z = Math.trunc(pos.z);
+                pos.z = Math.trunc(Math.round(pos.z));
                 break;
 
             case rendererViewType.VIEW_SIDE:
@@ -468,7 +468,7 @@ export default class SceneController {
                         this.snapScaleFactor
                 );
 
-                pos.x = Math.trunc(pos.x);
+                pos.x = Math.trunc(Math.round(pos.x));
                 break;
 
             case rendererViewType.VIEW_FRONT:
@@ -488,7 +488,7 @@ export default class SceneController {
                         this.snapScaleFactor
                 );
 
-                pos.y = Math.trunc(pos.y);
+                pos.y = Math.trunc(Math.round(pos.y));
                 break;
 
             default:
