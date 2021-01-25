@@ -85,18 +85,18 @@ class View {
         this.controls.target = new Vector3(0, 0, 0);
 
         if (this.type == rendererViewType.VIEW_TOP) {
-            this.camera.position.set(0, 0, 500);
+            this.camera.position.set(0, 0, 1000);
             // this.controls.minPolarAngle = -Math.PI;
             // this.controls.maxPolarAngle = -Math.PI;
             this.controls.enableRotate = false;
             // this.controls.rotateCtrl = true;
             this.camera.layers.enable(10);
         } else if (this.type == rendererViewType.VIEW_SIDE) {
-            this.camera.position.set(-500, 0, 0);
+            this.camera.position.set(-1000, 0, 0);
             this.controls.enableRotate = false;
             this.camera.layers.enable(11);
         } else if (this.type == rendererViewType.VIEW_FRONT) {
-            this.camera.position.set(0, -500, 0);
+            this.camera.position.set(0, -1000, 0);
             this.controls.enableRotate = false;
             this.camera.layers.enable(12);
         } else {
