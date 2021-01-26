@@ -206,6 +206,11 @@ export default class EditorBeamsTab extends Vue {
         }
     }
 
+    @Watch("truckDataBeams")
+    onUpdate() {
+        this.setBeamEditor(this.selectedBeam.id);
+    }
+
     setBeamEditor(beamId: number) {
         const currBeam = this.truckDataBeams.find(el => el.id == beamId);
         if (currBeam != undefined) {

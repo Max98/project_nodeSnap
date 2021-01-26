@@ -158,6 +158,7 @@ import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
 import { TruckFileInterface } from "@/components/Editor/ts/TruckFileInterfaces";
 
 import { ipcRenderer } from "electron";
+import { watch } from "fs";
 const remote = require("electron").remote;
 const { Menu, MenuItem } = remote;
 
@@ -242,6 +243,11 @@ export default class EditorNodesTab extends Vue {
         const title = this.truckDataGroups?.filter(el => el.grp_id == grp)[0]
             .title;
         return title;
+    }
+
+    @Watch("truckDataNodes")
+    onUpdate() {
+        this.setNodeEditor(this.selectedNode.id);
     }
 
     setNodeEditor(nodeId: number) {

@@ -71,6 +71,7 @@ export default class TruckEditor {
      */
     public loadData(data: TruckFileInterface) {
         this.truckData = data;
+        this.sendUpdate();
     }
 
     /**

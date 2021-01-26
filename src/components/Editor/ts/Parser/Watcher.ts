@@ -43,6 +43,9 @@ export default class ProjectWatcher {
 
     private onChange() {
         TruckEditorManager.getInstance().loadFile(this.currWatchingFile);
+        TruckEditorManager.getInstance()
+            .getEditorObj()
+            .loadTruckData();
         useToast().info("Project reloaded.");
     }
 
