@@ -4,6 +4,7 @@ import TruckEditorRenderer from "./TruckEditorRenderer";
 import TruckEditor from "./TruckEditor";
 import TruckFileImporter from "./Parser/RoR/TruckFileImporter";
 import TruckFileExporter from "./Parser/RoR/TruckFileExporter";
+import ProjectWatcher from "./Parser/Watcher";
 
 /**
  * All of this runs on the renderer electron process, not the main!
@@ -17,6 +18,8 @@ export default class TruckEditorManager {
     private editorRenderer: TruckEditorRenderer;
     private editorObj: TruckEditor;
 
+    private projectWatcher: ProjectWatcher;
+
     constructor() {
         TruckEditorManager.instance = this;
 
@@ -25,6 +28,8 @@ export default class TruckEditorManager {
 
         this.editorRenderer = new TruckEditorRenderer();
         this.editorObj = new TruckEditor();
+
+        this.projectWatcher = new ProjectWatcher();
     }
 
     /**
@@ -47,6 +52,7 @@ export default class TruckEditorManager {
      * @returns truck title
      */
     public loadFile(path: string) {
+        this.editorObj.setFilePath(path);
         const truckData = new TruckFileImporter().loadFile(path);
 
         this.editorObj.loadData(truckData);
@@ -55,11 +61,14 @@ export default class TruckEditorManager {
     }
 
     public saveFile() {
-        new TruckFileExporter().saveFile();
+        this.projectWatcher.dispose();
+        new TruckFileExporter().saveFile(this.editorObj.getFilePath());
 
         this.getRendererObj()
             .getSceneController()
-            .saveConfig();
+            .saveConfig(this.editorObj.getFilePath());
+
+        this.projectWatcher.start(this.editorObj.getFilePath());
     }
 
     public getRendererObj(): TruckEditorRenderer {
@@ -68,5 +77,20 @@ export default class TruckEditorManager {
 
     public getEditorObj(): TruckEditor {
         return this.editorObj;
+    }
+
+    public onLoaded() {
+        this.editorObj.loadTruckData();
+        this.editorRenderer
+            .getSceneController()
+            .loadConfig(this.editorObj.getFilePath());
+        this.projectWatcher.start(this.editorObj.getFilePath());
+    }
+
+    public onLeave() {
+        this.editorRenderer
+            .getSceneController()
+            .saveConfig(this.editorObj.getFilePath());
+        this.projectWatcher.dispose();
     }
 }

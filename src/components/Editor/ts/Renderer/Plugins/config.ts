@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import store from "@/store/index";
 import TruckEditorManager from "../../TruckEditorManagaer";
+import { useToast } from "vue-toastification";
 
 interface ConfigData {
     name: string;
@@ -56,8 +57,10 @@ export default class Config {
         };
     }
 
-    saveConfig() {
-        this.folderPath = store.getters.getTruckFilePath;
+    saveConfig(filePath: string) {
+        if (filePath == "") return;
+
+        this.folderPath = filePath;
         const split = this.folderPath.split("\\");
         this.folderPath = this.folderPath
             .replace(split[split.length - 1], "") //remove .truck file and get folder path
@@ -181,7 +184,6 @@ export default class Config {
         if (f) {
             f.data = this.projectConfig.data;
         } else {
-            const filePath: string = store.getters.getTruckFilePath;
             const fileName = filePath.split("\\");
 
             this.projectConfig.name = fileName[fileName.length - 1];
@@ -189,7 +191,7 @@ export default class Config {
         }
 
         if (!fs.existsSync(this.folderPath + "/.nodeSnap")) {
-            fs.mkdirSync(path.join(this.folderPath, ".nodeSnap"));
+            fs.mkdirSync(path.join(this.folderPath, "/.nodeSnap"));
         }
 
         fs.writeFileSync(
@@ -198,8 +200,14 @@ export default class Config {
         );
     }
 
-    loadConfig() {
-        this.folderPath = store.getters.getTruckFilePath;
+    loadConfig(filePath: string) {
+        if (filePath == "") {
+            useToast().warning(
+                "Failed to save project preferences! Invalid path."
+            );
+            return;
+        }
+        this.folderPath = filePath;
 
         const split = this.folderPath.split("\\");
         this.folderPath = this.folderPath

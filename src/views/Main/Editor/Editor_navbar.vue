@@ -57,10 +57,7 @@ import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
 export default class EditorNavBar extends Vue {
     onClose() {
         ipcRenderer.send("hideAllModals");
-        TruckEditorManager.getInstance()
-            .getRendererObj()
-            .getSceneController()
-            .saveConfig();
+        
 
         this.$store.dispatch("resetSettings");
     }

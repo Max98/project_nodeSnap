@@ -924,11 +924,11 @@ export default class SceneController {
     /**
      * Load user preference for this specific project
      */
-    public loadConfig() {
-        this.projectConfig.loadConfig();
+    public loadConfig(filePath: string) {
+        this.projectConfig.loadConfig(filePath);
     }
 
-    public saveConfig() {
-        this.projectConfig.saveConfig();
+    public saveConfig(filePath: string) {
+        this.projectConfig.saveConfig(filePath);
     }
 }

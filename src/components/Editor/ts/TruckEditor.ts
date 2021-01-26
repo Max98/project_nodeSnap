@@ -15,6 +15,7 @@ import * as THREE from "three";
  */
 import { useToast } from "vue-toastification";
 import { Vector3 } from "three";
+import { readonly } from "vue";
 
 interface HistorySystem {
     fn: string;
@@ -28,6 +29,8 @@ export default class TruckEditor {
     private renderInstance: TruckEditorRenderer;
 
     private HistorySystem: HistorySystem[] = [];
+
+    private filePath = "";
 
     constructor() {
         this.Log = myLogger.default.scope("TruckEditor");
@@ -53,6 +56,14 @@ export default class TruckEditor {
         };
 
         this.renderInstance = TruckEditorManager.getInstance().getRendererObj();
+    }
+
+    public setFilePath(filePath: string) {
+        this.filePath = filePath;
+    }
+
+    public getFilePath(): string {
+        return this.filePath;
     }
 
     /**

@@ -8,6 +8,8 @@ import * as Logger from "electron-log";
 import store from "@/store/index";
 import TruckEditorManager from "../../TruckEditorManagaer";
 
+import { useToast } from "vue-toastification";
+
 const remote = require("electron").remote;
 const { Menu, MenuItem, dialog } = remote;
 
@@ -49,9 +51,7 @@ export default class TruckFileExporter {
      * @param path path where the file will be saved
      * TODO: backups
      */
-    public saveFile(): string {
-        let filePath: string | undefined = store.getters.getTruckFilePath;
-
+    public saveFile(filePath: string): string {
         if (filePath == "") {
             filePath = dialog.showSaveDialogSync(remote.getCurrentWindow(), {
                 defaultPath: "newTruck",
@@ -72,10 +72,18 @@ export default class TruckFileExporter {
                     }
                 ]
             });
-            store.dispatch("setTruckFilePath", filePath);
+            if (!filePath) {
+                useToast().error("Failed to save, no folder selected.");
+                return "";
+            }
+
+            TruckEditorManager.getInstance()
+                .getEditorObj()
+                .setFilePath(filePath);
         }
 
         if (filePath == undefined) {
+            useToast().error("File path not found! " + filePath);
             this.parserLog.info("File path not found! " + filePath);
             return "";
         }
@@ -218,8 +226,6 @@ export default class TruckFileExporter {
         fs.writeFileSync(filePath, fileStr);
 
         this.parserLog.info("Done saving file.");
-
-        store.dispatch("setTruckFilePath", filePath);
 
         return filePath;
     }
