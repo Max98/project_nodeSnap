@@ -21,35 +21,30 @@ export default class ModalsManager {
         console.log("Init modals manager");
         this.winArray = [];
 
-        this.createModal(
-            "Settings",
-            "http://localhost:8081/#/Modals/Settings",
-            { width: 600, height: 300 }
-        );
+        this.createModal("Settings", "/#/Modals/Settings", {
+            width: 600,
+            height: 300
+        });
 
-        this.createModal(
-            "renameGrp",
-            "http://localhost:8081/#/Modals/Groups/Rename",
-            { width: 600, height: 180 }
-        );
+        this.createModal("renameGrp", "/#/Modals/Groups/Rename", {
+            width: 600,
+            height: 180
+        });
 
-        this.createModal(
-            "addGrp",
-            "http://localhost:8081/#/Modals/Groups/Add",
-            { width: 600, height: 230 }
-        );
+        this.createModal("addGrp", "/#/Modals/Groups/Add", {
+            width: 600,
+            height: 230
+        });
 
-        this.createModal(
-            "duplicateGrp",
-            "http://localhost:8081/#/Modals/Groups/Duplicate",
-            { width: 600, height: 350 }
-        );
+        this.createModal("duplicateGrp", "/#/Modals/Groups/Duplicate", {
+            width: 600,
+            height: 350
+        });
 
-        this.createModal(
-            "Blueprint",
-            "http://localhost:8081/#/Modals/Blueprint",
-            { width: 600, height: 300 }
-        );
+        this.createModal("Blueprint", "/#/Modals/Blueprint", {
+            width: 600,
+            height: 300
+        });
     }
 
     public dispose() {
@@ -103,7 +98,13 @@ export default class ModalsManager {
         const currWin = this.winArray[this.winArray.length - 1].win;
 
         //currWin.webContents.openDevTools();
-        currWin.loadURL(url);
+        if (process.env.WEBPACK_DEV_SERVER_URL) {
+            currWin.loadURL(
+                (process.env.WEBPACK_DEV_SERVER_URL as string) + url
+            );
+        } else {
+            currWin.loadURL("app://./index.html" + url);
+        }
 
         currWin.webContents.on("did-finish-load", () => {
             currWin.webContents.send("setId", { id: "Modal" });
