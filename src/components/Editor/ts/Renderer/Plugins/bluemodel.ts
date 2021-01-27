@@ -93,6 +93,12 @@ export default class BluemodelPlugin {
 
     public remove() {
         if (!this.blueModel) return;
+        if (!this.control) return;
+
+        this.control.clear();
+        this.control.dispose();
+        this.scene.remove(this.control);
+        this.control = undefined;
 
         this.scene.remove(this.blueModel);
         this.blueModel = undefined;
