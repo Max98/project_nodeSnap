@@ -1,9 +1,10 @@
-import chokidar from "chokidar";
 import { useToast } from "vue-toastification";
 import TruckEditorManager from "../TruckEditorManagaer";
+import { FSWatcher } from "fs";
+import watch from "node-watch";
 
 export default class ProjectWatcher {
-    private watcher: chokidar.FSWatcher | undefined;
+    private watcher: FSWatcher | undefined;
     private currWatchingFile = "";
 
     public start(filePath: string) {
@@ -11,42 +12,37 @@ export default class ProjectWatcher {
 
         this.currWatchingFile = filePath;
 
-        this.watcher = chokidar.watch(this.currWatchingFile, {
-            persistent: true,
-            awaitWriteFinish: {
-                stabilityThreshold: 500,
-                pollInterval: 100
-            }
-        });
-
-        this.watcher.on("change", (event, path) => {
-            this.onChange();
-        });
-
-        this.watcher.on("error", error =>
-            console.log(`Watcher error: ${error}`)
-        );
+        this.watcher = watch(this.currWatchingFile, { recursive: false });
 
         this.watcher.on("ready", () => {
-            console.log("Watching file....");
+            console.log("Watching file... " + this.currWatchingFile);
+        });
+
+        this.watcher.on("change", (evt, name) => {
+            if (evt == "update") {
+                this.onChange();
+            }
         });
     }
 
     public async dispose() {
-        if (this.watcher)
-            await this.watcher.close().then(() => {
-                console.log("Watcher removed");
-            });
+        if (this.watcher) this.watcher.close();
 
         console.log("Watcher dispose");
     }
 
     private onChange() {
-        TruckEditorManager.getInstance().loadFile(this.currWatchingFile);
-        TruckEditorManager.getInstance()
-            .getEditorObj()
-            .loadTruckData();
-        useToast().info("Project reloaded.");
+        const tM = TruckEditorManager.getInstance();
+
+        if (tM.getEditorObj().getSaveState() == true) {
+            tM.loadFile(this.currWatchingFile);
+            tM.getEditorObj().loadTruckData();
+            useToast().info("Project reloaded.");
+        } else {
+            useToast().warning(
+                "Failed to reload project, please save your progress!"
+            );
+        }
     }
 
     public getCurrFile() {

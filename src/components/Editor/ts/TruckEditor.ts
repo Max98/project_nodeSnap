@@ -24,13 +24,14 @@ interface HistorySystem {
 
 export default class TruckEditor {
     private Log: myLogger.LogFunctions;
-    private truckData: TruckFileInterface;
 
     private renderInstance: TruckEditorRenderer;
 
     private HistorySystem: HistorySystem[] = [];
 
+    private truckData: TruckFileInterface;
     private filePath = "";
+    private isSaved = false;
 
     constructor() {
         this.Log = myLogger.default.scope("TruckEditor");
@@ -64,6 +65,14 @@ export default class TruckEditor {
 
     public getFilePath(): string {
         return this.filePath;
+    }
+
+    public getSaveState() {
+        return this.isSaved;
+    }
+
+    public setSaveState(state: boolean) {
+        this.isSaved = state;
     }
 
     /**
@@ -788,8 +797,7 @@ export default class TruckEditor {
      * Update the UI
      */
     private async sendUpdate() {
-        //This is a performance hit on large data
-        //store.dispatch("setTruckData", this.truckData);
+        this.isSaved = false;
         document.dispatchEvent(new Event("truckDataUpdate"));
     }
 

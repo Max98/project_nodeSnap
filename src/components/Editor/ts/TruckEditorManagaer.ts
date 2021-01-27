@@ -56,10 +56,14 @@ export default class TruckEditorManager {
         const truckData = new TruckFileImporter().loadFile(path);
 
         this.editorObj.loadData(truckData);
+        this.editorObj.setSaveState(true);
 
         return truckData.title;
     }
 
+    /**
+     * Save the current open file
+     */
     public saveFile() {
         this.projectWatcher.dispose();
         new TruckFileExporter().saveFile(this.editorObj.getFilePath());
@@ -69,16 +73,27 @@ export default class TruckEditorManager {
             .saveConfig(this.editorObj.getFilePath());
 
         this.projectWatcher.start(this.editorObj.getFilePath());
+
+        this.editorObj.setSaveState(true);
     }
 
+    /**
+     * Returns the renderer class reference
+     */
     public getRendererObj(): TruckEditorRenderer {
         return this.editorRenderer;
     }
 
+    /**
+     * Returns the editor class reference
+     */
     public getEditorObj(): TruckEditor {
         return this.editorObj;
     }
 
+    /**
+     * Triggers after the main page has loaded
+     */
     public onLoaded() {
         this.editorObj.loadTruckData();
         this.editorRenderer
@@ -87,6 +102,9 @@ export default class TruckEditorManager {
         this.projectWatcher.start(this.editorObj.getFilePath());
     }
 
+    /**
+     * Triggers while the main page is being left
+     */
     public onLeave() {
         this.editorRenderer
             .getSceneController()

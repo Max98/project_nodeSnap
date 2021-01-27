@@ -15,18 +15,12 @@ const state: Truck = {
 };
 
 const getters = {
-    getTruckFilePath: (state: any): string => {
-        return state.truckFilePath;
-    },
     getParserSettings: (state: any) => {
         return state.parserSettings;
     }
 };
 
 const actions = {
-    setTruckFilePath: (context: any, path: string) => {
-        context.commit("setTruckFilePath", path);
-    },
     setParserSettings: (context: any, data: any) => {
         context.commit("setParserSettings", data);
     },
@@ -38,9 +32,6 @@ const actions = {
 };
 
 const mutations = {
-    setTruckFilePath(state: any, path: string) {
-        state.truckFilePath = path;
-    },
     setParserSettings(state: any, data: any) {
         state.parserSettings = data;
         state.parserSettings = JSON.parse(JSON.stringify(state.parserSettings));
