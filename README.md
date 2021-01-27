@@ -8,6 +8,8 @@ Made with Electron, three.js, Vue 3 + Vuex 4 and nodeJs, written Typescript.
 
 ## Project setup
 
+**You must use node.js version 14 LTS.**
+
 To install deps:
 
 ```
