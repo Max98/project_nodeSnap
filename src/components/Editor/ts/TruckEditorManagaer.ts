@@ -52,6 +52,9 @@ export default class TruckEditorManager {
      * @returns truck title
      */
     public loadFile(path: string) {
+        this.editorObj.reset();
+        this.editorRenderer.getSceneController().reset();
+
         this.editorObj.setFilePath(path);
         const truckData = new TruckFileImporter().loadFile(path);
 
@@ -75,6 +78,11 @@ export default class TruckEditorManager {
         this.projectWatcher.start(this.editorObj.getFilePath());
 
         this.editorObj.setSaveState(true);
+    }
+
+    public requestReload() {
+        this.loadFile(this.editorObj.getFilePath());
+        this.editorObj.loadTruckData();
     }
 
     /**
@@ -109,6 +117,7 @@ export default class TruckEditorManager {
         this.editorRenderer
             .getSceneController()
             .saveConfig(this.editorObj.getFilePath());
+        this.editorRenderer.dispose();
         this.projectWatcher.dispose();
     }
 }

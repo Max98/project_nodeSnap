@@ -343,6 +343,7 @@ export default class TruckEditorRenderer {
 
     public dispose() {
         this.views.length = 0;
+        this.SceneController.dispose();
         this.scene.clear();
 
         window.removeEventListener("resize", () => this.onWindowResize());

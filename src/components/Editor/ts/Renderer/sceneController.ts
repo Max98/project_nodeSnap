@@ -83,6 +83,7 @@ export default class SceneController {
     }
 
     public dispose() {
+        this.reset();
         console.log("Dispose");
     }
 

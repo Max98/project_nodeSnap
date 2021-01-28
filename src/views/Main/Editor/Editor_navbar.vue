@@ -26,7 +26,10 @@
                                 >
                             </li>
                             <li>
-                                <a class="dropdown-item disabled" href="#"
+                                <a
+                                    class="dropdown-item"
+                                    href="#"
+                                    @click.prevent="onReload"
                                     >Reload file</a
                                 >
                             </li>
@@ -54,16 +57,44 @@ import { Watch } from "@/components/vue-decorator";
 import { ipcRenderer } from "electron";
 import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
 
+const remote = require("electron").remote;
+const { dialog } = remote;
+
 export default class EditorNavBar extends Vue {
     onClose() {
         ipcRenderer.send("hideAllModals");
-        
 
         this.$store.dispatch("resetSettings");
     }
 
     onSave() {
         TruckEditorManager.getInstance().saveFile();
+    }
+
+    onReload() {
+        if (
+            TruckEditorManager.getInstance()
+                .getEditorObj()
+                .getSaveState() == false
+        ) {
+            const bl = dialog.showMessageBoxSync({
+                title: "Confirmation",
+                type: "warning",
+                buttons: ["Yes", "Cancel"],
+                defaultId: 1,
+                cancelId: 1,
+                message:
+                    "Reloading your file will discard all your recent changes. \nAre you sure?"
+            });
+
+            if (bl == 1) {
+                return false;
+            } else {
+                TruckEditorManager.getInstance().requestReload();
+            }
+
+            return true;
+        }
     }
 }
 </script>
