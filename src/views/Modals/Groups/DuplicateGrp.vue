@@ -3,8 +3,9 @@
         <p>
             You can use this function to duplicate the selected group
             <b style="color: white;">{{ grpData.title }}</b
-            >. You can do a simple offset duplication, a mirror, or a
-            non-flipping mirror
+            >. You can do a simple offset duplication or a mirror.
+            <!--, or a
+            non-flipping mirror !-->
         </p>
         <hr />
         <div class="row">
@@ -14,7 +15,7 @@
                     <select class="form-select" v-model="dupType">
                         <option value="0">Offset</option>
                         <option value="1">Mirror</option>
-                        <option value="2">Mirror (no-flip)</option>
+                        <!--<option value="2">Mirror (no-flip)</option> !-->
                     </select>
                 </div>
 

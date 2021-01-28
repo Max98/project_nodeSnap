@@ -529,7 +529,7 @@ export default class TruckEditor {
         times: number
     ) {
         //for some reasons ... and object.assign did not work here
-        let nodesArray: EditorNode[] = JSON.parse(
+        const nodesArray: EditorNode[] = JSON.parse(
             JSON.stringify(this.truckData.nodes.filter(el => el.grp_id == id))
         );
 
@@ -539,7 +539,7 @@ export default class TruckEditor {
             return;
         }
 
-        let beamsArray: EditorBeam[] = [];
+        const beamsArray: EditorBeam[] = [];
 
         /**
          * TODO: i'm pretty sure there is an easier and faster way for this
@@ -567,13 +567,19 @@ export default class TruckEditor {
                 }
             });
 
-            if (node1 != -1 && node2 != -1)
+            if (node1 != -1 && node2 != -1) {
                 beamsArray.push(JSON.parse(JSON.stringify(currBeam)));
+            }
         });
 
         let nodeIndex = this.getLastNodeId() + 1;
-        const beamIndex = this.getLastBeamId() + 1;
+        let beamIndex = this.getLastBeamId() + 1;
 
+        /**
+         * Type 0 => offset
+         * Type 1 => Mirror
+         * Type 2 => Non flipping mirror (Removed 28-01-2020)
+         */
         if (type == 0) {
             if (times <= 0) {
                 useToast().error(
@@ -589,187 +595,237 @@ export default class TruckEditor {
                 return;
             }
 
+            const dupNodesArray = [...nodesArray];
+
+            /**
+             * The way it works here:
+             * 1/Make a copy of the n/b
+             * 2/move it with the offset
+             * 3/const c has new nodes id => assign to copied beams using the current node id (which is the old id)
+             * 4/assign new nodes id to nodes
+             * 5/paste
+             */
+
             for (let n = 0; n < times; n++) {
+                const nodesBeamsChangeEx: { old: number; new: number }[] = [];
+                const nodesArray2: EditorNode[] = [];
+
+                const beamsArray2: EditorBeam[] = JSON.parse(
+                    JSON.stringify(beamsArray)
+                );
+
                 nodeIndex = this.getLastNodeId() + 1;
-                for (let i = 0; i < nodesArray.length; i++) {
-                    const el = nodesArray[i];
+                beamIndex = this.getLastBeamId() + 1;
 
-                    el.id = i + nodeIndex;
-                    el.name = el.id.toString();
-                    el.grp_id = this.getLastGroupId("node");
-
-                    console.log(typeof offset);
+                for (let i = 0; i < dupNodesArray.length; i++) {
+                    const currNode = { ...dupNodesArray[i] };
 
                     switch (axis) {
                         case "x":
-                            el.x = el.x + offset;
+                            currNode.x = currNode.x + offset * (n + 1);
                             break;
                         case "y":
-                            el.y = el.y + offset;
+                            currNode.y = currNode.y + offset * (n + 1);
                             break;
                         case "z":
-                            el.z = el.z + offset;
+                            currNode.z = currNode.z + offset * (n + 1);
                             break;
 
                         default:
                             break;
                     }
 
-                    this.truckData.nodes.push(el);
-                    this.renderInstance.getSceneController().addNodeToScene(el);
-                }
-                nodesArray = JSON.parse(JSON.stringify(nodesArray));
+                    const toDelete = this.truckData.nodes.filter(
+                        el =>
+                            el.x == currNode.x &&
+                            el.y == currNode.y &&
+                            el.z == currNode.z
+                    );
 
-                if (beamIndex != 0) {
-                    for (let i = 0; i < beamsArray.length; i++) {
-                        const el = beamsArray[i];
-                        el.node1 = el.node1 + nodesArray.length;
-                        el.node2 = el.node2 + nodesArray.length;
-                        el.id = i + beamIndex;
-                        el.grp_id = this.getLastGroupId("beam");
-
-                        this.truckData.beams.push(el);
-                        this.renderInstance
-                            .getSceneController()
-                            .addBeamToScene(el.node1, el.node2);
+                    if (toDelete.length != 0) {
+                        nodesBeamsChangeEx.push({
+                            old: currNode.id,
+                            new: toDelete[0].id
+                        });
+                    } else {
+                        nodesArray2.push({ ...currNode });
                     }
-                    this.renderInstance.getSceneController().buildBeamLines();
-                    beamsArray = JSON.parse(JSON.stringify(beamsArray));
+                }
+
+                for (let i = 0; i < nodesArray2.length; i++) {
+                    const currNode = nodesArray2[i];
+
+                    const newNodeId = i + nodeIndex;
+                    console.log(currNode.id + " => " + newNodeId);
+
+                    beamsArray2.forEach(currBeam => {
+                        if (currBeam.node1 == currNode.id) {
+                            currBeam.node1 = newNodeId;
+                        }
+                    });
+
+                    beamsArray2.forEach(currBeam => {
+                        if (currBeam.node2 == currNode.id) {
+                            currBeam.node2 = newNodeId;
+                        }
+                    });
+
+                    currNode.id = newNodeId;
+
+                    currNode.name = currNode.id.toString();
+                    currNode.grp_id = this.getLastGroupId("node");
+
+                    this.truckData.nodes.push(currNode);
+                    this.renderInstance
+                        .getSceneController()
+                        .addNodeToScene(currNode);
+                }
+
+                for (let i = 0; i < nodesBeamsChangeEx.length; i++) {
+                    const nodesData = nodesBeamsChangeEx[i];
+
+                    beamsArray2.forEach(currBeam => {
+                        /**
+                         * Find the beam
+                         */
+                        if (currBeam.node1 == nodesData.old) {
+                            currBeam.node1 = nodesData.new;
+                        } else if (currBeam.node2 == nodesData.old) {
+                            currBeam.node2 = nodesData.new;
+                        }
+                    });
+                }
+
+                for (let i = 0; i < beamsArray2.length; i++) {
+                    const currBeam = beamsArray2[i];
+
+                    currBeam.id = i + beamIndex;
+                    currBeam.grp_id = this.getLastGroupId("beam");
+
+                    this.truckData.beams.push(currBeam);
+                    this.renderInstance
+                        .getSceneController()
+                        .addBeamToScene(currBeam.node1, currBeam.node2);
                 }
             }
         } else if (type == 1) {
             this.addGrp(-1, newGrpTitle, "node");
-            for (let i = 0; i < nodesArray.length; i++) {
-                const el = nodesArray[i];
+            this.addGrp(-1, newGrpTitle, "beam");
 
-                const newNodeId = i + nodeIndex;
+            const dupNodesArray = [...nodesArray];
+            const nodesBeamsChangeEx: { old: number; new: number }[] = [];
+            const nodesArray2: EditorNode[] = [];
 
-                let beam = beamsArray.filter(
-                    currBeam => currBeam.node1 == el.id
-                );
-                if (beam.length != 0) {
-                    console.log("found");
-                    beam.forEach(b => {
-                        b.node1 = newNodeId;
-                    });
-                }
-                beam = [];
-
-                beam = beamsArray.filter(currBeam => currBeam.node2 == el.id);
-                if (beam.length != 0) {
-                    beam.forEach(b => {
-                        b.node2 = newNodeId;
-                    });
-                }
-                beam = [];
-
-                el.id = newNodeId;
-                el.name = el.id.toString();
-                el.grp_id = this.getLastGroupId("node");
+            for (let i = 0; i < dupNodesArray.length; i++) {
+                const currNode = { ...dupNodesArray[i] };
 
                 switch (axis) {
                     case "x":
-                        el.y = -el.y;
+                        currNode.y = -currNode.y;
                         break;
 
                     case "y":
-                        el.x = -el.x;
+                        currNode.x = -currNode.x;
                         break;
 
                     case "z":
-                        el.z = -el.z;
+                        currNode.z = -currNode.z;
                         break;
 
                     default:
                         break;
                 }
 
-                this.truckData.nodes.push(el);
-                this.renderInstance.getSceneController().addNodeToScene(el);
-            }
-        } else if (type == 2) {
-            this.addGrp(-1, newGrpTitle, "node");
-            const geometry = new THREE.Geometry();
-            nodesArray.forEach(el => {
-                geometry.vertices.push(new Vector3(el.x, el.y, el.z));
-            });
+                const toDelete = this.truckData.nodes.filter(
+                    el =>
+                        el.x == currNode.x &&
+                        el.y == currNode.y &&
+                        el.z == currNode.z
+                );
 
-            const mesh = new THREE.Mesh(geometry);
-            const center = new THREE.Vector3();
-            mesh.geometry.computeBoundingBox();
-            mesh.geometry.boundingBox!.getCenter(center);
-            mesh.geometry.center();
-            mesh.position.copy(center);
-
-            switch (axis) {
-                case "x":
-                    mesh.position.y = -mesh.position.y;
-                    break;
-
-                case "y":
-                    mesh.position.x = -mesh.position.x;
-                    break;
-
-                case "z":
-                    mesh.position.z = -mesh.position.z;
-                    break;
-
-                default:
-                    break;
-            }
-
-            mesh.updateMatrixWorld();
-
-            for (let i = 0; i < mesh.geometry.vertices.length; i++) {
-                const currVert = mesh.localToWorld(mesh.geometry.vertices[i]);
-                nodesArray[i].id = i + nodeIndex;
-
-                nodesArray[i].x = currVert.x;
-                nodesArray[i].y = currVert.y;
-                nodesArray[i].z = currVert.z;
-                nodesArray[i].grp_id = this.getLastGroupId("node");
-
-                if (
-                    this.truckData.nodes.filter(
-                        el =>
-                            el.x == currVert.x &&
-                            el.y == currVert.y &&
-                            el.z == currVert.z
-                    ).length != 0
-                ) {
-                    useToast().error("Overlap detected.");
-                    return;
+                if (toDelete.length != 0) {
+                    nodesBeamsChangeEx.push({
+                        old: currNode.id,
+                        new: toDelete[0].id
+                    });
+                } else {
+                    nodesArray2.push({ ...currNode });
                 }
+            }
 
-                this.truckData.nodes.push(nodesArray[i]);
+            for (let i = 0; i < nodesArray2.length; i++) {
+                const currNode = nodesArray2[i];
+
+                const newNodeId = i + nodeIndex;
+
+                beamsArray.forEach(currBeam => {
+                    if (currBeam.node1 == currNode.id) {
+                        currBeam.node1 = newNodeId;
+                    }
+                });
+
+                beamsArray.forEach(currBeam => {
+                    if (currBeam.node2 == currNode.id) {
+                        currBeam.node2 = newNodeId;
+                    }
+                });
+
+                currNode.id = newNodeId;
+                currNode.name = currNode.id.toString();
+                currNode.grp_id = this.getLastGroupId("node");
+
+                this.truckData.nodes.push(currNode);
                 this.renderInstance
                     .getSceneController()
-                    .addNodeToScene(nodesArray[i]);
+                    .addNodeToScene(currNode);
+            }
+
+            for (let i = 0; i < nodesBeamsChangeEx.length; i++) {
+                const nodesData = nodesBeamsChangeEx[i];
+
+                beamsArray.forEach(currBeam => {
+                    /**
+                     * Find the beam
+                     */
+                    if (currBeam.node1 == nodesData.old) {
+                        currBeam.node1 = nodesData.new;
+                    } else if (currBeam.node2 == nodesData.old) {
+                        currBeam.node2 = nodesData.new;
+                    }
+                });
+            }
+
+            for (let i = 0; i < beamsArray.length; i++) {
+                const currBeam = beamsArray[i];
+
+                currBeam.id = i + beamIndex;
+                currBeam.grp_id = this.getLastGroupId("beam");
+
+                this.truckData.beams.push(currBeam);
+                this.renderInstance
+                    .getSceneController()
+                    .addBeamToScene(currBeam.node1, currBeam.node2);
             }
         }
 
-        if (type != 0) {
-            if (beamIndex != 0) {
-                this.addGrp(-1, newGrpTitle, "beam");
+        /*if (beamIndex != 0) {
+            this.addGrp(-1, newGrpTitle, "beam");
 
-                for (let i = 0; i < beamsArray.length; i++) {
-                    const el = beamsArray[i];
-                    /*el.node1 = el.node1 + nodeIndex - el.node1;
+            for (let i = 0; i < beamsArray.length; i++) {
+                const el = beamsArray[i];
 
-                    el.node2 = el.node2 + nodeIndex - el.node2;*/
+                el.id = i + beamIndex;
+                el.grp_id = this.getLastGroupId("beam");
 
-                    el.id = i + beamIndex;
-                    el.grp_id = this.getLastGroupId("beam");
-
-                    this.truckData.beams.push(el);
-                    this.renderInstance
-                        .getSceneController()
-                        .addBeamToScene(el.node1, el.node2);
-                }
-                this.renderInstance.getSceneController().buildBeamLines();
+                this.truckData.beams.push(el);
+                this.renderInstance
+                    .getSceneController()
+                    .addBeamToScene(el.node1, el.node2);
             }
-        }
+            this.renderInstance.getSceneController().buildBeamLines();
+        }*/
 
+        this.renderInstance.getSceneController().buildBeamLines();
         this.sendUpdate();
     }
 
