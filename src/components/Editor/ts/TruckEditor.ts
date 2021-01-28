@@ -31,7 +31,7 @@ export default class TruckEditor {
 
     private truckData: TruckFileInterface;
     private filePath = "";
-    private isSaved = false;
+    private isSaved = true;
 
     constructor() {
         this.Log = myLogger.default.scope("TruckEditor");

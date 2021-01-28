@@ -4,9 +4,18 @@
             <div class="col my-auto">
                 <div class="card mx-auto project-card">
                     <div class="card-header">
-                        <h3 class="card-title project-header-class">
-                            rorEditor Projects:
-                        </h3>
+                        <div class="row">
+                            <div class="col">
+                                <h3 class="card-title project-header-class">
+                                    Projects:
+                                </h3>
+                            </div>
+                            <div class="col">
+                                <small class="float-end"
+                                    >Version: {{ $snapVersion }}</small
+                                >
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -146,7 +155,11 @@ export default class Projects extends Vue {
     }
 
     checkBeforeOpen() {
-        if (this.currProject.title != "") {
+        if (
+            TruckEditorManager.getInstance()
+                .getEditorObj()
+                .getSaveState() == false
+        ) {
             const bl = dialog.showMessageBoxSync({
                 title: "Confirmation",
                 type: "warning",
@@ -212,8 +225,6 @@ export default class Projects extends Vue {
         if (this.checkBeforeOpen() == false) return;
 
         const data = TruckEditorManager.getInstance().loadFile(project.path);
-
-        this.$store.dispatch("setTruckFilePath", project.path);
 
         this.latestProjects.pushProject({
             title: data,

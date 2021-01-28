@@ -145,8 +145,12 @@ export default class Main extends Vue {
             }
         });
 
-        /*window.onbeforeunload = (e: Event) => {
-            if (!this.settings.isSaved) {
+        window.onbeforeunload = (e: Event) => {
+            if (
+                !TruckEditorManager.getInstance()
+                    .getEditorObj()
+                    .getSaveState()
+            ) {
                 const bl = dialog.showMessageBoxSync({
                     title: "Confirmation",
                     type: "warning",
@@ -161,7 +165,7 @@ export default class Main extends Vue {
                     e.returnValue = false;
                 }
             }
-        };*/
+        };
     }
 }
 </script>

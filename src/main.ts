@@ -37,7 +37,6 @@ const options: PluginOptions = {
  */
 
 ipcRenderer.on("setId", (e, arg) => {
-    console.log("setId");
     if (arg.id == "Main") {
         const app = createApp(MainApp);
         new TruckEditorManager();
@@ -47,8 +46,9 @@ ipcRenderer.on("setId", (e, arg) => {
         app.use(Toast, options);
         app.use(store);
         app.mount("#app");
+
+        app.config.globalProperties.$snapVersion = "0.1.0.0-RC1";
     } else if (arg.id == "Modal") {
-        console.log("Hai der");
         //Modals stuff
         const app = createApp(ModalApp);
         app.use(router);
