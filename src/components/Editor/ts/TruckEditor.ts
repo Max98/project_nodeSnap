@@ -8,14 +8,11 @@ import {
 import TruckEditorRenderer from "./TruckEditorRenderer";
 import TruckEditorManager from "./TruckEditorManagaer";
 
-import * as THREE from "three";
-
 /**
  * TODO: maybe a class for this?
  */
 import { useToast } from "vue-toastification";
 import { Vector3 } from "three";
-import { readonly } from "vue";
 
 interface HistorySystem {
     fn: string;
@@ -437,6 +434,31 @@ export default class TruckEditor {
     }
 
     /**
+     * Remove a specific group
+     * @param grpId
+     * @param destroy deletes everything inside the group
+     */
+    public removeGrp(grpId: number, destroy = false) {
+        this.truckData.groups = this.truckData.groups.filter(
+            currGrp => currGrp.grp_id != grpId
+        );
+
+        this.truckData.nodes
+            .filter(currNode => currNode.grp_id == grpId)
+            .forEach(currNode => {
+                currNode.grp_id = this.getLastGroupId("node");
+            });
+
+        this.truckData.beams
+            .filter(currBeam => currBeam.grp_id == grpId)
+            .forEach(currBeam => {
+                currBeam.grp_id = this.getLastGroupId("beam");
+            });
+
+        this.sendUpdate();
+    }
+
+    /**
      * Add a new group to either type ("node" or "beam")
      * @param id item id (-1 to just create a new group)
      * @param title group title
@@ -808,23 +830,6 @@ export default class TruckEditor {
             }
         }
 
-        /*if (beamIndex != 0) {
-            this.addGrp(-1, newGrpTitle, "beam");
-
-            for (let i = 0; i < beamsArray.length; i++) {
-                const el = beamsArray[i];
-
-                el.id = i + beamIndex;
-                el.grp_id = this.getLastGroupId("beam");
-
-                this.truckData.beams.push(el);
-                this.renderInstance
-                    .getSceneController()
-                    .addBeamToScene(el.node1, el.node2);
-            }
-            this.renderInstance.getSceneController().buildBeamLines();
-        }*/
-
         this.renderInstance.getSceneController().buildBeamLines();
         this.sendUpdate();
     }
@@ -843,6 +848,90 @@ export default class TruckEditor {
             .forEach(el => {
                 el.isVisible = state;
             });
+    }
+
+    /**
+     * Scale the whole n/b
+     * @param factor
+     */
+    public scaleAll(factor: number) {
+        if (factor == 0) {
+            useToast().warning("Scaling factor cannot be equal to 0.");
+            return;
+        }
+
+        this.truckData.nodes.forEach(currNode => {
+            currNode.x *= factor;
+            currNode.y *= factor;
+            currNode.z *= factor;
+        });
+
+        this.renderInstance.getSceneController().reset();
+        this.loadTruckData();
+        this.sendUpdate();
+    }
+
+    /**
+     * Move the whole n/b
+     * @param offset
+     */
+    public translateAll(offset: { x: number; y: number; z: number }) {
+        this.truckData.nodes.forEach(currNode => {
+            currNode.x += offset.x;
+            currNode.y += offset.y;
+            currNode.z += offset.z;
+        });
+
+        this.renderInstance.getSceneController().reset();
+        this.loadTruckData();
+        this.sendUpdate();
+    }
+
+    /**
+     * Rotate the whole n/b
+     * @param rot in degree
+     * @param axis axis
+     */
+    public rotateAll(rot: number, axis: string) {
+        const rotRad = (rot * Math.PI) / 180;
+
+        const vectorArray: Vector3[] = [];
+
+        this.truckData.nodes.forEach(currNode => {
+            vectorArray.push(new Vector3(currNode.x, currNode.y, currNode.z));
+        });
+
+        let axisVec: Vector3;
+
+        switch (axis) {
+            case "x":
+                axisVec = new Vector3(1, 0, 0);
+                break;
+
+            case "y":
+                axisVec = new Vector3(0, 1, 0);
+                break;
+
+            case "z":
+                axisVec = new Vector3(0, 0, 1);
+                break;
+
+            default:
+                break;
+        }
+
+        let i = 0;
+        vectorArray.forEach(vec => {
+            vec.applyAxisAngle(axisVec, rotRad);
+            this.truckData.nodes[i].x = vec.x;
+            this.truckData.nodes[i].y = vec.y;
+            this.truckData.nodes[i].z = vec.z;
+            i++;
+        });
+
+        this.renderInstance.getSceneController().reset();
+        this.loadTruckData();
+        this.sendUpdate();
     }
 
     /**

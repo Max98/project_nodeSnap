@@ -349,6 +349,16 @@ export default class EditorNodesTab extends Vue {
                     }
                 })
             );
+            menu.append(
+                new MenuItem({
+                    label: "Delete",
+                    click: () => {
+                        TruckEditorManager.getInstance()
+                            .getEditorObj()
+                            .removeGrp(data.grpId);
+                    }
+                })
+            );
             menu.append(new MenuItem({ type: "separator" }));
             menu.append(
                 new MenuItem({

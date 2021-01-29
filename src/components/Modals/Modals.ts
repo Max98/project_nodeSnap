@@ -45,6 +45,29 @@ export default class ModalsManager {
             width: 600,
             height: 300
         });
+
+        this.createModal(
+            "transformRotation",
+            "/#/Modals/Transformation/Rotation",
+            {
+                width: 600,
+                height: 250
+            }
+        );
+
+        this.createModal(
+            "transformTranslation",
+            "/#/Modals/Transformation/Translation",
+            {
+                width: 600,
+                height: 380
+            }
+        );
+
+        this.createModal("transformScale", "/#/Modals/Transformation/Scale", {
+            width: 600,
+            height: 250
+        });
     }
 
     public dispose() {

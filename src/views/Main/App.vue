@@ -78,7 +78,7 @@ export default class Main extends Vue {
                     tM.getRendererObj()
                         .getSceneController()
                         .getBlueprintSystem()
-                        .load(arg.data.filePath, arg.data.opacity);
+                        .load(arg.data.filePath, parseFloat(arg.data.opacity));
                     break;
 
                 case "remove":
@@ -100,7 +100,7 @@ export default class Main extends Vue {
                     tM.getRendererObj()
                         .getSceneController()
                         .getBlueprintSystem()
-                        .setOpacity(arg.data.opacity);
+                        .setOpacity(parseFloat(arg.data.opacity));
                     break;
 
                 default:
@@ -116,7 +116,7 @@ export default class Main extends Vue {
                     tM.getRendererObj()
                         .getSceneController()
                         .getBluemodelSystem()
-                        .load(arg.data.filePath, arg.data.opacity);
+                        .load(arg.data.filePath, parseFloat(arg.data.opacity));
                     break;
 
                 case "remove":
@@ -137,7 +137,7 @@ export default class Main extends Vue {
                     tM.getRendererObj()
                         .getSceneController()
                         .getBluemodelSystem()
-                        .setOpacity(arg.data.opacity);
+                        .setOpacity(parseFloat(arg.data.opacity));
                     break;
 
                 default:
@@ -145,7 +145,35 @@ export default class Main extends Vue {
             }
         });
 
-        window.onbeforeunload = (e: Event) => {
+        ipcRenderer.on("transform", (event, arg) => {
+            const tM: TruckEditorManager = TruckEditorManager.getInstance();
+
+            switch (arg.func) {
+                case "rotation":
+                    tM.getEditorObj().rotateAll(
+                        parseFloat(arg.data.angle),
+                        arg.data.axis
+                    );
+                    break;
+
+                case "scale":
+                    tM.getEditorObj().scaleAll(parseFloat(arg.data.factor));
+                    break;
+
+                case "translation":
+                    tM.getEditorObj().translateAll({
+                        x: parseFloat(arg.data.x),
+                        y: parseFloat(arg.data.y),
+                        z: parseFloat(arg.data.z)
+                    });
+                    break;
+
+                default:
+                    break;
+            }
+        });
+
+        /* window.onbeforeunload = (e: Event) => {
             if (
                 !TruckEditorManager.getInstance()
                     .getEditorObj()
@@ -165,7 +193,7 @@ export default class Main extends Vue {
                     e.returnValue = false;
                 }
             }
-        };
+        };*/
     }
 }
 </script>

@@ -9,6 +9,9 @@ import RenameGrp from "../views/Modals/Groups/RenameGrp.vue";
 import AddGrp from "../views/Modals/Groups/AddGrp.vue";
 import DuplicateGrp from "../views/Modals/Groups/DuplicateGrp.vue";
 import Blueprint from "../views/Modals/Blueprint.vue";
+import TransformRotation from "../views/Modals/Transformation/Rotation.vue";
+import TransformTranslation from "../views/Modals/Transformation/Translation.vue";
+import TransformScale from "../views/Modals/Transformation/Scale.vue";
 
 const routes: Array<RouteRecordRaw> = [
     /**
@@ -66,6 +69,21 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: "Blueprint",
                 component: Blueprint
+            },
+            /**
+             * Transformation
+             */
+            {
+                path: "Transformation/Rotation",
+                component: TransformRotation
+            },
+            {
+                path: "Transformation/Translation",
+                component: TransformTranslation
+            },
+            {
+                path: "Transformation/Scale",
+                component: TransformScale
             }
         ]
     }

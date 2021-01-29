@@ -226,12 +226,6 @@ export default class EditorBeamsTab extends Vue {
         return title;
     }
 
-    deleteBeam(currBeamId: number) {
-        TruckEditorManager.getInstance()
-            .getEditorObj()
-            .removeBeam(currBeamId);
-    }
-
     onBeamMouseDown(e: any /** MouseEvent */) {
         let data: any;
 
@@ -266,7 +260,9 @@ export default class EditorBeamsTab extends Vue {
                 new MenuItem({
                     label: "Delete beam",
                     click: () => {
-                        this.deleteBeam(data.beamId);
+                        TruckEditorManager.getInstance()
+                            .getEditorObj()
+                            .removeBeam(data.beamId);
                     }
                 })
             );
@@ -304,7 +300,9 @@ export default class EditorBeamsTab extends Vue {
                 new MenuItem({
                     label: "Delete group",
                     click: () => {
-                        console.log("delete group");
+                        TruckEditorManager.getInstance()
+                            .getEditorObj()
+                            .removeGrp(data.grpId);
                     }
                 })
             );

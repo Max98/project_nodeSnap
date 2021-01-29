@@ -144,3 +144,10 @@ ipcMain.on("blueprintEdit", (event, arg) => {
 ipcMain.on("modelEdit", (event, arg) => {
     win.webContents.send("modelEdit", arg);
 });
+
+/**
+ * Transformation
+ */
+ipcMain.on("transform", (event, arg) => {
+    win.webContents.send("transform", arg);
+});

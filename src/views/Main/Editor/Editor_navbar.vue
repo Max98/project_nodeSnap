@@ -1,9 +1,49 @@
 <template>
     <div class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
+        <div class="container-fluid" style="padding: 0;">
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"></li>
+                    <li class="nav-item">
+                        <div class="dropdown">
+                            <a
+                                class="nav-link dropdown-toggle"
+                                href="#"
+                                id="navbarDarkDropdownMenuLink"
+                                role="button"
+                                data-bs-toggle="dropdown"
+                            >
+                                Edit
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a
+                                        class="dropdown-item"
+                                        href="#"
+                                        @click.prevent="onScale()"
+                                        >Scale</a
+                                    >
+                                </li>
+                                <li>
+                                    <a
+                                        class="dropdown-item"
+                                        href="#"
+                                        @click.prevent="onMove()"
+                                        >Move</a
+                                    >
+                                </li>
+
+                                <li>
+                                    <a
+                                        class="dropdown-item"
+                                        href="#"
+                                        @click.prevent="onRotate()"
+                                    >
+                                        Rotate</a
+                                    >
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
                 </ul>
                 <div class="d-flex">
                     <div class="dropdown">
@@ -56,6 +96,7 @@ import { Watch } from "@/components/vue-decorator";
 
 import { ipcRenderer } from "electron";
 import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
+import { useToast } from "vue-toastification";
 
 const remote = require("electron").remote;
 const { dialog } = remote;
@@ -72,6 +113,17 @@ export default class EditorNavBar extends Vue {
     }
 
     onReload() {
+        if (
+            TruckEditorManager.getInstance()
+                .getEditorObj()
+                .getFilePath() == ""
+        ) {
+            useToast().warning(
+                "You need to save your project at least once before reloading!"
+            );
+            return;
+        }
+
         if (
             TruckEditorManager.getInstance()
                 .getEditorObj()
@@ -95,6 +147,27 @@ export default class EditorNavBar extends Vue {
 
             return true;
         }
+    }
+
+    onScale() {
+        ipcRenderer.send("setModalVisibility", {
+            name: "transformScale",
+            state: true
+        });
+    }
+
+    onMove() {
+        ipcRenderer.send("setModalVisibility", {
+            name: "transformTranslation",
+            state: true
+        });
+    }
+
+    onRotate() {
+        ipcRenderer.send("setModalVisibility", {
+            name: "transformRotation",
+            state: true
+        });
     }
 }
 </script>
