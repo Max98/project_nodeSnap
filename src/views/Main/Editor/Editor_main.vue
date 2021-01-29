@@ -29,7 +29,7 @@
                 >
                     <canvas id="myRender2" class="renderer"></canvas>
                     <canvas
-                        id="viewCube"
+                        id="viewCube2"
                         class="nav-cube"
                         style="top: 5px; right: 5px"
                     ></canvas>
@@ -47,7 +47,7 @@
                 >
                     <canvas id="myRender3" class="renderer"></canvas>
                     <canvas
-                        id="viewCube"
+                        id="viewCube3"
                         class="nav-cube"
                         style="top: 5px; right: 5px"
                     ></canvas>
@@ -59,7 +59,7 @@
                 >
                     <canvas id="myRender4" class="renderer"></canvas>
                     <canvas
-                        id="viewCube"
+                        id="viewCube4"
                         class="nav-cube"
                         style="top: 5px; right: 5px"
                     ></canvas>

@@ -23,27 +23,32 @@ export default class ModalsManager {
 
         this.createModal("Settings", "/#/Modals/Settings", {
             width: 600,
-            height: 300
+            height: 300,
+            title: "Settings"
         });
 
         this.createModal("renameGrp", "/#/Modals/Groups/Rename", {
             width: 600,
-            height: 180
+            height: 180,
+            title: "Rename group"
         });
 
         this.createModal("addGrp", "/#/Modals/Groups/Add", {
             width: 600,
-            height: 230
+            height: 230,
+            title: "Add group"
         });
 
         this.createModal("duplicateGrp", "/#/Modals/Groups/Duplicate", {
             width: 600,
-            height: 350
+            height: 350,
+            title: "Duplicate group"
         });
 
         this.createModal("Blueprint", "/#/Modals/Blueprint", {
             width: 600,
-            height: 300
+            height: 300,
+            title: "Blueprint"
         });
 
         this.createModal(
@@ -51,7 +56,8 @@ export default class ModalsManager {
             "/#/Modals/Transformation/Rotation",
             {
                 width: 600,
-                height: 250
+                height: 250,
+                title: "Rotation"
             }
         );
 
@@ -60,13 +66,21 @@ export default class ModalsManager {
             "/#/Modals/Transformation/Translation",
             {
                 width: 600,
-                height: 380
+                height: 380,
+                title: "Translation"
             }
         );
 
         this.createModal("transformScale", "/#/Modals/Transformation/Scale", {
             width: 600,
-            height: 250
+            height: 250,
+            title: "Scale"
+        });
+
+        this.createModal("about", "/#/Modals/About", {
+            width: 600,
+            height: 400,
+            title: "About"
         });
     }
 
@@ -98,11 +112,12 @@ export default class ModalsManager {
     private createModal(
         name: string,
         url: string,
-        param: { width: number; height: number }
+        param: { width: number; height: number; title: string }
     ) {
         this.winArray.push({
             name,
             win: new BrowserWindow({
+                title: param.title,
                 width: param.width,
                 height: param.height,
                 show: false,

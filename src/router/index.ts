@@ -12,6 +12,7 @@ import Blueprint from "../views/Modals/Blueprint.vue";
 import TransformRotation from "../views/Modals/Transformation/Rotation.vue";
 import TransformTranslation from "../views/Modals/Transformation/Translation.vue";
 import TransformScale from "../views/Modals/Transformation/Scale.vue";
+import About from "../views/Modals/About.vue";
 
 const routes: Array<RouteRecordRaw> = [
     /**
@@ -84,6 +85,13 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: "Transformation/Scale",
                 component: TransformScale
+            },
+            /**
+             * Help
+             */
+            {
+                path: "About",
+                component: About
             }
         ]
     }

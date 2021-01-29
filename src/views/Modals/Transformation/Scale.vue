@@ -9,7 +9,7 @@
             <label class="form-label">Factor</label>
             <input type="number" class="form-control" v-model="factor" />
             <div class="form-text">
-                A positive value means bigger, a negative values means smaller
+                Values > 1 makes it bigger and values &lt; 1 makes it smaller
             </div>
         </div>
 

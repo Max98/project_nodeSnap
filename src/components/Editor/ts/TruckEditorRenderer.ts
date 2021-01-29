@@ -179,7 +179,7 @@ class View {
         this.canvas.removeEventListener("keyup", e => this.onKeyUp(e));
     }
 
-    public render() {
+    public render(time: number) {
         if (this.canvasContext == null) return; //TODO: implement error here
 
         this.renderer.setSize(this.canvas.width, this.canvas.height);
@@ -188,7 +188,7 @@ class View {
 
         this.renderer.render(this.scene, this.camera);
 
-        if (this.viewCube != undefined) this.viewCube.render();
+        if (this.viewCube != undefined) this.viewCube.render(time);
 
         this.canvasContext.drawImage(this.renderer.domElement, 0, 0);
     }
@@ -376,7 +376,7 @@ export default class TruckEditorRenderer {
         }
 
         this.populateScene();
-        this.update();
+        this.update(0);
     }
 
     /**
@@ -490,16 +490,16 @@ export default class TruckEditorRenderer {
     /**
      * Main function
      */
-    private update() {
+    private update(time: number) {
         /*setTimeout(() => {
             requestAnimationFrame(() => this.update());
         }, 1000 / 60);
         */
 
-        requestAnimationFrame(() => this.update());
+        requestAnimationFrame(e => this.update(e));
 
         for (let i = 0; i < this.views.length; ++i) {
-            this.views[i].render();
+            this.views[i].render(time);
         }
     }
 }

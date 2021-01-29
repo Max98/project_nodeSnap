@@ -3,6 +3,8 @@ import { Vector2, Vector3, Euler } from "three";
 
 import { OrbitControls, MapControls } from "../../js/EditorOrbitCamera.js";
 
+import TWEEN, { VERSION } from "@tweenjs/tween.js";
+
 /**
  * Code from https://github.com/yoavmil/angular-threejs-starter/tree/nav-cube/src/app/nav-cube
  */
@@ -41,6 +43,8 @@ export default class NavCube {
 
     isOrtho = false;
 
+    canvasCtx: CanvasRenderingContext2D[] = [];
+
     constructor(params: {
         canvas: HTMLCanvasElement;
         camera: THREE.Camera;
@@ -53,10 +57,10 @@ export default class NavCube {
         this.params = {
             canvas: params.canvas,
             camera: params.camera,
-            champer: 0.15,
-            faceColor: 0xd6d7dc,
-            edgeColor: 0xb1c5d4,
-            vertexColor: 0x71879a
+            champer: 0.0,
+            faceColor: 0x282828,
+            edgeColor: 0x282828,
+            vertexColor: 0x282828
         };
 
         if (
@@ -67,7 +71,7 @@ export default class NavCube {
 
         this.renderer = new THREE.WebGLRenderer({
             canvas: this.params.canvas,
-            antialias: true,
+            //antialias: true,
             alpha: true
         });
 
@@ -85,8 +89,8 @@ export default class NavCube {
 
         this.cubeMesh = new THREE.Mesh();
         this.createMainFacets();
-        this.createEdgeFacets();
-        this.createCornerFacets();
+        //this.createEdgeFacets();
+        //this.createCornerFacets();
         this.createLabels();
 
         this.scene = new THREE.Scene();
@@ -94,8 +98,17 @@ export default class NavCube {
 
         const ratio =
             this.params.canvas.clientWidth / this.params.canvas.clientHeight;
-        this.localCamera = new THREE.PerspectiveCamera(45, ratio, 0.01, 500);
+        this.localCamera = new THREE.PerspectiveCamera(50, ratio, 0.01, 500);
         this.localCamera.up = this.params.camera.up.clone();
+
+        this.params.canvas.addEventListener("mouseenter", e => {
+            console.log("over");
+            this.onMouseEnter(e);
+        });
+
+        this.params.canvas.addEventListener("mouseout", e => {
+            this.onMouseLeave();
+        });
 
         this.params.canvas.onclick = (event: MouseEvent) => {
             this.onClick(event);
@@ -114,56 +127,128 @@ export default class NavCube {
             normal.applyAxisAngle(new Vector3(1, 0, 0).normalize(), 0);
         }
 
-        const newCamRot = new Euler().copy(this.params.camera.rotation);
-
         const lookAt = new Vector3().copy(this.control.target);
-
-        console.log(this.params.camera.rotation);
 
         let dist = this.control.target.distanceTo(this.params.camera.position);
 
+        const animTime = 500;
         switch (mesh.userData.sides) {
             case Sides.Bottom:
             case Sides.Top:
-                lookAt.z = 0;
-                if (this.params.camera.position.z < 0) {
-                    dist = -dist;
-                }
+                {
+                    if (this.params.camera.position.z < 0) {
+                        dist = -dist;
+                    }
+                    const anivVec2 = new Vector3(0, 0, 0).copy(lookAt);
+                    const tween2 = new TWEEN.Tween(anivVec2)
+                        .to(new Vector3(lookAt.x, lookAt.y, 0), animTime)
+                        .easing(TWEEN.Easing.Quadratic.Out)
+                        .onUpdate(() => {
+                            this.control.target = anivVec2;
+                        })
+                        .start();
 
-                this.params.camera.position.set(lookAt.x, lookAt.y, dist);
-                this.control.target = lookAt;
+                    const animVec = new Vector3(0, 0, 0).copy(
+                        this.params.camera.position
+                    );
+
+                    const tween = new TWEEN.Tween(animVec)
+                        .to(new Vector3(lookAt.x, lookAt.y, dist), animTime)
+                        .easing(TWEEN.Easing.Quadratic.Out)
+                        .onUpdate(() => {
+                            this.params.camera.position.set(
+                                animVec.x,
+                                animVec.y,
+                                animVec.z
+                            );
+                        })
+                        .onComplete(() => {
+                            this.control.enabled = true;
+                        })
+                        .start();
+                }
 
                 break;
 
             case Sides.Right:
             case Sides.Left:
-                lookAt.z = 0;
-                lookAt.x = 0;
-                if (this.params.camera.position.x < 0) {
-                    dist = -dist;
+                {
+                    if (this.params.camera.position.x < 0) {
+                        dist = -dist;
+                    }
+
+                    const anivVec2 = new Vector3(0, 0, 0).copy(lookAt);
+                    const tween2 = new TWEEN.Tween(anivVec2)
+                        .to(new Vector3(0, lookAt.y, 0), animTime)
+                        .easing(TWEEN.Easing.Quadratic.Out)
+                        .onUpdate(() => {
+                            this.control.target = anivVec2;
+                        })
+                        .start();
+
+                    const animVec = new Vector3(0, 0, 0).copy(
+                        this.params.camera.position
+                    );
+
+                    const tween = new TWEEN.Tween(animVec)
+                        .to(new Vector3(dist, lookAt.y, lookAt.z), animTime)
+                        .easing(TWEEN.Easing.Quadratic.Out)
+                        .onUpdate(() => {
+                            this.params.camera.position.set(
+                                animVec.x,
+                                animVec.y,
+                                animVec.z
+                            );
+                        })
+                        .onComplete(() => {
+                            this.control.enabled = true;
+                        })
+                        .start();
                 }
-                this.params.camera.position.set(dist, lookAt.y, lookAt.z);
-                this.control.target = lookAt;
+
                 break;
 
             case Sides.Back:
             case Sides.Front:
-                lookAt.z = 0;
-                lookAt.y = 0;
+                {
+                    if (this.params.camera.position.y < 0) {
+                        dist = -dist;
+                    }
 
-                if (this.params.camera.position.y < 0) {
-                    dist = -dist;
+                    const anivVec2 = new Vector3(0, 0, 0).copy(lookAt);
+                    const tween2 = new TWEEN.Tween(anivVec2)
+                        .to(new Vector3(lookAt.x, 0, 0), animTime)
+                        .easing(TWEEN.Easing.Quadratic.Out)
+                        .onUpdate(() => {
+                            this.control.target = anivVec2;
+                        })
+                        .start();
+
+                    const animVec = new Vector3(0, 0, 0).copy(
+                        this.params.camera.position
+                    );
+
+                    const tween = new TWEEN.Tween(animVec)
+                        .to(new Vector3(lookAt.x, dist, lookAt.z), animTime)
+                        .easing(TWEEN.Easing.Quadratic.Out)
+                        .onUpdate(() => {
+                            this.params.camera.position.set(
+                                animVec.x,
+                                animVec.y,
+                                animVec.z
+                            );
+                        })
+                        .onComplete(() => {
+                            this.control.enabled = true;
+                        })
+                        .start();
                 }
 
-                this.params.camera.position.set(lookAt.x, dist, lookAt.z);
-                this.control.target = lookAt;
                 break;
 
             default:
                 break;
         }
-        this.control.enabled = true;
-        //this.params.camera.position.set(300, 0, 300);
     }
 
     private onClick(event: MouseEvent) {
@@ -432,7 +517,7 @@ export default class NavCube {
             Sides.Top,
             Sides.Bottom
         ];
-        const canvasSize = 256; // textures need 2^N, N=7
+        const canvasSize = 1024; // textures need 2^N, N=7
         let fontSize = 72;
 
         {
@@ -445,7 +530,7 @@ export default class NavCube {
             if (ctx == null) return;
 
             ctx.font = `bold ${fontSize}px Arial`;
-            const pixels = ctx.measureText(longestString);
+            const pixels = ctx.measureText(longestString.toUpperCase());
             const ratio = canvasSize / pixels.width;
             fontSize = Math.round(fontSize * ratio * 0.9); // 90% for padding
         }
@@ -461,14 +546,21 @@ export default class NavCube {
 
             if (ctx == null) return;
 
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
             ctx.fillStyle = `#${this.params.faceColor.toString(16)}`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.font = `bold ${fontSize}px Arial`;
+
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillStyle = "black";
-            ctx.fillText(str, canvas.width / 2, canvas.height / 2);
+            ctx.fillText(
+                str.toUpperCase(),
+                canvas.width / 2,
+                canvas.height / 2
+            );
 
             const mesh = this.getMeshOfSide(side);
             const mat = mesh.material as THREE.MeshBasicMaterial;
@@ -476,7 +568,17 @@ export default class NavCube {
         }
     }
 
-    render() {
+    private onMouseEnter(event: MouseEvent) {
+        this.params.faceColor = 0xbdbdc1;
+        this.createLabels();
+    }
+
+    private onMouseLeave() {
+        this.params.faceColor = 0x282828;
+        this.createLabels();
+    }
+
+    render(time: number) {
         const userQuat = this.params.camera.quaternion;
         const localQuat = this.localCamera.quaternion;
         const changed = !userQuat.equals(localQuat);
@@ -487,11 +589,9 @@ export default class NavCube {
             vec.applyQuaternion(userQuat);
             this.localCamera.position.copy(vec);
             this.localCamera.setRotationFromQuaternion(userQuat);
-            this.renderer.render(this.scene, this.localCamera);
         }
 
-        /*setTimeout(() => {
-            requestAnimationFrame(() => this.render());
-        }, 1000 / 60);*/
+        this.renderer.render(this.scene, this.localCamera);
+        TWEEN.update(time);
     }
 }

@@ -60,7 +60,7 @@
                             <li>
                                 <a
                                     class="dropdown-item"
-                                    @click.prevent="onSave"
+                                    @click.prevent="onSave()"
                                     href="#"
                                     >Save</a
                                 >
@@ -69,14 +69,23 @@
                                 <a
                                     class="dropdown-item"
                                     href="#"
-                                    @click.prevent="onReload"
+                                    @click.prevent="onReload()"
                                     >Reload file</a
                                 >
                             </li>
                             <li><hr class="dropdown-divider" /></li>
                             <li>
+                                <a
+                                    class="dropdown-item"
+                                    href="#"
+                                    @click.prevent="onAbout()"
+                                    >About</a
+                                >
+                            </li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
                                 <router-link
-                                    @click="onClose"
+                                    @click="onClose()"
                                     class="dropdown-item"
                                     to="/"
                                     >Close</router-link
@@ -166,6 +175,13 @@ export default class EditorNavBar extends Vue {
     onRotate() {
         ipcRenderer.send("setModalVisibility", {
             name: "transformRotation",
+            state: true
+        });
+    }
+
+    onAbout() {
+        ipcRenderer.send("setModalVisibility", {
+            name: "about",
             state: true
         });
     }

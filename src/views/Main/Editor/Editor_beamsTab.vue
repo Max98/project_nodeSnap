@@ -334,7 +334,7 @@ export default class EditorBeamsTab extends Vue {
         background-color: $darker;
     }
     .accordion-button:not(.collapsed) {
-        background-color: $info;
+        background-color: #7e543e;
         color: white;
     }
 }

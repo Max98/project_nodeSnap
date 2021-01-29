@@ -17,6 +17,7 @@ let win: BrowserWindow;
 async function createWindow() {
     // Create the browser window.
     win = new BrowserWindow({
+        title: "nodeSnap",
         width: 1280,
         height: 720,
         webPreferences: {
