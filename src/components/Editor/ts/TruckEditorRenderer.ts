@@ -96,7 +96,7 @@ class View {
             this.controls.enableRotate = false;
             this.camera.layers.enable(11);
         } else if (this.type == rendererViewType.VIEW_FRONT) {
-            this.camera.position.set(0, -1000, 0);
+            this.camera.position.set(0, -2000, 0);
             this.controls.enableRotate = false;
             this.camera.layers.enable(12);
         } else {
@@ -315,8 +315,8 @@ export default class TruckEditorRenderer {
     /**
      * Scene stuff
      */
-    private gridSize = 9600;
-    private gridDivisions = 160;
+    private gridSize = 9600 * 5;
+    private gridDivisions = 160 * 5;
     private gridTop?: THREE.GridHelper = undefined;
     private gridFront?: THREE.GridHelper = undefined;
     private gridSide?: THREE.GridHelper = undefined;
