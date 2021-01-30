@@ -82,6 +82,7 @@
                         type="file"
                         class="form-control"
                         id="inputGroupFile01"
+                        accept=".xml,.obj"
                         @change="loadModelFile($event)"
                     />
                 </div>
