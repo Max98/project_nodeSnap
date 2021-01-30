@@ -90,6 +90,8 @@ export default class OgreLoader {
             }
         }
 
+        if (geometry.vertices.length == 0) return;
+
         geometry.computeFaceNormals();
         geometry.computeVertexNormals();
 
