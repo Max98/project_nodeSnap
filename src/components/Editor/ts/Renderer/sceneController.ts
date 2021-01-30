@@ -154,6 +154,9 @@ export default class SceneController {
             obj.push(this.nodesSpriteArray[nodeData.id]);
         });
 
+        this.nodesSpriteArray[nodeData.id].visible = nodeData.isVisible;
+        if (!nodeData.isVisible) this.invisibleNodesArray.push(nodeData.id);
+
         /*       this.nodesDraggableSpriteArray.push(this.nodesSpriteArray[nodeData.id]);
         console.log(this.nodesDraggableSpriteArray);*/
         this.editorScene.add(this.nodesSpriteArray[nodeData.id]);

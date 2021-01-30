@@ -315,8 +315,10 @@ export default class TruckEditorRenderer {
     /**
      * Scene stuff
      */
-    private gridSize = 9600 * 5;
-    private gridDivisions = 160 * 5;
+    private s = 5;
+
+    private gridSize = 9600 * this.s;
+    private gridDivisions = 160 * this.s;
     private gridTop?: THREE.GridHelper = undefined;
     private gridFront?: THREE.GridHelper = undefined;
     private gridSide?: THREE.GridHelper = undefined;
@@ -422,8 +424,8 @@ export default class TruckEditorRenderer {
         this.scene.add(this.gridTop);
 
         const gridSpace = new THREE.GridHelper(
-            this.gridSize,
-            this.gridDivisions,
+            this.gridSize / this.s,
+            this.gridDivisions / this.s,
             0x4f4f4f,
             0x272727
         );
@@ -491,11 +493,6 @@ export default class TruckEditorRenderer {
      * Main function
      */
     private update(time: number) {
-        /*setTimeout(() => {
-            requestAnimationFrame(() => this.update());
-        }, 1000 / 60);
-        */
-
         requestAnimationFrame(e => this.update(e));
 
         for (let i = 0; i < this.views.length; ++i) {
