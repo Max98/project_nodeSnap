@@ -1,12 +1,11 @@
-import fs from "fs";
 import * as THREE from "three";
 import { rendererViewType } from "../../TruckEditorInterfaces";
 import TruckEditorManager from "../../TruckEditorManagaer";
-import mime from "mime-types";
 import { TransformControls } from "@/components/Editor/js/TransformControls";
 
 import OgreLoader from "@/components/Editor/ts/Renderer/Loaders/OgreLoader";
 import { useToast } from "vue-toastification";
+import OBJLoader from "../Loaders/OBJLoader";
 
 export default class BluemodelPlugin {
     private scene: THREE.Scene;
@@ -36,6 +35,9 @@ export default class BluemodelPlugin {
         //TODO: convert mesh files to mesh.xml using OgreConverter
         if (type == "xml") {
             const loader = new OgreLoader(filePath);
+            this.blueModel = loader.getMesh();
+        } else if (type == "obj") {
+            const loader = new OBJLoader(filePath);
             this.blueModel = loader.getMesh();
         } else {
             useToast().error("Unsupported file type: " + type);
