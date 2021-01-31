@@ -41,6 +41,16 @@
                                         Rotate</a
                                     >
                                 </li>
+
+                                <li>
+                                    <a
+                                        class="dropdown-item"
+                                        href="#"
+                                        @click.prevent="onDuplicateVisible()"
+                                    >
+                                        Duplicate visible</a
+                                    >
+                                </li>
                             </ul>
                         </div>
                     </li>
@@ -182,6 +192,13 @@ export default class EditorNavBar extends Vue {
     onAbout() {
         ipcRenderer.send("setModalVisibility", {
             name: "about",
+            state: true
+        });
+    }
+
+    onDuplicateVisible() {
+        ipcRenderer.send("setModalVisibility", {
+            name: "duplicateVisible",
             state: true
         });
     }

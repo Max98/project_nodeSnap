@@ -13,6 +13,7 @@ import TransformRotation from "../views/Modals/Transformation/Rotation.vue";
 import TransformTranslation from "../views/Modals/Transformation/Translation.vue";
 import TransformScale from "../views/Modals/Transformation/Scale.vue";
 import About from "../views/Modals/About.vue";
+import DuplicateVisible from "../views/Modals/DuplicateVisible.vue";
 
 const routes: Array<RouteRecordRaw> = [
     /**
@@ -85,6 +86,13 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: "Transformation/Scale",
                 component: TransformScale
+            },
+            /**
+             * Duplicate visible
+             */
+            {
+                path: "DuplicateVisible",
+                component: DuplicateVisible
             },
             /**
              * Help

@@ -82,6 +82,12 @@ export default class ModalsManager {
             height: 400,
             title: "About"
         });
+
+        this.createModal("duplicateVisible", "/#/Modals/DuplicateVisible", {
+            width: 600,
+            height: 350,
+            title: "Duplicate visible"
+        });
     }
 
     public dispose() {

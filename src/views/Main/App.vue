@@ -173,6 +173,18 @@ export default class Main extends Vue {
             }
         });
 
+        ipcRenderer.on("duplicateVisible", (event, arg) => {
+            const tM: TruckEditorManager = TruckEditorManager.getInstance();
+
+            tM.getEditorObj().duplicateVisible(
+                arg.data.type,
+                arg.data.axis,
+                arg.data.grpTitle,
+                parseInt(arg.data.offset),
+                parseInt(arg.data.times)
+            );
+        });
+
         /* window.onbeforeunload = (e: Event) => {
             if (
                 !TruckEditorManager.getInstance()

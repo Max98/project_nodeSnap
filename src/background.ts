@@ -156,3 +156,9 @@ ipcMain.on("modelEdit", (event, arg) => {
 ipcMain.on("transform", (event, arg) => {
     win.webContents.send("transform", arg);
 });
+/**
+ * Duplicate visible
+ */
+ipcMain.on("duplicateVisible", (event, arg) => {
+    win.webContents.send("duplicateVisible", arg);
+});

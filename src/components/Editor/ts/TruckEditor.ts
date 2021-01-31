@@ -834,6 +834,188 @@ export default class TruckEditor {
         this.sendUpdate();
     }
 
+    duplicateVisible(
+        type: number,
+        axis: string,
+        newGrpTitle: string,
+        offset: number,
+        times: number
+    ) {
+        //for some reasons ... and object.assign did not work here
+        const nodesArray: EditorNode[] = JSON.parse(
+            JSON.stringify(
+                this.truckData.nodes.filter(el => el.isVisible == true)
+            )
+        );
+
+        //nodes are mandatory, not the same for beams
+        if (nodesArray.length == 0) {
+            useToast().error("Failed to duplicate!");
+            return;
+        }
+
+        const beamsArray: EditorBeam[] = [];
+
+        /**
+         * TODO: i'm pretty sure there is an easier and faster way for this
+         */
+        this.truckData.beams.forEach(currBeam => {
+            let node1 = -1;
+            let node2 = -1;
+
+            nodesArray.forEach(currNode => {
+                if (
+                    currBeam.node1 == currNode.id ||
+                    currBeam.node2 == currNode.id
+                ) {
+                    node1 = currNode.id;
+                }
+            });
+
+            nodesArray.forEach(currNode => {
+                if (
+                    (currBeam.node1 == currNode.id ||
+                        currBeam.node2 == currNode.id) &&
+                    currNode.id != node1
+                ) {
+                    node2 = currNode.id;
+                }
+            });
+
+            if (node1 != -1 && node2 != -1) {
+                beamsArray.push(JSON.parse(JSON.stringify(currBeam)));
+            }
+        });
+
+        const nodeIndex = this.getLastNodeId() + 1;
+        const beamIndex = this.getLastBeamId() + 1;
+
+        /*this.addGrp(-1, newGrpTitle, "node");
+        this.addGrp(-1, newGrpTitle, "beam");*/
+
+        const dupNodesArray = [...nodesArray];
+        const nodesBeamsChangeEx: {
+            old: number;
+            new: number;
+        }[] = [];
+        const nodesArray2: EditorNode[] = [];
+
+        for (let i = 0; i < dupNodesArray.length; i++) {
+            const currNode = { ...dupNodesArray[i] };
+
+            switch (axis) {
+                case "x":
+                    currNode.y = -currNode.y;
+                    break;
+
+                case "y":
+                    currNode.x = -currNode.x;
+                    break;
+
+                case "z":
+                    currNode.z = -currNode.z;
+                    break;
+
+                default:
+                    break;
+            }
+
+            const toDelete = this.truckData.nodes.filter(
+                el =>
+                    el.x == currNode.x &&
+                    el.y == currNode.y &&
+                    el.z == currNode.z
+            );
+
+            if (toDelete.length != 0) {
+                nodesBeamsChangeEx.push({
+                    old: currNode.id,
+                    new: toDelete[0].id
+                });
+            } else {
+                nodesArray2.push({ ...currNode });
+            }
+        }
+
+        let lastGrpId = -1;
+
+        for (let i = 0; i < nodesArray2.length; i++) {
+            const currNode = nodesArray2[i];
+
+            const newNodeId = i + nodeIndex;
+
+            beamsArray.forEach(currBeam => {
+                if (currBeam.node1 == currNode.id) {
+                    currBeam.node1 = newNodeId;
+                }
+            });
+
+            beamsArray.forEach(currBeam => {
+                if (currBeam.node2 == currNode.id) {
+                    currBeam.node2 = newNodeId;
+                }
+            });
+
+            currNode.id = newNodeId;
+            currNode.name = currNode.id.toString();
+
+            if (currNode.grp_id != lastGrpId) {
+                this.addGrp(
+                    -1,
+                    this.truckData.groups.find(
+                        el => el.grp_id == currNode.grp_id
+                    )!.title + newGrpTitle,
+                    "node"
+                );
+                lastGrpId = currNode.grp_id;
+            }
+            currNode.grp_id = this.getLastGroupId("node");
+
+            this.truckData.nodes.push(currNode);
+            this.renderInstance.getSceneController().addNodeToScene(currNode);
+        }
+
+        for (let i = 0; i < nodesBeamsChangeEx.length; i++) {
+            const nodesData = nodesBeamsChangeEx[i];
+
+            beamsArray.forEach(currBeam => {
+                /**
+                 * Find the beam
+                 */
+                if (currBeam.node1 == nodesData.old) {
+                    currBeam.node1 = nodesData.new;
+                } else if (currBeam.node2 == nodesData.old) {
+                    currBeam.node2 = nodesData.new;
+                }
+            });
+        }
+
+        lastGrpId = -1;
+        for (let i = 0; i < beamsArray.length; i++) {
+            const currBeam = beamsArray[i];
+
+            currBeam.id = i + beamIndex;
+            if (currBeam.grp_id != lastGrpId) {
+                this.addGrp(
+                    -1,
+                    this.truckData.groups.find(
+                        el => el.grp_id == currBeam.grp_id
+                    )!.title + newGrpTitle,
+                    "beam"
+                );
+                lastGrpId = currBeam.grp_id;
+            }
+            currBeam.grp_id = this.getLastGroupId("beam");
+
+            this.truckData.beams.push(currBeam);
+            this.renderInstance
+                .getSceneController()
+                .addBeamToScene(currBeam.node1, currBeam.node2);
+        }
+        this.renderInstance.getSceneController().buildBeamLines();
+        this.sendUpdate();
+    }
+
     /**
      * change a group's visibility
      * @param id group id
