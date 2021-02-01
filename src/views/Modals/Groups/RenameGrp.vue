@@ -36,7 +36,6 @@ export default class RenameGrp extends Vue {
     mounted() {
         ipcRenderer.on("data", (event, arg) => {
             this.grpData = arg;
-            console.log(arg);
         });
     }
 

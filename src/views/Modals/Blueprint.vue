@@ -143,7 +143,6 @@ export default class Blueprint extends Vue {
      * Blueprint
      */
     loadBlueprintFile(e: any) {
-        console.log(e.target.files);
         this.blueprintFilePath = e.target.files[0].path;
     }
 
@@ -177,7 +176,6 @@ export default class Blueprint extends Vue {
      * Model
      */
     loadModelFile(e: any) {
-        console.log(e.target.files);
         this.modelFilePath = e.target.files[0].path;
     }
 

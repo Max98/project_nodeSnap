@@ -120,8 +120,6 @@ export default class TruckFileExporter {
                 const element = this.truckFile.unknown[lastUnkownIndex];
                 const afterKeyword: string = element.after_section;
 
-                console.log("lol: ", afterKeyword.substr(8));
-
                 if (afterKeyword.substr(8) == "TRUCK_NAME") {
                     fileStr += this.onSaveProcessComments(element);
                     fileStr += this.onSaveProcessSetBeamDefaults(element);

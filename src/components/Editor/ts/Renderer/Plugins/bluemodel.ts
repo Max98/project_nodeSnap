@@ -7,6 +7,8 @@ import OgreLoader from "@/components/Editor/ts/Renderer/Loaders/OgreLoader";
 import { useToast } from "vue-toastification";
 import OBJLoader from "../Loaders/OBJLoader";
 
+import * as Logger from "electron-log";
+
 export default class BluemodelPlugin {
     private scene: THREE.Scene;
     private defaultOpacity = 1;
@@ -15,7 +17,12 @@ export default class BluemodelPlugin {
     private blueModel: THREE.Mesh | undefined;
     private control: TransformControls | undefined;
 
+    private logger: Logger.LogFunctions;
+
     constructor(scene: THREE.Scene) {
+        this.logger = Logger.default.scope("bluemodelPlugin");
+        this.logger.log("init");
+
         this.scene = scene;
     }
 
@@ -41,10 +48,11 @@ export default class BluemodelPlugin {
             this.blueModel = loader.getMesh();
         } else {
             useToast().error("Unsupported file type: " + type);
+            this.logger.error("Unsupported file type: " + type);
         }
 
         if (this.blueModel == undefined) {
-            console.log("failed to load mesh");
+            this.logger.error("failed to load mesh");
             return;
         }
 

@@ -20,7 +20,7 @@ interface HistorySystem {
 }
 
 export default class TruckEditor {
-    private Log: myLogger.LogFunctions;
+    private logger: myLogger.LogFunctions;
 
     private renderInstance: TruckEditorRenderer;
 
@@ -31,8 +31,8 @@ export default class TruckEditor {
     private isSaved = true;
 
     constructor() {
-        this.Log = myLogger.default.scope("TruckEditor");
-        this.Log.info("init");
+        this.logger = myLogger.default.scope("TruckEditor");
+        this.logger.info("init");
 
         /**
          * Base structure
@@ -132,7 +132,7 @@ export default class TruckEditor {
         //Fetch the data again
         //this.truckData = store.getters.getTruckData;
 
-        console.log(this.truckData);
+        this.logger.log("loading data..");
 
         for (let i = 0, n = this.truckData.nodes.length; i < n; i++) {
             const currNode = this.truckData.nodes[i];
@@ -170,7 +170,7 @@ export default class TruckEditor {
 
         if (overlap) {
             useToast().error("Failed to add new node: overlap detected.");
-            this.Log.error("Failed to add new node: overlap detected.");
+            this.logger.error("Failed to add new node: overlap detected.");
             return;
         }
 
@@ -346,7 +346,7 @@ export default class TruckEditor {
             )
         ) {
             useToast().error("Failed to add new beam: overlap detected.");
-            this.Log.error("Failed to add new beam: overlap detected.");
+            this.logger.error("Failed to add new beam: overlap detected.");
             return;
         }
 
@@ -354,7 +354,7 @@ export default class TruckEditor {
             useToast().error(
                 "Failed to add new beam: zero-length beam detected."
             );
-            this.Log.error(
+            this.logger.error(
                 "Failed to add new beam: zero-length beam detected."
             );
             return;
@@ -692,7 +692,6 @@ export default class TruckEditor {
                     const currNode = nodesArray2[i];
 
                     const newNodeId = i + nodeIndex;
-                    console.log(currNode.id + " => " + newNodeId);
 
                     beamsArray2.forEach(currBeam => {
                         if (currBeam.node1 == currNode.id) {
@@ -1245,26 +1244,20 @@ export default class TruckEditor {
      * Only for nodes and beams
      */
     public requestUndo() {
-        console.log(this.HistorySystem);
-
         if (this.HistorySystem.length == 0) return;
 
         const data: HistorySystem = this.HistorySystem[0];
 
         switch (data.fn) {
             case "addNode":
-                console.log("removing node:" + data.data);
                 this.removeNode(parseInt(data.data.split(":")[1]));
                 this.HistorySystem.shift();
                 break;
             case "addBeam":
-                console.log("removing beam:" + data.data);
                 this.removeBeam(parseInt(data.data.split(":")[1]));
                 this.HistorySystem.shift();
                 break;
             case "moveNode":
-                console.log("restored node to pos");
-
                 this.moveNode(
                     parseInt(data.data.split("|")[0]),
                     {

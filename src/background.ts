@@ -1,6 +1,6 @@
 "use strict";
 
-import { Modal } from "bootstrap";
+import myLogger from "electron-log";
 import { app, protocol, BrowserWindow, ipcMain } from "electron";
 const path = require("path");
 const os = require("os");
@@ -45,10 +45,15 @@ async function createWindow() {
     }
 
     win.webContents.on("did-finish-load", () => {
+        myLogger.log("main window created!");
         win.webContents.send("setId", { id: "Main" });
     });
 
     win.on("close", () => {
+        myLogger.log("Quit requested");
+        if (win.webContents.isDevToolsOpened()) {
+            win.webContents.closeDevTools();
+        }
         ModalsManager.getInstance().dispose();
     });
 
@@ -90,6 +95,7 @@ app.on("ready", async () => {
       "C:/Users/Moncef/AppData/Local/BraveSoftware/Brave-Browser/User Data/Default/Extensions/ljjemllljcmogpfapbkkighbhhppjdbg/6.0.0.3_0"
     );*/
     }
+    //myLogger.log("creating main window...");
     createWindow();
 });
 
@@ -109,7 +115,7 @@ if (isDevelopment) {
 }
 
 process.on("uncaughtException", function(err) {
-    console.log(err);
+    myLogger.error(err);
 });
 
 /**

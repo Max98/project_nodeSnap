@@ -9,6 +9,7 @@ import BlueprintPlugin from "./Plugins/blueprint";
 import BluemodelPlugin from "./Plugins/bluemodel";
 import { useToast } from "vue-toastification";
 import Config from "./Plugins/config";
+import * as Logger from "electron-log";
 
 const remote = require("electron").remote;
 const { Menu, MenuItem, dialog } = remote;
@@ -71,7 +72,15 @@ export default class SceneController {
      */
     private projectConfig: Config;
 
+    /**
+     * logger
+     */
+    private logger: Logger.LogFunctions;
+
     constructor(scene: THREE.Scene) {
+        this.logger = Logger.default.scope("sceneController");
+        this.logger.log("init");
+
         this.scene = scene;
 
         this.editorScene = new THREE.Object3D();
@@ -84,7 +93,7 @@ export default class SceneController {
 
     public dispose() {
         this.reset();
-        console.log("Dispose");
+        this.logger.log("Dispose");
     }
 
     /** Main editor functions */
@@ -157,8 +166,6 @@ export default class SceneController {
         this.nodesSpriteArray[nodeData.id].visible = nodeData.isVisible;
         if (!nodeData.isVisible) this.invisibleNodesArray.push(nodeData.id);
 
-        /*       this.nodesDraggableSpriteArray.push(this.nodesSpriteArray[nodeData.id]);
-        console.log(this.nodesDraggableSpriteArray);*/
         this.editorScene.add(this.nodesSpriteArray[nodeData.id]);
     }
 
@@ -413,8 +420,6 @@ export default class SceneController {
      * @param state
      */
     public setGroupVisibility(id: number, state: boolean) {
-        console.log(id);
-
         const nodesArray = this.nodesSpriteArray.filter(
             el => el.userData.grp_id == id
         );

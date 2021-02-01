@@ -1,5 +1,5 @@
 import { dialog, BrowserWindow } from "electron";
-
+import * as Logger from "electron-log";
 /**
  * We register all modals here so they get inited
  * then we show them when we need them for better performance
@@ -14,11 +14,13 @@ export default class ModalsManager {
     private winArray: WinInfo[];
     private static instance: ModalsManager;
     private canDispose = false;
+    private logger: Logger.LogFunctions;
 
     constructor() {
         ModalsManager.instance = this;
+        this.logger = Logger.default.scope("ModalsManager");
+        this.logger.log("init");
 
-        console.log("Init modals manager");
         this.winArray = [];
 
         this.createModal("Settings", "/#/Modals/Settings", {
@@ -96,6 +98,8 @@ export default class ModalsManager {
         this.winArray.forEach(el => {
             el.win.close();
         });
+
+        this.winArray.length = 0;
     }
 
     /**

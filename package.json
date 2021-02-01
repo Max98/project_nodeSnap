@@ -1,6 +1,6 @@
 {
     "name": "nodesnap",
-    "version": "0.1.0.0-RC1",
+    "version": "0.1.0-beta",
     "private": true,
     "scripts": {
         "lint": "vue-cli-service lint",

@@ -2,10 +2,17 @@ import { useToast } from "vue-toastification";
 import TruckEditorManager from "../TruckEditorManagaer";
 import { FSWatcher } from "fs";
 import watch from "node-watch";
+import * as Logger from "electron-log";
 
 export default class ProjectWatcher {
     private watcher: FSWatcher | undefined;
     private currWatchingFile = "";
+    private logger: Logger.LogFunctions;
+
+    constructor() {
+        this.logger = Logger.default.scope("ProjectWatcher");
+        this.logger.info("init");
+    }
 
     public start(filePath: string) {
         if (filePath == "") return;
@@ -15,7 +22,7 @@ export default class ProjectWatcher {
         this.watcher = watch(this.currWatchingFile, { recursive: false });
 
         this.watcher.on("ready", () => {
-            console.log("Watching file... " + this.currWatchingFile);
+            this.logger.log("Watching file... " + this.currWatchingFile);
         });
 
         this.watcher.on("change", (evt, name) => {
@@ -28,11 +35,12 @@ export default class ProjectWatcher {
     public async dispose() {
         if (this.watcher) this.watcher.close();
 
-        console.log("Watcher dispose");
+        this.logger.log("Watcher dispose");
     }
 
     private onChange() {
         const tM = TruckEditorManager.getInstance();
+        this.logger.log("change detected");
 
         if (tM.getEditorObj().getSaveState() == true) {
             tM.loadFile(this.currWatchingFile);

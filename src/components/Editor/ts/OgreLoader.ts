@@ -2,12 +2,14 @@ import * as THREE from "three";
 import fs from "fs";
 import xml2js from "xml2js";
 import TruckEditor from "./TruckEditorRenderer";
+import * as Logger from "electron-log";
 
 export default class OgreLoader {
     private scene: THREE.Scene;
     private scale: number;
     private mesh!: THREE.LineSegments;
     private truckEditorInstance: TruckEditor;
+    private logger: Logger.LogFunctions;
 
     constructor(
         file: File,
@@ -15,6 +17,9 @@ export default class OgreLoader {
         scale: number,
         truckEditorInstance: TruckEditor
     ) {
+        this.logger = Logger.default.scope("OgreLoader");
+        this.logger.log("Loading file: " + file.path);
+
         this.scene = scene;
         this.scale = scale;
         this.truckEditorInstance = truckEditorInstance;
@@ -117,7 +122,7 @@ export default class OgreLoader {
         this.mesh.scale.set(this.scale, this.scale, this.scale);
         this.mesh.rotateY(-Math.PI * 0.5);
 
-        console.log("Done");
+        this.logger.log("Done");
 
         this.scene.add(this.mesh);
     }

@@ -105,8 +105,6 @@ export default class TruckFileImporter {
         }
 
         this.parserLog.info("File loading done");
-        console.log(this.truckFile);
-        console.log(this.sectionsKeywordOrder);
 
         store.dispatch("setParserSettings", {
             sectionsKeywordOrder: this.sectionsKeywordOrder
@@ -528,7 +526,7 @@ export default class TruckFileImporter {
                      */
 
                     this.currGroupId = -1;
-                    console.log("resseting groups index");
+                    this.parserLog.log("resseting groups index");
 
                     this.firstBeamLine = true;
                 }

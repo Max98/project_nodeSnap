@@ -3,6 +3,7 @@ import path from "path";
 import store from "@/store/index";
 import TruckEditorManager from "../../TruckEditorManagaer";
 import { useToast } from "vue-toastification";
+import * as Logger from "electron-log";
 
 interface ConfigData {
     name: string;
@@ -41,8 +42,10 @@ export default class Config {
     private projectConfig: ConfigData;
     private folderPath = "";
     private truckFileName = "";
+    private logger: Logger.LogFunctions;
 
     constructor() {
+        this.logger = Logger.default.scope("sceneConfig");
         /**
          * TODO: maybe store this in TruckEditor.ts instead of vuex?
          */
@@ -229,8 +232,6 @@ export default class Config {
         if (data == undefined) return;
         this.projectConfig = data;
 
-        console.log(this.projectConfig);
-
         /**
          * TODO: find a better way for this
          */
@@ -245,7 +246,7 @@ export default class Config {
         if (this.projectConfig.data.blueprint != undefined) {
             if (this.projectConfig.data.blueprint.filePath == "") return;
             if (!fs.existsSync(this.projectConfig.data.blueprint.filePath)) {
-                console.log("blueprint file not found!");
+                this.logger.error("blueprint file not found!");
                 return;
             }
 
@@ -319,7 +320,7 @@ export default class Config {
         if (this.projectConfig.data.bluemodel != undefined) {
             if (this.projectConfig.data.bluemodel.filePath == "") return;
             if (!fs.existsSync(this.projectConfig.data.bluemodel.filePath)) {
-                console.log("blueprint model file not found!");
+                this.logger.error("blueprint model file not found!");
                 return;
             }
 

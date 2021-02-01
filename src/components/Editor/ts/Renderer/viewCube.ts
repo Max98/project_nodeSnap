@@ -102,7 +102,6 @@ export default class NavCube {
         this.localCamera.up = this.params.camera.up.clone();
 
         this.params.canvas.addEventListener("mouseenter", e => {
-            console.log("over");
             this.onMouseEnter(e);
         });
 
