@@ -92,6 +92,7 @@ export default class TruckEditor {
      * Warning: deletes everything
      */
     public reset() {
+        this.filePath = "";
         this.truckData = {
             title: "",
             globals: {
@@ -253,15 +254,23 @@ export default class TruckEditor {
     }
 
     /**
-     * remove a specific node
-     * @param id nodeId
+     * remove a specific node without updating all the nodes after it
+     * @param id
      */
-    public removeNode(id: number) {
+    private removeNodeLoop(id: number) {
         this.truckData.nodes = this.truckData.nodes.filter(el => el.id != id);
 
         this.truckData.beams = this.truckData.beams.filter(
             el => el.node1 != id && el.node2 != id //thanks only_a_ptr ;)
         );
+    }
+
+    /**
+     * remove a specific node and update everything after it
+     * @param id nodeId
+     */
+    public removeNode(id: number) {
+        this.removeNodeLoop(id);
 
         for (let i = 0, n = this.truckData.nodes.length; i < n; i++) {
             const currNode = this.truckData.nodes[i];
@@ -281,7 +290,6 @@ export default class TruckEditor {
                 currBeam.node2 -= 1;
             }
         }
-
         this.sendUpdate();
         this.loadTruckData();
     }
@@ -597,6 +605,9 @@ export default class TruckEditor {
         let nodeIndex = this.getLastNodeId() + 1;
         let beamIndex = this.getLastBeamId() + 1;
 
+        //for ctrl+z
+        const addedNodesIndex: number[] = [];
+
         /**
          * Type 0 => offset
          * Type 1 => Mirror
@@ -629,7 +640,10 @@ export default class TruckEditor {
              */
 
             for (let n = 0; n < times; n++) {
-                const nodesBeamsChangeEx: { old: number; new: number }[] = [];
+                const nodesBeamsChangeEx: {
+                    old: number;
+                    new: number;
+                }[] = [];
                 const nodesArray2: EditorNode[] = [];
 
                 const beamsArray2: EditorBeam[] = JSON.parse(
@@ -698,6 +712,7 @@ export default class TruckEditor {
                     currNode.grp_id = this.getLastGroupId("node");
 
                     this.truckData.nodes.push(currNode);
+                    addedNodesIndex.push(currNode.id);
                     this.renderInstance
                         .getSceneController()
                         .addNodeToScene(currNode);
@@ -735,7 +750,10 @@ export default class TruckEditor {
             this.addGrp(-1, newGrpTitle, "beam");
 
             const dupNodesArray = [...nodesArray];
-            const nodesBeamsChangeEx: { old: number; new: number }[] = [];
+            const nodesBeamsChangeEx: {
+                old: number;
+                new: number;
+            }[] = [];
             const nodesArray2: EditorNode[] = [];
 
             for (let i = 0; i < dupNodesArray.length; i++) {
@@ -797,6 +815,7 @@ export default class TruckEditor {
                 currNode.grp_id = this.getLastGroupId("node");
 
                 this.truckData.nodes.push(currNode);
+                addedNodesIndex.push(currNode.id);
                 this.renderInstance
                     .getSceneController()
                     .addNodeToScene(currNode);
@@ -829,6 +848,18 @@ export default class TruckEditor {
                     .addBeamToScene(currBeam.node1, currBeam.node2);
             }
         }
+
+        let str = "";
+        addedNodesIndex.forEach(el => {
+            str += el.toString() + "|";
+        });
+
+        const historyData: HistorySystem = {
+            fn: "dupFunc",
+            data: str
+        };
+
+        this.HistorySystem.unshift(historyData);
 
         this.renderInstance.getSceneController().buildBeamLines();
         this.sendUpdate();
@@ -890,8 +921,8 @@ export default class TruckEditor {
         const nodeIndex = this.getLastNodeId() + 1;
         const beamIndex = this.getLastBeamId() + 1;
 
-        /*this.addGrp(-1, newGrpTitle, "node");
-        this.addGrp(-1, newGrpTitle, "beam");*/
+        //for ctrl+z
+        const addedNodesIndex: number[] = [];
 
         const dupNodesArray = [...nodesArray];
         const nodesBeamsChangeEx: {
@@ -972,6 +1003,7 @@ export default class TruckEditor {
             currNode.grp_id = this.getLastGroupId("node");
 
             this.truckData.nodes.push(currNode);
+            addedNodesIndex.push(currNode.id);
             this.renderInstance.getSceneController().addNodeToScene(currNode);
         }
 
@@ -1012,6 +1044,18 @@ export default class TruckEditor {
                 .getSceneController()
                 .addBeamToScene(currBeam.node1, currBeam.node2);
         }
+        let str = "";
+        addedNodesIndex.forEach(el => {
+            str += el.toString() + "|";
+        });
+
+        const historyData: HistorySystem = {
+            fn: "dupFunc",
+            data: str
+        };
+
+        this.HistorySystem.unshift(historyData);
+
         this.renderInstance.getSceneController().buildBeamLines();
         this.sendUpdate();
     }
@@ -1036,7 +1080,7 @@ export default class TruckEditor {
      * Scale the whole n/b
      * @param factor
      */
-    public scaleAll(factor: number) {
+    public scaleAll(factor: number, isHistory = false) {
         if (factor == 0) {
             useToast().warning("Scaling factor cannot be equal to 0.");
             return;
@@ -1048,6 +1092,15 @@ export default class TruckEditor {
             currNode.z *= factor;
         });
 
+        if (!isHistory) {
+            const historyData: HistorySystem = {
+                fn: "scale",
+                data: factor.toString()
+            };
+
+            this.HistorySystem.unshift(historyData);
+        }
+
         this.renderInstance.getSceneController().reset();
         this.loadTruckData();
         this.sendUpdate();
@@ -1057,12 +1110,29 @@ export default class TruckEditor {
      * Move the whole n/b
      * @param offset
      */
-    public translateAll(offset: { x: number; y: number; z: number }) {
+    public translateAll(
+        offset: { x: number; y: number; z: number },
+        isHistory = false
+    ) {
         this.truckData.nodes.forEach(currNode => {
             currNode.x += offset.x;
             currNode.y += offset.y;
             currNode.z += offset.z;
         });
+
+        if (!isHistory) {
+            const historyData: HistorySystem = {
+                fn: "translate",
+                data:
+                    offset.x.toString() +
+                    "|" +
+                    offset.y.toString() +
+                    "|" +
+                    offset.z.toString()
+            };
+
+            this.HistorySystem.unshift(historyData);
+        }
 
         this.renderInstance.getSceneController().reset();
         this.loadTruckData();
@@ -1074,7 +1144,7 @@ export default class TruckEditor {
      * @param rot in degree
      * @param axis axis
      */
-    public rotateAll(rot: number, axis: string) {
+    public rotateAll(rot: number, axis: string, isHistory = false) {
         const rotRad = (rot * Math.PI) / 180;
 
         const vectorArray: Vector3[] = [];
@@ -1110,6 +1180,15 @@ export default class TruckEditor {
             this.truckData.nodes[i].z = vec.z;
             i++;
         });
+
+        if (!isHistory) {
+            const historyData: HistorySystem = {
+                fn: "rotate",
+                data: rot.toString() + "|" + axis
+            };
+
+            this.HistorySystem.unshift(historyData);
+        }
 
         this.renderInstance.getSceneController().reset();
         this.loadTruckData();
@@ -1164,13 +1243,6 @@ export default class TruckEditor {
     /**
      * Undo/Redo
      * Only for nodes and beams
-     *
-     * addNode
-     * removeNode
-     * moveNode
-     *
-     * addBeam
-     * removeBeam
      */
     public requestUndo() {
         console.log(this.HistorySystem);
@@ -1203,6 +1275,38 @@ export default class TruckEditor {
                     true
                 );
 
+                this.HistorySystem.shift();
+                break;
+            case "dupFunc":
+                data.data.split("|").forEach(currNodeId => {
+                    if (currNodeId == "") return;
+                    this.removeNodeLoop(parseInt(currNodeId));
+                });
+                this.HistorySystem.shift();
+                this.sendUpdate();
+                this.loadTruckData();
+                break;
+            case "scale":
+                this.scaleAll(1 / parseFloat(data.data), true);
+                this.HistorySystem.shift();
+                break;
+            case "translate":
+                this.translateAll(
+                    {
+                        x: -parseFloat(data.data.split("|")[0]),
+                        y: -parseFloat(data.data.split("|")[1]),
+                        z: -parseFloat(data.data.split("|")[2])
+                    },
+                    true
+                );
+                this.HistorySystem.shift();
+                break;
+            case "rotate":
+                this.rotateAll(
+                    -parseFloat(data.data.split("|")[0]),
+                    data.data.split("|")[1],
+                    true
+                );
                 this.HistorySystem.shift();
                 break;
         }

@@ -20,10 +20,12 @@ async function createWindow() {
         title: "nodeSnap",
         width: 1280,
         height: 720,
+        autoHideMenuBar: true,
         webPreferences: {
             webSecurity: true,
             allowRunningInsecureContent: true,
             enableRemoteModule: true,
+
             // Use pluginOptions.nodeIntegration, leave this alone
             // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
             nodeIntegration: (process.env

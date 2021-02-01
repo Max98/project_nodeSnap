@@ -32,7 +32,10 @@
                                         >
                                     </small>
                                 </h3>
-                                <div class="projects-array-scroll">
+                                <div
+                                    class="projects-array-scroll"
+                                    style="max-height: 440px;"
+                                >
                                     <div
                                         class="list-group "
                                         v-for="(project,

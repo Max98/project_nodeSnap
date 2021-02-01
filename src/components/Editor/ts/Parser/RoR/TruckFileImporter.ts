@@ -135,7 +135,7 @@ export default class TruckFileImporter {
      */
     private parseTruckFileRawLine() {
         this.currLine = this.currLine.trim();
-        if (this.currLine.length == 0) return;
+        //if (this.currLine.length == 0) return;
 
         this.parseTruckFileLine();
     }

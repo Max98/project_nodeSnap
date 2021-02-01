@@ -185,7 +185,7 @@ export default class Main extends Vue {
             );
         });
 
-        /* window.onbeforeunload = (e: Event) => {
+        window.onbeforeunload = (e: Event) => {
             if (
                 !TruckEditorManager.getInstance()
                     .getEditorObj()
@@ -205,7 +205,7 @@ export default class Main extends Vue {
                     e.returnValue = false;
                 }
             }
-        };*/
+        };
     }
 }
 </script>

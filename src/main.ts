@@ -17,6 +17,8 @@ import TruckEditorManager from "./components/Editor/ts/TruckEditorManagaer";
 import Toast, { PluginOptions, POSITION } from "vue-toastification";
 import "./sass/toast.scss";
 
+import { version } from "../package.json";
+
 const options: PluginOptions = {
     // You can set your default options here
     newestOnTop: true,
@@ -47,7 +49,7 @@ ipcRenderer.on("setId", (e, arg) => {
         app.use(store);
         app.mount("#app");
 
-        app.config.globalProperties.$snapVersion = "0.1.0.0-RC1";
+        app.config.globalProperties.$snapVersion = version;
     } else if (arg.id == "Modal") {
         //Modals stuff
         const app = createApp(ModalApp);

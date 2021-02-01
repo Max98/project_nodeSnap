@@ -17,10 +17,10 @@
             <input
                 type="range"
                 class="form-range"
-                min="0"
+                min="0.1"
                 v-model="nodeSize"
                 max="5"
-                step="0.5"
+                step="0.1"
             />
         </div>
         <div class="input-group mb-3">

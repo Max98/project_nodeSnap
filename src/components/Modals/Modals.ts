@@ -129,6 +129,7 @@ export default class ModalsManager {
                 show: false,
                 resizable: false,
                 maximizable: false,
+                autoHideMenuBar: true,
                 webPreferences: {
                     webSecurity: true,
                     allowRunningInsecureContent: true,

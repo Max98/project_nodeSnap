@@ -16,6 +16,9 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
+                                    <h6 class="dropdown-header">Transform</h6>
+                                </li>
+                                <li>
                                     <a
                                         class="dropdown-item"
                                         href="#"
@@ -41,7 +44,10 @@
                                         Rotate</a
                                     >
                                 </li>
-
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <h6 class="dropdown-header">Functions</h6>
+                                </li>
                                 <li>
                                     <a
                                         class="dropdown-item"

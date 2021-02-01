@@ -16,7 +16,8 @@
         "paths": {
             "@/*": ["src/*"]
         },
-        "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
+        "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
+        "resolveJsonModule": true
     },
     "include": [
         "src/**/*.ts",
@@ -24,7 +25,9 @@
         "src/**/*.vue",
         "tests/**/*.ts",
         "tests/**/*.tsx",
-        "src/vuex.d.ts."
-, "src/store/plugins/promiseAction.js", "src/components/Editor/ts/Worker/commit.js"    ],
+        "src/vuex.d.ts.",
+        "src/store/plugins/promiseAction.js",
+        "src/components/Editor/ts/Worker/commit.js"
+    ],
     "exclude": ["node_modules"]
 }
