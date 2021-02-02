@@ -78,9 +78,9 @@ export default class NavCube {
         this.renderer.setPixelRatio(window.devicePixelRatio);
 
         const canvasWidth =
-            this.params.canvas.clientWidth * window.devicePixelRatio;
+            this.params.canvas.clientWidth //* window.devicePixelRatio;
         const canvasHeight =
-            this.params.canvas.clientHeight * window.devicePixelRatio;
+            this.params.canvas.clientHeight //* window.devicePixelRatio;
 
         this.renderer.setSize(canvasWidth, canvasHeight);
         this.renderer.outputEncoding = THREE.sRGBEncoding;
@@ -545,7 +545,7 @@ export default class NavCube {
 
             if (ctx == null) return;
 
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            //ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
             ctx.fillStyle = `#${this.params.faceColor.toString(16)}`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);

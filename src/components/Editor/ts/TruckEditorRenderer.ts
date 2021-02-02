@@ -357,7 +357,7 @@ export default class TruckEditorRenderer {
      * @param last3D set last canvas to a prespective camera and all other to ortho
      */
     public createViews(canvasArray: RendererViewData[]) {
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        //this.renderer.setPixelRatio(window.devicePixelRatio);
 
         if (canvasArray.length == 0) {
             this.Log.error("No views found!");
