@@ -244,7 +244,7 @@ class View {
         this.canvas.width = this.canvas.clientWidth * window.devicePixelRatio;
         this.canvas.height = this.canvas.clientHeight * window.devicePixelRatio;
 
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        //this.renderer.setPixelRatio(window.devicePixelRatio);
     }
 
     private onMouseDown(event: MouseEvent, camera: THREE.Camera) {
