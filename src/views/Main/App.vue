@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
+import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
 import { Watch } from "@/components/vue-decorator";
 import { ipcRenderer } from "electron";
 
@@ -21,12 +21,14 @@ export default class Main extends Vue {
         const tM: TruckEditorManager = TruckEditorManager.getInstance();
         //nodes scale
         tM.getRendererObj()
-            .getSceneController()
+            .getSceneManager()
+            .getCurrSceneController()
             .scaleNodeSprites(this.settings.nodesSpriteScale);
 
         //nodes names
         tM.getRendererObj()
-            .getSceneController()
+            .getSceneManager()
+            .getCurrSceneController()
             .setNodesNameVisibility(this.settings.displayNodesName);
 
         //grid factor
@@ -76,21 +78,24 @@ export default class Main extends Vue {
             switch (arg.func) {
                 case "add":
                     tM.getRendererObj()
-                        .getSceneController()
+                        .getSceneManager()
+
                         .getBlueprintSystem()
                         .load(arg.data.filePath, parseFloat(arg.data.opacity));
                     break;
 
                 case "remove":
                     tM.getRendererObj()
-                        .getSceneController()
+                        .getSceneManager()
+
                         .getBlueprintSystem()
                         .remove();
                     break;
 
                 case "toggle":
                     tM.getRendererObj()
-                        .getSceneController()
+                        .getSceneManager()
+
                         .getBlueprintSystem()
                         .toggleVisibility();
 
@@ -98,7 +103,8 @@ export default class Main extends Vue {
 
                 case "set-opacity":
                     tM.getRendererObj()
-                        .getSceneController()
+                        .getSceneManager()
+
                         .getBlueprintSystem()
                         .setOpacity(parseFloat(arg.data.opacity));
                     break;
@@ -114,28 +120,30 @@ export default class Main extends Vue {
             switch (arg.func) {
                 case "add":
                     tM.getRendererObj()
-                        .getSceneController()
+                        .getSceneManager()
+
                         .getBluemodelSystem()
                         .load(arg.data.filePath, parseFloat(arg.data.opacity));
                     break;
 
                 case "remove":
                     tM.getRendererObj()
-                        .getSceneController()
+                        .getSceneManager()
                         .getBluemodelSystem()
                         .remove();
                     break;
 
                 case "toggle":
                     tM.getRendererObj()
-                        .getSceneController()
+                        .getSceneManager()
+
                         .getBluemodelSystem()
                         .toggleVisibility();
                     break;
 
                 case "set-opacity":
                     tM.getRendererObj()
-                        .getSceneController()
+                        .getSceneManager()
                         .getBluemodelSystem()
                         .setOpacity(parseFloat(arg.data.opacity));
                     break;

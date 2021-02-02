@@ -130,10 +130,10 @@ import { Watch, Prop } from "@/components/vue-decorator";
 import {
     EditorBeam,
     EditorGroup
-} from "@/components/Editor/ts/RoR/TruckFileInterfaces";
+} from "@/components/Editor/RoR/TruckFileInterfaces";
 
-import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
-import { TruckFileInterface } from "@/components/Editor/ts/RoR/TruckFileInterfaces";
+import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
+import { TruckFileInterface } from "@/components/Editor/RoR/TruckFileInterfaces";
 
 import { ipcRenderer } from "electron";
 const remote = require("electron").remote;

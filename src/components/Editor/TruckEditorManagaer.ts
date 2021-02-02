@@ -33,7 +33,7 @@ export default class TruckEditorManager {
 
         this.projectWatcher = new ProjectWatcher();
 
-        new JBeamImporter();
+        //new JBeamImporter();
     }
 
     /**
@@ -57,7 +57,7 @@ export default class TruckEditorManager {
      */
     public loadFile(path: string) {
         this.editorObj.reset();
-        this.editorRenderer.getSceneController().reset();
+        this.editorRenderer.getSceneManager().reset();
 
         this.editorObj.setFilePath(path);
         const truckData = new TruckFileImporter().loadFile(path);
@@ -76,7 +76,7 @@ export default class TruckEditorManager {
         new TruckFileExporter().saveFile(this.editorObj.getFilePath());
 
         this.getRendererObj()
-            .getSceneController()
+            .getSceneManager()
             .saveConfig(this.editorObj.getFilePath());
 
         this.projectWatcher.start(this.editorObj.getFilePath());
@@ -109,7 +109,7 @@ export default class TruckEditorManager {
     public onLoaded() {
         this.editorObj.loadTruckData();
         this.editorRenderer
-            .getSceneController()
+            .getSceneManager()
             .loadConfig(this.editorObj.getFilePath());
         this.projectWatcher.start(this.editorObj.getFilePath());
     }
@@ -119,7 +119,7 @@ export default class TruckEditorManager {
      */
     public onLeave() {
         this.editorRenderer
-            .getSceneController()
+            .getSceneManager()
             .saveConfig(this.editorObj.getFilePath());
         this.editorRenderer.dispose();
         this.projectWatcher.dispose();

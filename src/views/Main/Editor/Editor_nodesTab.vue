@@ -173,10 +173,10 @@ import {
     EditorNode,
     nodeType,
     EditorGroup
-} from "@/components/Editor/ts/RoR/TruckFileInterfaces";
+} from "@/components/Editor/RoR/TruckFileInterfaces";
 
-import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
-import { TruckFileInterface } from "@/components/Editor/ts/RoR/TruckFileInterfaces";
+import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
+import { TruckFileInterface } from "@/components/Editor/RoR/TruckFileInterfaces";
 
 import { ipcRenderer } from "electron";
 import { watch } from "fs";

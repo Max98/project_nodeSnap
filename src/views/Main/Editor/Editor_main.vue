@@ -73,12 +73,12 @@
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "@/components/vue-decorator";
 
-import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
+import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
 import {
     RendererViewData,
     rendererViewType,
     viewCameraType
-} from "@/components/Editor/ts/TruckEditorInterfaces";
+} from "@/components/Editor/TruckEditorInterfaces";
 
 @Options({
     components: {}

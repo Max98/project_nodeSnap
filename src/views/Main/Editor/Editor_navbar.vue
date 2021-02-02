@@ -120,7 +120,7 @@ import { Options, Vue } from "vue-class-component";
 import { Watch } from "@/components/vue-decorator";
 
 import { ipcRenderer } from "electron";
-import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
+import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
 import { useToast } from "vue-toastification";
 
 const remote = require("electron").remote;

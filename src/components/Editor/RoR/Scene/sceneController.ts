@@ -5,11 +5,11 @@ import { DragControls } from "../../../js/DragControls.js";
 import TruckEditorManager from "../../TruckEditorManagaer";
 import { rendererViewType } from "../../TruckEditorInterfaces";
 import { ConeBufferGeometry, Vector3 } from "three";
-import BlueprintPlugin from "../../Common/Plugins/blueprint";
-import BluemodelPlugin from "../../Common/Plugins/bluemodel";
+
 import { useToast } from "vue-toastification";
-import Config from "../../Common/Plugins/config";
+
 import * as Logger from "electron-log";
+import SceneController from "../../Common/SceneController";
 
 const remote = require("electron").remote;
 const { Menu, MenuItem, dialog } = remote;
@@ -27,9 +27,7 @@ enum ControlMode {
     BLUEPRINT
 }
 
-export default class SceneController {
-    private scene: THREE.Scene;
-
+export default class RoRSceneController extends SceneController {
     private nodesSpriteArray: THREE.Sprite[] = [];
     private displayNodesName = false;
     private nodesDragControl: DragControls[] = [];
@@ -64,13 +62,6 @@ export default class SceneController {
      * Editor mode
      */
     private controlMode: ControlMode = ControlMode.TRUCK;
-    private blueprintSystem: BlueprintPlugin;
-    private bluemodelSystem: BluemodelPlugin;
-
-    /**
-     * Config system
-     */
-    private projectConfig: Config;
 
     /**
      * logger
@@ -78,17 +69,12 @@ export default class SceneController {
     private logger: Logger.LogFunctions;
 
     constructor(scene: THREE.Scene) {
+        super(scene);
+
         this.logger = Logger.default.scope("sceneController");
         this.logger.log("init");
 
-        this.scene = scene;
-
         this.editorScene = new THREE.Object3D();
-
-        this.blueprintSystem = new BlueprintPlugin(this.scene);
-        this.bluemodelSystem = new BluemodelPlugin(this.scene);
-
-        this.projectConfig = new Config();
     }
 
     public dispose() {
@@ -897,14 +883,6 @@ export default class SceneController {
         }
     }
 
-    public getBlueprintSystem() {
-        return this.blueprintSystem;
-    }
-
-    public getBluemodelSystem() {
-        return this.bluemodelSystem;
-    }
-
     /**
      * Editor modes
      */
@@ -921,23 +899,12 @@ export default class SceneController {
             });
         }
 
-        if (control != ControlMode.BLUEPRINT) {
+        /*if (control != ControlMode.BLUEPRINT) {
             this.blueprintSystem.setControlState(false);
             this.bluemodelSystem.setControlState(false);
         } else {
             this.blueprintSystem.setControlState(true);
             this.bluemodelSystem.setControlState(true);
-        }
-    }
-
-    /**
-     * Load user preference for this specific project
-     */
-    public loadConfig(filePath: string) {
-        this.projectConfig.loadConfig(filePath);
-    }
-
-    public saveConfig(filePath: string) {
-        this.projectConfig.saveConfig(filePath);
+        }*/
     }
 }

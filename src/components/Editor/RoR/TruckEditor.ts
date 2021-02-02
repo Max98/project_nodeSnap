@@ -127,7 +127,7 @@ export default class TruckEditor {
      * load truck data
      */
     public loadTruckData() {
-        this.renderInstance.getSceneController().reset();
+        this.renderInstance.getSceneManager().reset();
 
         //Fetch the data again
         //this.truckData = store.getters.getTruckData;
@@ -137,21 +137,34 @@ export default class TruckEditor {
         for (let i = 0, n = this.truckData.nodes.length; i < n; i++) {
             const currNode = this.truckData.nodes[i];
 
-            this.renderInstance.getSceneController().addNodeToScene(currNode);
+            this.renderInstance
+                .getSceneManager()
+                .getCurrSceneController()
+                .addNodeToScene(currNode);
         }
 
-        this.renderInstance.getSceneController().prepareNodes();
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .prepareNodes();
 
         for (let i = 0, n = this.truckData.beams.length; i < n; i++) {
             const currBeam = this.truckData.beams[i];
 
             this.renderInstance
-                .getSceneController()
+                .getSceneManager()
+                .getCurrSceneController()
                 .addBeamToScene(currBeam.node1, currBeam.node2);
         }
 
-        this.renderInstance.getSceneController().buildBeamLines();
-        this.renderInstance.getSceneController().postCalc();
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .buildBeamLines();
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .postCalc();
     }
 
     /**
@@ -201,7 +214,10 @@ export default class TruckEditor {
 
         this.truckData.nodes.push(currNode);
 
-        this.renderInstance.getSceneController().addNodeToScene(currNode);
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .addNodeToScene(currNode);
         this.sendUpdate();
     }
 
@@ -241,14 +257,20 @@ export default class TruckEditor {
             currNode.z = position.z;
 
             if (isUndo) {
-                this.renderInstance.getSceneController().moveNodeSprite(id, {
-                    x: position.x,
-                    y: position.y,
-                    z: position.z
-                });
+                this.renderInstance
+                    .getSceneManager()
+                    .getCurrSceneController()
+                    .moveNodeSprite(id, {
+                        x: position.x,
+                        y: position.y,
+                        z: position.z
+                    });
             }
 
-            this.renderInstance.getSceneController().buildBeamLines();
+            this.renderInstance
+                .getSceneManager()
+                .getCurrSceneController()
+                .buildBeamLines();
             this.sendUpdate();
         }
     }
@@ -300,7 +322,10 @@ export default class TruckEditor {
      * @param state visibility
      */
     public setNodeVisibility(id: number, state: boolean) {
-        this.renderInstance.getSceneController().setNodeVisibility(id, state);
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .setNodeVisibility(id, state);
         this.truckData.nodes.find(el => el.id == id)!.isVisible = state;
     }
 
@@ -319,13 +344,19 @@ export default class TruckEditor {
 
         Object.assign(currNode, node);
 
-        this.renderInstance.getSceneController().moveNodeSprite(currNode.id, {
-            x: currNode.x,
-            y: currNode.y,
-            z: currNode.z
-        });
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .moveNodeSprite(currNode.id, {
+                x: currNode.x,
+                y: currNode.y,
+                z: currNode.z
+            });
 
-        this.renderInstance.getSceneController().buildBeamLines();
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .buildBeamLines();
         this.sendUpdate();
     }
 
@@ -381,9 +412,13 @@ export default class TruckEditor {
         this.HistorySystem.unshift(historyData);
 
         this.renderInstance
-            .getSceneController()
+            .getSceneManager()
+            .getCurrSceneController()
             .addBeamToScene(beam.node1, beam.node2);
-        this.renderInstance.getSceneController().buildBeamLines();
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .buildBeamLines();
         this.sendUpdate();
     }
 
@@ -396,7 +431,8 @@ export default class TruckEditor {
         if (currBeam.length == 0) return;
 
         this.renderInstance
-            .getSceneController()
+            .getSceneManager()
+            .getCurrSceneController()
             .removeBeamFromScene(currBeam[0].node1, currBeam[0].node2);
 
         this.truckData.beams = this.truckData.beams.filter(
@@ -411,7 +447,10 @@ export default class TruckEditor {
             }
         }
 
-        this.renderInstance.getSceneController().buildBeamLines();
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .buildBeamLines();
         this.sendUpdate();
     }
 
@@ -502,7 +541,8 @@ export default class TruckEditor {
                                 if (el.grp_id == exGrpId) {
                                     el.grp_id = newGrpId;
                                     this.renderInstance
-                                        .getSceneController()
+                                        .getSceneManager()
+                                        .getCurrSceneController()
                                         .updateNodeSpriteGrp(el.id, el.grp_id);
                                 }
                             }
@@ -713,7 +753,8 @@ export default class TruckEditor {
                     this.truckData.nodes.push(currNode);
                     addedNodesIndex.push(currNode.id);
                     this.renderInstance
-                        .getSceneController()
+                        .getSceneManager()
+                        .getCurrSceneController()
                         .addNodeToScene(currNode);
                 }
 
@@ -740,7 +781,8 @@ export default class TruckEditor {
 
                     this.truckData.beams.push(currBeam);
                     this.renderInstance
-                        .getSceneController()
+                        .getSceneManager()
+                        .getCurrSceneController()
                         .addBeamToScene(currBeam.node1, currBeam.node2);
                 }
             }
@@ -816,7 +858,8 @@ export default class TruckEditor {
                 this.truckData.nodes.push(currNode);
                 addedNodesIndex.push(currNode.id);
                 this.renderInstance
-                    .getSceneController()
+                    .getSceneManager()
+                    .getCurrSceneController()
                     .addNodeToScene(currNode);
             }
 
@@ -843,7 +886,8 @@ export default class TruckEditor {
 
                 this.truckData.beams.push(currBeam);
                 this.renderInstance
-                    .getSceneController()
+                    .getSceneManager()
+                    .getCurrSceneController()
                     .addBeamToScene(currBeam.node1, currBeam.node2);
             }
         }
@@ -860,7 +904,10 @@ export default class TruckEditor {
 
         this.HistorySystem.unshift(historyData);
 
-        this.renderInstance.getSceneController().buildBeamLines();
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .buildBeamLines();
         this.sendUpdate();
     }
 
@@ -1003,7 +1050,10 @@ export default class TruckEditor {
 
             this.truckData.nodes.push(currNode);
             addedNodesIndex.push(currNode.id);
-            this.renderInstance.getSceneController().addNodeToScene(currNode);
+            this.renderInstance
+                .getSceneManager()
+                .getCurrSceneController()
+                .addNodeToScene(currNode);
         }
 
         for (let i = 0; i < nodesBeamsChangeEx.length; i++) {
@@ -1040,7 +1090,8 @@ export default class TruckEditor {
 
             this.truckData.beams.push(currBeam);
             this.renderInstance
-                .getSceneController()
+                .getSceneManager()
+                .getCurrSceneController()
                 .addBeamToScene(currBeam.node1, currBeam.node2);
         }
         let str = "";
@@ -1055,7 +1106,10 @@ export default class TruckEditor {
 
         this.HistorySystem.unshift(historyData);
 
-        this.renderInstance.getSceneController().buildBeamLines();
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .buildBeamLines();
         this.sendUpdate();
     }
 
@@ -1065,7 +1119,10 @@ export default class TruckEditor {
      * @param state visibility
      */
     public setGroupVisibility(id: number, state: boolean) {
-        this.renderInstance.getSceneController().setGroupVisibility(id, state);
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .setGroupVisibility(id, state);
         this.truckData.groups!.find(el => el.grp_id == id)!.isVisible = state;
 
         this.truckData.nodes
@@ -1100,7 +1157,7 @@ export default class TruckEditor {
             this.HistorySystem.unshift(historyData);
         }
 
-        this.renderInstance.getSceneController().reset();
+        this.renderInstance.getSceneManager().reset();
         this.loadTruckData();
         this.sendUpdate();
     }
@@ -1133,7 +1190,7 @@ export default class TruckEditor {
             this.HistorySystem.unshift(historyData);
         }
 
-        this.renderInstance.getSceneController().reset();
+        this.renderInstance.getSceneManager().reset();
         this.loadTruckData();
         this.sendUpdate();
     }
@@ -1189,7 +1246,7 @@ export default class TruckEditor {
             this.HistorySystem.unshift(historyData);
         }
 
-        this.renderInstance.getSceneController().reset();
+        this.renderInstance.getSceneManager().reset();
         this.loadTruckData();
         this.sendUpdate();
     }

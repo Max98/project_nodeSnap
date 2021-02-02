@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { rendererViewType } from "../../TruckEditorInterfaces";
 import TruckEditorManager from "../../TruckEditorManagaer";
 import mime from "mime-types";
-import { TransformControls } from "@/components/Editor/js/TransformControls";
+import { TransformControls } from "@/components/js/TransformControls";
 
 interface Blueprints {
     model: THREE.Mesh;

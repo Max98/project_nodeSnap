@@ -8,7 +8,7 @@ import { ipcRenderer } from "electron";
 import "bootstrap";
 import "./sass/bootstrap.scss";
 import { BootstrapIconsPlugin } from "bootstrap-icons-vue";
-import TruckEditorManager from "./components/Editor/ts/TruckEditorManagaer";
+import TruckEditorManager from "./components/Editor/TruckEditorManagaer";
 
 /**
  * Toast

@@ -99,7 +99,7 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
+import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
 
 const remote = require("electron").remote;
 const { dialog } = remote;
@@ -107,7 +107,7 @@ const { dialog } = remote;
 import {
     LatestProjectsArray,
     LatestProjects
-} from "@/components/Editor/ts/LatestProjects";
+} from "@/components/Editor/LatestProjects";
 
 interface CurrentProject {
     title: string;

@@ -103,7 +103,8 @@ export default class Config {
 
         const bluePrintSystem = tM
             .getRendererObj()
-            .getSceneController()
+            .getSceneManager()
+
             .getBlueprintSystem();
 
         if (bluePrintSystem.getBlueprints().length != 0) {
@@ -166,7 +167,8 @@ export default class Config {
 
         const blueModelSystem = tM
             .getRendererObj()
-            .getSceneController()
+            .getSceneManager()
+
             .getBluemodelSystem();
 
         if (blueModelSystem.getBlueModel() != undefined) {
@@ -251,7 +253,8 @@ export default class Config {
             }
 
             tM.getRendererObj()
-                .getSceneController()
+                .getSceneManager()
+
                 .getBlueprintSystem()
                 .load(
                     this.projectConfig.data.blueprint.filePath,
@@ -325,7 +328,8 @@ export default class Config {
             }
 
             tM.getRendererObj()
-                .getSceneController()
+                .getSceneManager()
+
                 .getBluemodelSystem()
                 .load(
                     this.projectConfig.data.bluemodel.filePath,
@@ -334,7 +338,8 @@ export default class Config {
 
             const model = tM
                 .getRendererObj()
-                .getSceneController()
+                .getSceneManager()
+
                 .getBluemodelSystem()
                 .getBlueModel();
 

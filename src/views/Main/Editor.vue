@@ -80,12 +80,12 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "@/components/vue-decorator";
-import EditorNodesTab from "./Editor/RoR/Editor_nodesTab.vue";
-import EditorBeamsTab from "./Editor/RoR/Editor_beamsTab.vue";
-import EditorOtherTab from "./Editor/RoR//Editor_otherTab.vue";
-import EditorNavBar from "./Editor/RoR/Editor_navbar.vue";
+import EditorNodesTab from "./Editor/Editor_nodesTab.vue";
+import EditorBeamsTab from "./Editor/Editor_beamsTab.vue";
+import EditorOtherTab from "./Editor//Editor_otherTab.vue";
+import EditorNavBar from "./Editor/Editor_navbar.vue";
 import EditorMain from "./Editor/Editor_main.vue";
-import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
+import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
 
 @Options({
     name: "Editor",

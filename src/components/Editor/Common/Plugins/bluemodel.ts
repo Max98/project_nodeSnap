@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { rendererViewType } from "../../TruckEditorInterfaces";
 import TruckEditorManager from "../../TruckEditorManagaer";
-import { TransformControls } from "@/components/Editor/js/TransformControls";
+import { TransformControls } from "@/components/js/TransformControls";
 
-import OgreLoader from "@/components/Editor/ts/Common/Loaders/OgreLoader";
+import OgreLoader from "@/components/Editor/Common/Loaders/OgreLoader";
 import { useToast } from "vue-toastification";
 import OBJLoader from "../Loaders/OBJLoader";
 
