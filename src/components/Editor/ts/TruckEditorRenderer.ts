@@ -5,8 +5,8 @@ import * as THREE from "three";
 //We use our own camera modifed from the original OrbitCamera class from three.js
 import { OrbitControls, MapControls } from "../js/EditorOrbitCamera.js";
 
-import viewCube from "./Renderer/viewCube";
-import SceneController from "./Renderer/sceneController";
+import viewCube from "./Common/viewCube";
+import SceneController from "./RoR/Scene/sceneController";
 
 import {
     RendererViewData,

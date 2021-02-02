@@ -1,4 +1,4 @@
-import { TruckFileInterface } from "@/components/Editor/ts/TruckFileInterfaces";
+import { TruckFileInterface } from "@/components/Editor/ts/RoR/TruckFileInterfaces";
 import { markRaw } from "vue";
 
 /**

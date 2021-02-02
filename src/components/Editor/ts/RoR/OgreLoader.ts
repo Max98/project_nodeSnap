@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import fs from "fs";
 import xml2js from "xml2js";
-import TruckEditor from "./TruckEditorRenderer";
+import TruckEditor from "../TruckEditorRenderer";
 import * as Logger from "electron-log";
 
 export default class OgreLoader {

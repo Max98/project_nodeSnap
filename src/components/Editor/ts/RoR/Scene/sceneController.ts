@@ -1,14 +1,14 @@
 import * as THREE from "three";
 import { EditorNode } from "../TruckFileInterfaces";
 import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { DragControls } from "../../js/DragControls.js";
-import TruckEditorManager from "../TruckEditorManagaer";
-import { rendererViewType } from "../TruckEditorInterfaces";
+import { DragControls } from "../../../js/DragControls.js";
+import TruckEditorManager from "../../TruckEditorManagaer";
+import { rendererViewType } from "../../TruckEditorInterfaces";
 import { ConeBufferGeometry, Vector3 } from "three";
-import BlueprintPlugin from "./Plugins/blueprint";
-import BluemodelPlugin from "./Plugins/bluemodel";
+import BlueprintPlugin from "../../Common/Plugins/blueprint";
+import BluemodelPlugin from "../../Common/Plugins/bluemodel";
 import { useToast } from "vue-toastification";
-import Config from "./Plugins/config";
+import Config from "../../Common/Plugins/config";
 import * as Logger from "electron-log";
 
 const remote = require("electron").remote;

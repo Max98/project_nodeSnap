@@ -1,69 +1,90 @@
 <template>
     <div class="node-table">
-        <div v-if="nodesList[0].nodes.length == 0 && !nodesList[1]">
-            <div class="row">
-                <div class="col">
-                    Empty
-                </div>
-            </div>
-        </div>
-        <div v-for="grp in nodesList" :key="grp.grp_id">
-            <div
-                class="row grp-row"
-                :data-grp-id="grp.grp_id"
-                @mousedown="onGrpMouseDown"
-            >
-                <template v-if="grp.grp_id != -1">
-                    <div class="col" style="flex: 0 0 26px !important;">
-                        <input
-                            class="form-check-input"
-                            type="checkbox"
-                            v-model="grp.isVisible"
-                            @change="
-                                onChangeGroupVisibility(
-                                    grp.grp_id,
-                                    $event.srcElement.checked
-                                )
-                            "
-                        />
-                    </div>
-                    <div class="col">grp: {{ getGrpName(grp.grp_id) }}</div>
-                </template>
-            </div>
-            <div v-for="(node, idx) in grp.nodes" :key="idx">
-                <div
-                    class="row"
-                    @mousedown="onNodeMouseDown"
-                    :data-grp-id="node.grp_id"
-                    :data-node-id="node.id"
-                    :class="{
-                        active: selectedNode.id == node.id
-                    }"
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button
+                    class="accordion-button"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#beamsCollapse"
+                    aria-expanded="true"
                 >
-                    <div class="col" style="flex: 0 0 26px !important;">
-                        <input
-                            v-model="node.isVisible"
-                            class="form-check-input"
-                            type="checkbox"
-                            @change="
-                                onChangeNodeVisibility(
-                                    node.id,
-                                    $event.srcElement.checked
-                                )
-                            "
-                        />
+                    Beams
+                </button>
+            </h2>
+            <div
+                id="beamsCollapse"
+                data-bs-parent="#beamsCollapse"
+                class="accordion-collapse collapse show"
+            >
+                <div v-if="nodesList[0].nodes.length == 0 && !nodesList[1]">
+                    <div class="row">
+                        <div class="col">
+                            Empty
+                        </div>
                     </div>
-                    <div class="col">
-                        {{ node.id }}
+                </div>
+                <div v-for="grp in nodesList" :key="grp.grp_id">
+                    <div
+                        class="row grp-row"
+                        :data-grp-id="grp.grp_id"
+                        @mousedown="onGrpMouseDown"
+                    >
+                        <template v-if="grp.grp_id != -1">
+                            <div class="col" style="flex: 0 0 26px !important;">
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    v-model="grp.isVisible"
+                                    @change="
+                                        onChangeGroupVisibility(
+                                            grp.grp_id,
+                                            $event.srcElement.checked
+                                        )
+                                    "
+                                />
+                            </div>
+                            <div class="col">
+                                grp: {{ getGrpName(grp.grp_id) }}
+                            </div>
+                        </template>
                     </div>
-                    <div class="col">
-                        {{ Math.trunc(node.x * 100) / 100 }}
-                    </div>
-                    <div class="col">
-                        {{ Math.trunc(node.y * 100) / 100 }}
-                    </div>
-                    <div class="col">
-                        {{ Math.trunc(node.z * 100) / 100 }}
+                    <div v-for="(node, idx) in grp.nodes" :key="idx">
+                        <div
+                            class="row"
+                            @mousedown="onNodeMouseDown"
+                            :data-grp-id="node.grp_id"
+                            :data-node-id="node.id"
+                            :class="{
+                                active: selectedNode.id == node.id
+                            }"
+                        >
+                            <div class="col" style="flex: 0 0 26px !important;">
+                                <input
+                                    v-model="node.isVisible"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    @change="
+                                        onChangeNodeVisibility(
+                                            node.id,
+                                            $event.srcElement.checked
+                                        )
+                                    "
+                                />
+                            </div>
+                            <div class="col">
+                                {{ node.id }}
+                            </div>
+                            <div class="col">
+                                {{ Math.trunc(node.x * 100) / 100 }}
+                            </div>
+                            <div class="col">
+                                {{ Math.trunc(node.y * 100) / 100 }}
+                            </div>
+                            <div class="col">
+                                {{ Math.trunc(node.z * 100) / 100 }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -152,10 +173,10 @@ import {
     EditorNode,
     nodeType,
     EditorGroup
-} from "@/components/Editor/ts/TruckFileInterfaces";
+} from "@/components/Editor/ts/RoR/TruckFileInterfaces";
 
 import TruckEditorManager from "@/components/Editor/ts/TruckEditorManagaer";
-import { TruckFileInterface } from "@/components/Editor/ts/TruckFileInterfaces";
+import { TruckFileInterface } from "@/components/Editor/ts/RoR/TruckFileInterfaces";
 
 import { ipcRenderer } from "electron";
 import { watch } from "fs";

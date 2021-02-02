@@ -3,7 +3,7 @@ import { rendererViewType } from "../../TruckEditorInterfaces";
 import TruckEditorManager from "../../TruckEditorManagaer";
 import { TransformControls } from "@/components/Editor/js/TransformControls";
 
-import OgreLoader from "@/components/Editor/ts/Renderer/Loaders/OgreLoader";
+import OgreLoader from "@/components/Editor/ts/Common/Loaders/OgreLoader";
 import { useToast } from "vue-toastification";
 import OBJLoader from "../Loaders/OBJLoader";
 

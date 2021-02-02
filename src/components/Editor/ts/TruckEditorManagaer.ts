@@ -1,10 +1,12 @@
 import myLogger from "electron-log";
 
 import TruckEditorRenderer from "./TruckEditorRenderer";
-import TruckEditor from "./TruckEditor";
-import TruckFileImporter from "./Parser/RoR/TruckFileImporter";
-import TruckFileExporter from "./Parser/RoR/TruckFileExporter";
-import ProjectWatcher from "./Parser/Watcher";
+import TruckEditor from "./RoR/TruckEditor";
+import TruckFileImporter from "./RoR/Parser/TruckFileImporter";
+import TruckFileExporter from "./RoR/Parser/TruckFileExporter";
+import ProjectWatcher from "./Watcher";
+
+import JBeamImporter from "./BeamNG/JBeamImporter";
 
 /**
  * All of this runs on the renderer electron process, not the main!
@@ -30,6 +32,8 @@ export default class TruckEditorManager {
         this.editorObj = new TruckEditor();
 
         this.projectWatcher = new ProjectWatcher();
+
+        new JBeamImporter();
     }
 
     /**

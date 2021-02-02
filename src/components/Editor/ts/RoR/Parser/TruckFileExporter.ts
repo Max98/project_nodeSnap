@@ -1,4 +1,4 @@
-import * as TruckSectionsInterface from "../../TruckFileInterfaces";
+import * as TruckSectionsInterface from "../TruckFileInterfaces";
 import { Keyword } from "./TruckFileParserSections";
 
 import fs from "fs";

@@ -5,8 +5,8 @@ import {
     nodeType,
     EditorBeam
 } from "./TruckFileInterfaces";
-import TruckEditorRenderer from "./TruckEditorRenderer";
-import TruckEditorManager from "./TruckEditorManagaer";
+import TruckEditorRenderer from "../TruckEditorRenderer";
+import TruckEditorManager from "../TruckEditorManagaer";
 
 /**
  * TODO: maybe a class for this?

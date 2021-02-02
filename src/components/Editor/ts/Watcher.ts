@@ -1,5 +1,5 @@
 import { useToast } from "vue-toastification";
-import TruckEditorManager from "../TruckEditorManagaer";
+import TruckEditorManager from "./TruckEditorManagaer";
 import { FSWatcher } from "fs";
 import watch from "node-watch";
 import * as Logger from "electron-log";
