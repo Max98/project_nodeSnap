@@ -102,7 +102,7 @@ export enum nodeType {
     NAMED
 }
 
-interface TruckFileNode extends SECTION {
+export interface TruckFileNode extends SECTION {
     id: number; //we parse as string
     name: string;
     type: nodeType;
@@ -116,7 +116,7 @@ interface TruckFileNode extends SECTION {
 /**
  * Beams
  */
-interface TruckFileBeam extends SECTION {
+export interface TruckFileBeam extends SECTION {
     node1: number;
     node2: number;
     options?: string;
@@ -160,12 +160,12 @@ export interface TruckFileInterface {
     fileformat?: TruckFileFormat;
     fileinfo?: TruckFileInfo;
     globals: TruckFileGlobals;
-    nodes: EditorNode[];
-    beams: EditorBeam[];
+    nodes: TruckFileNode[];
+    beams: TruckFileBeam[];
 
     setNodesDefaults?: TruckFileSetNodesDefaults[];
     setBeamDefaults?: TruckFileSetBeamDefaults[];
-    groups: EditorGroup[];
+    groups: TruckFileGroup[];
     comments?: TruckFileComment[];
     detacher_group?: TruckFileDetacherGroup[];
 
@@ -189,17 +189,4 @@ export interface TruckFileInterface {
     commands2?: TruckFileCommands2[];
     hydros?: TruckFileHydros[];
     animators?: TruckFileAnimators[];*/
-}
-
-/**
- * Editor specific
- */
-export interface EditorNode extends TruckFileNode {
-    isVisible: boolean;
-}
-export interface EditorBeam extends TruckFileBeam {
-    isVisible: boolean;
-}
-export interface EditorGroup extends TruckFileGroup {
-    isVisible: boolean;
 }

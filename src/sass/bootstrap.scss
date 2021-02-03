@@ -188,3 +188,30 @@ a {
 .form-check-input {
     background-color: $secondary;
 }
+
+.node-table {
+    max-width: 253px;
+
+    .accordion-button {
+        padding: 0 1rem;
+        background-color: transparent;
+        border: none;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background-color: transparent;
+        color: #adafae;
+    }
+
+    .acc-title {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        text-align: justify;
+        height: 17px;
+    }
+    .collapsing {
+        transition: none;
+        display: none;
+    }
+}

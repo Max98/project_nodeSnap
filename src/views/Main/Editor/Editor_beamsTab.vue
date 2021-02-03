@@ -3,7 +3,7 @@
         <div class="accordion-item">
             <h2 class="accordion-header">
                 <button
-                    class="accordion-button"
+                    class="accordion-button beamsCollapse"
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target="#beamsCollapse"
@@ -25,35 +25,64 @@
                     </div>
                 </div>
                 <div v-for="grp in beamsList" :key="grp.grp_id">
-                    <div
-                        class="row grp-row"
-                        :data-grp-id="grp.grp_id"
-                        @mousedown="onGrpMouseDown"
-                    >
-                        <template v-if="grp.grp_id != -1">
-                            <div class="col">
-                                grp: {{ getGrpName(grp.grp_id) }}
-                            </div>
-                        </template>
-                    </div>
-                    <div v-for="(beam, idx) in grp.beams" :key="idx">
+                    <div class="accordion-item">
                         <div
-                            class="row"
-                            @mousedown="onBeamMouseDown"
-                            :data-beam-id="beam.id"
-                            :data-grp-id="beam.grp_id"
-                            :class="{
-                                active: selectedBeam.id == beam.id
-                            }"
+                            class="row grp-row"
+                            :data-grp-id="grp.grp_id"
+                            @mousedown="onGrpMouseDown"
                         >
-                            <div class="col">
-                                {{ beam.node1 }}
-                            </div>
-                            <div class="col">
-                                {{ beam.node2 }}
-                            </div>
-                            <div class="col">
-                                {{ beam.options }}
+                            <template v-if="grp.grp_id != -1">
+                                <div class="col">
+                                    <h2 class="accordion-header">
+                                        <button
+                                            class="accordion-button groups-button collapsed"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            :data-bs-target="
+                                                `#group` + grp.grp_id
+                                            "
+                                            aria-expanded="true"
+                                            :aria-controls="
+                                                `group` + grp.grp_id
+                                            "
+                                        >
+                                            <div
+                                                class="acc-title"
+                                                :title="getGrpName(grp.grp_id)"
+                                            >
+                                                grp:
+                                                {{ getGrpName(grp.grp_id) }}
+                                            </div>
+                                        </button>
+                                    </h2>
+                                </div>
+                            </template>
+                        </div>
+                        <div
+                            :id="`group` + grp.grp_id"
+                            :data-bs-parent="`#group` + grp.grp_id"
+                            class="accordion-collapse collapse"
+                        >
+                            <div v-for="(beam, idx) in grp.beams" :key="idx">
+                                <div
+                                    class="row"
+                                    @mousedown="onBeamMouseDown"
+                                    :data-beam-id="beam.id"
+                                    :data-grp-id="beam.grp_id"
+                                    :class="{
+                                        active: selectedBeam.id == beam.id
+                                    }"
+                                >
+                                    <div class="col">
+                                        {{ beam.node1 }}
+                                    </div>
+                                    <div class="col">
+                                        {{ beam.node2 }}
+                                    </div>
+                                    <div class="col">
+                                        {{ beam.options }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -130,10 +159,9 @@ import { Watch, Prop } from "@/components/vue-decorator";
 import {
     EditorBeam,
     EditorGroup
-} from "@/components/Editor/RoR/TruckFileInterfaces";
+} from "@/components/Editor/TruckEditorInterfaces";
 
 import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
-import { TruckFileInterface } from "@/components/Editor/RoR/TruckFileInterfaces";
 
 import { ipcRenderer } from "electron";
 const remote = require("electron").remote;
@@ -164,9 +192,7 @@ export default class EditorBeamsTab extends Vue {
         id: -1,
         isVisible: true,
         grp_id: -1,
-        comment_id: -1,
-        sbd_preset_id: -1,
-        snd_preset_id: -1
+        options: ""
     };
 
     @Watch("truckDataBeams")
@@ -261,7 +287,7 @@ export default class EditorBeamsTab extends Vue {
                     label: "Delete beam",
                     click: () => {
                         TruckEditorManager.getInstance()
-                            .getEditorObj()
+                            .getEditorObj()!
                             .removeBeam(data.beamId);
                     }
                 })
@@ -301,7 +327,7 @@ export default class EditorBeamsTab extends Vue {
                     label: "Delete group",
                     click: () => {
                         TruckEditorManager.getInstance()
-                            .getEditorObj()
+                            .getEditorObj()!
                             .removeGrp(data.grpId);
                     }
                 })
@@ -314,7 +340,7 @@ export default class EditorBeamsTab extends Vue {
 
     applyBeamData() {
         TruckEditorManager.getInstance()
-            .getEditorObj()
+            .getEditorObj()!
             .setBeamData(this.selectedBeam);
     }
 
@@ -327,15 +353,4 @@ export default class EditorBeamsTab extends Vue {
 
 <style lang="scss">
 @import "~@/sass/var";
-
-.node-table {
-    .accordion-button {
-        padding: 0 1rem;
-        background-color: $darker;
-    }
-    .accordion-button:not(.collapsed) {
-        background-color: #7e543e;
-        color: white;
-    }
-}
 </style>

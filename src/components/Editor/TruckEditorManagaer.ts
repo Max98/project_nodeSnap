@@ -1,12 +1,15 @@
 import myLogger from "electron-log";
 
 import TruckEditorRenderer from "./TruckEditorRenderer";
-import TruckEditor from "./RoR/TruckEditor";
+import TruckEditor from "./RoR/RoRTruckEditor";
 import TruckFileImporter from "./RoR/Parser/TruckFileImporter";
 import TruckFileExporter from "./RoR/Parser/TruckFileExporter";
 import ProjectWatcher from "./Watcher";
 
-import JBeamImporter from "./BeamNG/JBeamImporter";
+import JBeamImporter from "./BeamNG/Parser/JBeamImporter";
+import TruckFileData from "./RoR/Parser/TruckFileData";
+import Editor from "./Common/EditorClass";
+import { editorType } from "./TruckEditorInterfaces";
 
 /**
  * All of this runs on the renderer electron process, not the main!
@@ -18,9 +21,12 @@ export default class TruckEditorManager {
     private Log: myLogger.LogFunctions;
 
     private editorRenderer: TruckEditorRenderer;
-    private editorObj: TruckEditor;
+    private editorObj: Editor | undefined;
+    private editorStore: TruckFileData;
 
     private projectWatcher: ProjectWatcher;
+
+    private editorType: editorType = editorType.ROR;
 
     constructor() {
         TruckEditorManager.instance = this;
@@ -29,7 +35,7 @@ export default class TruckEditorManager {
         this.Log.info("init");
 
         this.editorRenderer = new TruckEditorRenderer();
-        this.editorObj = new TruckEditor();
+        this.editorStore = new TruckFileData();
 
         this.projectWatcher = new ProjectWatcher();
 
@@ -56,14 +62,19 @@ export default class TruckEditorManager {
      * @returns truck title
      */
     public loadFile(path: string) {
-        this.editorObj.reset();
+        if (this.editorObj) this.editorObj.reset();
         this.editorRenderer.getSceneManager().reset();
 
-        this.editorObj.setFilePath(path);
+        this.editorStore.setFilePath(path);
         const truckData = new TruckFileImporter().loadFile(path);
 
-        this.editorObj.loadData(truckData);
-        this.editorObj.setSaveState(true);
+        if (!truckData) return;
+
+        this.editorStore.loadData(truckData);
+        this.editorStore.setSaveState(true);
+        this.editorObj = new TruckEditor();
+
+        this.editorObj.fetchData();
 
         return truckData.title;
     }
@@ -73,20 +84,24 @@ export default class TruckEditorManager {
      */
     public saveFile() {
         this.projectWatcher.dispose();
-        new TruckFileExporter().saveFile(this.editorObj.getFilePath());
+        new TruckFileExporter().saveFile(this.editorStore.getFilePath());
 
         this.getRendererObj()
             .getSceneManager()
-            .saveConfig(this.editorObj.getFilePath());
+            .saveConfig(this.editorStore.getFilePath());
 
-        this.projectWatcher.start(this.editorObj.getFilePath());
+        this.projectWatcher.start(this.editorStore.getFilePath());
 
-        this.editorObj.setSaveState(true);
+        this.editorStore.setSaveState(true);
     }
 
     public requestReload() {
-        this.loadFile(this.editorObj.getFilePath());
-        this.editorObj.loadTruckData();
+        if (this.editorObj) {
+            this.loadFile(this.editorStore.getFilePath());
+            this.editorObj.loadTruckData();
+        } else {
+            throw console.error("editorObj not found!");
+        }
     }
 
     /**
@@ -99,19 +114,28 @@ export default class TruckEditorManager {
     /**
      * Returns the editor class reference
      */
-    public getEditorObj(): TruckEditor {
+    public getEditorObj(): Editor | undefined {
         return this.editorObj;
     }
 
+    public getStoreObj(): TruckFileData {
+        return this.editorStore;
+    }
+
     /**
-     * Triggers after the main page has loaded
+     * Triggers after the editor page has loaded
+     * Warning: we are talking about Editor_main.vue here, not Editor.vue
      */
     public onLoaded() {
-        this.editorObj.loadTruckData();
-        this.editorRenderer
-            .getSceneManager()
-            .loadConfig(this.editorObj.getFilePath());
-        this.projectWatcher.start(this.editorObj.getFilePath());
+        if (this.editorObj) {
+            this.editorObj.loadTruckData();
+            this.editorRenderer
+                .getSceneManager()
+                .loadConfig(this.editorStore.getFilePath());
+            this.projectWatcher.start(this.editorStore.getFilePath());
+        } else {
+            throw console.error("editorObj not found!");
+        }
     }
 
     /**
@@ -120,7 +144,7 @@ export default class TruckEditorManager {
     public onLeave() {
         this.editorRenderer
             .getSceneManager()
-            .saveConfig(this.editorObj.getFilePath());
+            .saveConfig(this.editorStore.getFilePath());
         this.editorRenderer.dispose();
         this.projectWatcher.dispose();
     }

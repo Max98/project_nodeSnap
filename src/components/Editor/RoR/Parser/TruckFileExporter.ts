@@ -1,4 +1,4 @@
-import * as TruckSectionsInterface from "../TruckFileInterfaces";
+import * as TruckSectionsInterface from "../RoRTruckFileInterfaces";
 import { Keyword } from "./TruckFileParserSections";
 
 import fs from "fs";
@@ -42,7 +42,7 @@ export default class TruckFileExporter {
         this.parserLog.info("init");
 
         this.truckFile = TruckEditorManager.getInstance()
-            .getEditorObj()
+            .getStoreObj()
             .getData();
     }
 
@@ -78,7 +78,7 @@ export default class TruckFileExporter {
             }
 
             TruckEditorManager.getInstance()
-                .getEditorObj()
+                .getStoreObj()
                 .setFilePath(filePath);
         }
 
@@ -397,7 +397,7 @@ export default class TruckFileExporter {
      * @param lineBreak
      */
     private onSaveProcessDetacherGroups(
-        el: TruckSectionsInterface.EditorBeam
+        el: TruckSectionsInterface.TruckFileBeam
     ): string {
         let fileStr = "";
 

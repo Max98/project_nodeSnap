@@ -140,7 +140,7 @@ export default class EditorNavBar extends Vue {
     onReload() {
         if (
             TruckEditorManager.getInstance()
-                .getEditorObj()
+                .getStoreObj()
                 .getFilePath() == ""
         ) {
             useToast().warning(
@@ -151,7 +151,7 @@ export default class EditorNavBar extends Vue {
 
         if (
             TruckEditorManager.getInstance()
-                .getEditorObj()
+                .getStoreObj()
                 .getSaveState() == false
         ) {
             const bl = dialog.showMessageBoxSync({

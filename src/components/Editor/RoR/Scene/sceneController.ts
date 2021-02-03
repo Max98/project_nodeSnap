@@ -1,15 +1,13 @@
 import * as THREE from "three";
-import { EditorNode } from "../TruckFileInterfaces";
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { DragControls } from "../../../js/DragControls.js";
 import TruckEditorManager from "../../TruckEditorManagaer";
 import { rendererViewType } from "../../TruckEditorInterfaces";
-import { ConeBufferGeometry, Vector3 } from "three";
+import { Vector3 } from "three";
 
 import { useToast } from "vue-toastification";
 
 import * as Logger from "electron-log";
-import SceneController from "../../Common/SceneController";
+import SceneController, { SceneNode } from "../../Common/SceneController";
 
 const remote = require("electron").remote;
 const { Menu, MenuItem, dialog } = remote;
@@ -109,50 +107,48 @@ export default class RoRSceneController extends SceneController {
      * Addes a node to the 3D Scene
      * @param nodeData node data
      */
-    public addNodeToScene(nodeData: EditorNode) {
+    public addNodeToScene(nodeData: SceneNode) {
         const spriteMaterial = new THREE.SpriteMaterial({
             color: "green"
         });
+        const newNode = new THREE.Sprite(spriteMaterial);
 
-        this.nodesSpriteArray[nodeData.id] = new THREE.Sprite(spriteMaterial);
-        this.nodesSpriteArray[nodeData.id].scale.set(
-            this.nodesSpriteScale,
-            this.nodesSpriteScale,
-            1.0
-        );
+        newNode.scale.set(this.nodesSpriteScale, this.nodesSpriteScale, 1.0);
 
-        this.nodesSpriteArray[nodeData.id].position.set(
-            nodeData.x * this.nodesPosRenderScale,
-            nodeData.y * this.nodesPosRenderScale,
-            nodeData.z * this.nodesPosRenderScale
-        );
+        newNode.position
+            .copy(nodeData.position)
+            .multiplyScalar(this.nodesPosRenderScale);
 
-        this.nodesSpriteArray[nodeData.id].userData = {
-            id: nodeData.id,
-            grp_id: nodeData.grp_id
+        newNode.userData = {
+            id: nodeData.nodeInfo.nodeId,
+            grp_id: nodeData.nodeInfo.grpId
         };
 
-        this.nodesSpriteArray[nodeData.id].layers.set(1);
+        newNode.layers.set(1);
 
         //Generate node name
         //TODO: support nodes2
-        const spritey = this.makeTextSprite(nodeData.id.toString());
+        const spritey = this.makeTextSprite(
+            nodeData.nodeInfo.nodeName.toString()
+        );
 
         if (spritey) {
             spritey.visible = this.displayNodesName;
-            this.nodesSpriteArray[nodeData.id].add(spritey);
+            newNode.add(spritey);
             spritey.layers.set(0);
         }
 
         this.nodesDragControl.forEach(el => {
             const obj = el.getObjects();
-            obj.push(this.nodesSpriteArray[nodeData.id]);
+            obj.push(newNode);
         });
 
-        this.nodesSpriteArray[nodeData.id].visible = nodeData.isVisible;
-        if (!nodeData.isVisible) this.invisibleNodesArray.push(nodeData.id);
+        newNode.visible = nodeData.visible;
+        if (!nodeData.visible)
+            this.invisibleNodesArray.push(nodeData.nodeInfo.nodeId);
 
-        this.editorScene.add(this.nodesSpriteArray[nodeData.id]);
+        this.nodesSpriteArray.push(newNode);
+        this.editorScene.add(newNode);
     }
 
     /**
@@ -192,7 +188,7 @@ export default class RoRSceneController extends SceneController {
         position: { x: number; y: number; z: number }
     ) {
         TruckEditorManager.getInstance()
-            .getEditorObj()
+            .getEditorObj()!
             .moveNode(id, {
                 x: position.x / this.nodesPosRenderScale,
                 y: position.y / this.nodesPosRenderScale,
@@ -222,7 +218,7 @@ export default class RoRSceneController extends SceneController {
      */
     private addNode(position: THREE.Vector3) {
         TruckEditorManager.getInstance()
-            .getEditorObj()
+            .getEditorObj()!
             .addNode(position.multiplyScalar(1 / this.nodesPosRenderScale));
     }
 
@@ -231,7 +227,7 @@ export default class RoRSceneController extends SceneController {
      */
     private addBeam(beam: { node1: number; node2: number }) {
         TruckEditorManager.getInstance()
-            .getEditorObj()
+            .getEditorObj()!
             .addBeam(beam);
     }
 
@@ -721,7 +717,7 @@ export default class RoRSceneController extends SceneController {
                         label: "Delete node",
                         click: () => {
                             TruckEditorManager.getInstance()
-                                .getEditorObj()
+                                .getEditorObj()!
                                 .removeNode(intersects[0].object.userData.id);
                         }
                     })
@@ -816,7 +812,7 @@ export default class RoRSceneController extends SceneController {
                 if (e.ctrlKey) {
                     if (this.controlMode == ControlMode.TRUCK) {
                         TruckEditorManager.getInstance()
-                            .getEditorObj()
+                            .getEditorObj()!
                             .requestUndo();
                     }
                 }

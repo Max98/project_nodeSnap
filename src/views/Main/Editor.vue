@@ -101,7 +101,7 @@ export default class Editor extends Vue {
     truckDataNodes = JSON.parse(
         JSON.stringify(
             TruckEditorManager.getInstance()
-                .getEditorObj()
+                .getEditorObj()!
                 .getData().nodes
         )
     );
@@ -109,7 +109,7 @@ export default class Editor extends Vue {
     truckDataBeams = JSON.parse(
         JSON.stringify(
             TruckEditorManager.getInstance()
-                .getEditorObj()
+                .getEditorObj()!
                 .getData().beams
         )
     );
@@ -117,7 +117,7 @@ export default class Editor extends Vue {
     truckDataGroups = JSON.parse(
         JSON.stringify(
             TruckEditorManager.getInstance()
-                .getEditorObj()
+                .getEditorObj()!
                 .getData().groups
         )
     );
@@ -126,21 +126,21 @@ export default class Editor extends Vue {
         this.truckDataNodes = JSON.parse(
             JSON.stringify(
                 TruckEditorManager.getInstance()
-                    .getEditorObj()
+                    .getEditorObj()!
                     .getData().nodes
             )
         );
         this.truckDataBeams = JSON.parse(
             JSON.stringify(
                 TruckEditorManager.getInstance()
-                    .getEditorObj()
+                    .getEditorObj()!
                     .getData().beams
             )
         );
         this.truckDataGroups = JSON.parse(
             JSON.stringify(
                 TruckEditorManager.getInstance()
-                    .getEditorObj()
+                    .getEditorObj()!
                     .getData().groups
             )
         );

@@ -20,7 +20,7 @@ async function createWindow() {
         title: "nodeSnap",
         width: 1280,
         height: 720,
-        autoHideMenuBar: true,
+        autoHideMenuBar: process.env.WEBPACK_DEV_SERVER_URL ? false : true,
         webPreferences: {
             webSecurity: true,
             allowRunningInsecureContent: true,

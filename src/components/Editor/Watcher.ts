@@ -42,9 +42,9 @@ export default class ProjectWatcher {
         const tM = TruckEditorManager.getInstance();
         this.logger.log("change detected");
 
-        if (tM.getEditorObj().getSaveState() == true) {
+        if (tM.getStoreObj().getSaveState() == true) {
             tM.loadFile(this.currWatchingFile);
-            tM.getEditorObj().loadTruckData();
+            tM.getEditorObj()!.loadTruckData();
             useToast().info("Project reloaded.");
         } else {
             useToast().warning(

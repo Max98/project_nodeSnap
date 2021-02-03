@@ -129,11 +129,11 @@ export default class Projects extends Vue {
     mounted() {
         if (
             TruckEditorManager.getInstance()
-                .getEditorObj()
+                .getStoreObj()
                 .getData().title
         ) {
             this.currProject.title = TruckEditorManager.getInstance()
-                .getEditorObj()
+                .getStoreObj()
                 .getData().title;
         }
     }
@@ -160,7 +160,7 @@ export default class Projects extends Vue {
     checkBeforeOpen() {
         if (
             TruckEditorManager.getInstance()
-                .getEditorObj()
+                .getStoreObj()
                 .getSaveState() == false
         ) {
             const bl = dialog.showMessageBoxSync({
@@ -228,6 +228,10 @@ export default class Projects extends Vue {
         if (this.checkBeforeOpen() == false) return;
 
         const data = TruckEditorManager.getInstance().loadFile(project.path);
+
+        if (!data) {
+            return;
+        }
 
         this.latestProjects.pushProject({
             title: data,

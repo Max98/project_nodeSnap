@@ -1,5 +1,15 @@
+import { Vector3 } from "three";
 import { rendererViewType } from "../TruckEditorInterfaces";
-import { EditorNode } from "../RoR/TruckFileInterfaces";
+
+export interface SceneNode {
+    position: Vector3;
+    visible: boolean;
+    nodeInfo: {
+        nodeId: number;
+        nodeName: string;
+        grpId: number;
+    };
+}
 
 export default abstract class SceneController {
     protected scene: THREE.Scene;
@@ -24,7 +34,7 @@ export default abstract class SceneController {
     public abstract onKeyDown(e: KeyboardEvent): void;
     public abstract onKeyUp(e: KeyboardEvent): void;
 
-    public abstract addNodeToScene(nodeData: EditorNode): void;
+    public abstract addNodeToScene(nodeData: SceneNode): void;
     public abstract addBeamToScene(node1: number, node2: number): void;
     public abstract removeBeamFromScene(node1: number, node2: number): void;
     public abstract moveNodeSprite(

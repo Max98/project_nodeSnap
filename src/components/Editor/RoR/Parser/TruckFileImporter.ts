@@ -1,4 +1,4 @@
-import * as TruckSectionsInterface from "../TruckFileInterfaces";
+import * as TruckSectionsInterface from "../RoRTruckFileInterfaces";
 import { Section, Keyword } from "./TruckFileParserSections";
 
 import fs from "fs";
@@ -84,6 +84,11 @@ export default class TruckFileImporter {
         this.parserLog.info("Loading file: " + filePatch);
         this.parserLog.info("Starting section: " + Section[this.currSection]);
 
+        if (!fs.existsSync(filePatch)) {
+            this.parserLog.error("File not found!");
+            return;
+        }
+
         this.FileBuffer = fs
             .readFileSync(filePatch, "utf8")
             .toString()
@@ -109,11 +114,6 @@ export default class TruckFileImporter {
         store.dispatch("setParserSettings", {
             sectionsKeywordOrder: this.sectionsKeywordOrder
         });
-
-        /**
-         * Push data to vuex memory
-         */
-        //store.dispatch("setTruckData", this.truckFile);
 
         return this.truckFile;
     }
@@ -144,7 +144,7 @@ export default class TruckFileImporter {
     private ParseBeams() {
         if (!this.CheckNumArguments(2)) return;
 
-        const beamArray: TruckSectionsInterface.EditorBeam = {
+        const beamArray: TruckSectionsInterface.TruckFileBeam = {
             sbd_preset_id: this.currPresetBeamId,
             snd_preset_id: this.currPresetNodeId,
             grp_id: this.currGroupId,
@@ -152,9 +152,7 @@ export default class TruckFileImporter {
 
             id: this.beamIndex,
             node1: this.getNodeIdFromName(this.currArgs[0]),
-            node2: this.getNodeIdFromName(this.currArgs[1]),
-
-            isVisible: true
+            node2: this.getNodeIdFromName(this.currArgs[1])
         };
 
         if (this.currArgs[2]) {
@@ -173,7 +171,7 @@ export default class TruckFileImporter {
     private ParseNodesUnified() {
         if (!this.CheckNumArguments(4)) return;
 
-        const nodeParams: TruckSectionsInterface.EditorNode = {
+        const nodeParams: TruckSectionsInterface.TruckFileNode = {
             sbd_preset_id: this.currPresetBeamId,
             snd_preset_id: this.currPresetNodeId,
             grp_id: this.currGroupId,
@@ -189,9 +187,7 @@ export default class TruckFileImporter {
 
             x: parseFloat(this.currArgs[3]), //y
             y: parseFloat(this.currArgs[1]), //z
-            z: parseFloat(this.currArgs[2]), //x
-
-            isVisible: true
+            z: parseFloat(this.currArgs[2]) //x
         };
 
         if (this.currArgs[4]) {
@@ -339,11 +335,10 @@ export default class TruckFileImporter {
             grpType = "beam";
         }
 
-        const groups: TruckSectionsInterface.EditorGroup = {
+        const groups: TruckSectionsInterface.TruckFileGroup = {
             grp_id: this.truckFile.groups.length,
             title: this.currLine.substr(5),
-            type: grpType,
-            isVisible: true
+            type: grpType
         };
 
         this.truckFile.groups.push(groups);

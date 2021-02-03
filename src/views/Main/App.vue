@@ -45,11 +45,11 @@ export default class Main extends Vue {
 
             switch (arg.func) {
                 case "rename":
-                    tM.getEditorObj().renameGrp(arg.data.id, arg.data.title); //TODO: investigate why JSON changes grpId to id.
+                    tM.getEditorObj()!.renameGrp(arg.data.id, arg.data.title); //TODO: investigate why JSON changes grpId to id.
                     break;
 
                 case "add":
-                    tM.getEditorObj().addGrp(
+                    tM.getEditorObj()!.addGrp(
                         arg.data.id,
                         arg.data.title,
                         arg.data.type
@@ -57,7 +57,7 @@ export default class Main extends Vue {
                     break;
 
                 case "duplicate":
-                    tM.getEditorObj().duplicateGrp(
+                    tM.getEditorObj()!.duplicateGrp(
                         arg.data.id,
                         arg.data.type,
                         arg.data.axis,
@@ -158,18 +158,18 @@ export default class Main extends Vue {
 
             switch (arg.func) {
                 case "rotation":
-                    tM.getEditorObj().rotateAll(
+                    tM.getEditorObj()!.rotateAll(
                         parseFloat(arg.data.angle),
                         arg.data.axis
                     );
                     break;
 
                 case "scale":
-                    tM.getEditorObj().scaleAll(parseFloat(arg.data.factor));
+                    tM.getEditorObj()!.scaleAll(parseFloat(arg.data.factor));
                     break;
 
                 case "translation":
-                    tM.getEditorObj().translateAll({
+                    tM.getEditorObj()!.translateAll({
                         x: parseFloat(arg.data.x),
                         y: parseFloat(arg.data.y),
                         z: parseFloat(arg.data.z)
@@ -184,7 +184,7 @@ export default class Main extends Vue {
         ipcRenderer.on("duplicateVisible", (event, arg) => {
             const tM: TruckEditorManager = TruckEditorManager.getInstance();
 
-            tM.getEditorObj().duplicateVisible(
+            tM.getEditorObj()!.duplicateVisible(
                 arg.data.type,
                 arg.data.axis,
                 arg.data.grpTitle,
@@ -195,8 +195,9 @@ export default class Main extends Vue {
 
         window.onbeforeunload = (e: Event) => {
             if (
+                !process.env.WEBPACK_DEV_SERVER_URL &&
                 !TruckEditorManager.getInstance()
-                    .getEditorObj()
+                    .getStoreObj()
                     .getSaveState()
             ) {
                 const bl = dialog.showMessageBoxSync({

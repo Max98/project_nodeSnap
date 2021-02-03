@@ -80,8 +80,8 @@ export default class Projects extends Vue {
 
     next() {
         TruckEditorManager.getInstance()
-            .getEditorObj()
-            .create(this.truckTitle, this.dryMass, this.cargoMass);
+            .getStoreObj()
+            .create(this.truckTitle);
         this.$router.push("/editor");
     }
 

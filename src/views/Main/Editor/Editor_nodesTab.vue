@@ -3,19 +3,20 @@
         <div class="accordion-item">
             <h2 class="accordion-header">
                 <button
-                    class="accordion-button"
+                    class="accordion-button collapsed"
                     type="button"
                     data-bs-toggle="collapse"
-                    data-bs-target="#beamsCollapse"
-                    aria-expanded="true"
+                    data-bs-target="#Slot"
+                    aria-expanded="false"
+                    aria-controls="Slot"
                 >
-                    Beams
+                    {{ truckfileName }}
                 </button>
             </h2>
             <div
-                id="beamsCollapse"
-                data-bs-parent="#beamsCollapse"
-                class="accordion-collapse collapse show"
+                id="Slot"
+                data-bs-parent="#Slot"
+                class="accordion-collapse collapse"
             >
                 <div v-if="nodesList[0].nodes.length == 0 && !nodesList[1]">
                     <div class="row">
@@ -25,64 +26,99 @@
                     </div>
                 </div>
                 <div v-for="grp in nodesList" :key="grp.grp_id">
-                    <div
-                        class="row grp-row"
-                        :data-grp-id="grp.grp_id"
-                        @mousedown="onGrpMouseDown"
-                    >
-                        <template v-if="grp.grp_id != -1">
-                            <div class="col" style="flex: 0 0 26px !important;">
-                                <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    v-model="grp.isVisible"
-                                    @change="
-                                        onChangeGroupVisibility(
-                                            grp.grp_id,
-                                            $event.srcElement.checked
-                                        )
-                                    "
-                                />
-                            </div>
-                            <div class="col">
-                                grp: {{ getGrpName(grp.grp_id) }}
-                            </div>
-                        </template>
-                    </div>
-                    <div v-for="(node, idx) in grp.nodes" :key="idx">
+                    <div class="accordion-item">
                         <div
-                            class="row"
-                            @mousedown="onNodeMouseDown"
-                            :data-grp-id="node.grp_id"
-                            :data-node-id="node.id"
-                            :class="{
-                                active: selectedNode.id == node.id
-                            }"
+                            class="row grp-row"
+                            :data-grp-id="grp.grp_id"
+                            @mousedown="onGrpMouseDown"
                         >
-                            <div class="col" style="flex: 0 0 26px !important;">
-                                <input
-                                    v-model="node.isVisible"
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    @change="
-                                        onChangeNodeVisibility(
-                                            node.id,
-                                            $event.srcElement.checked
-                                        )
-                                    "
-                                />
-                            </div>
-                            <div class="col">
-                                {{ node.id }}
-                            </div>
-                            <div class="col">
-                                {{ Math.trunc(node.x * 100) / 100 }}
-                            </div>
-                            <div class="col">
-                                {{ Math.trunc(node.y * 100) / 100 }}
-                            </div>
-                            <div class="col">
-                                {{ Math.trunc(node.z * 100) / 100 }}
+                            <template v-if="grp.grp_id != -1">
+                                <div
+                                    class="col"
+                                    style="flex: 0 0 26px !important;"
+                                >
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        v-model="grp.isVisible"
+                                        @change="
+                                            onChangeGroupVisibility(
+                                                grp.grp_id,
+                                                $event.srcElement.checked
+                                            )
+                                        "
+                                    />
+                                </div>
+                                <div class="col">
+                                    <h2 class="accordion-header">
+                                        <button
+                                            class="accordion-button groups-button collapsed"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            :data-bs-target="
+                                                `#group` + grp.grp_id
+                                            "
+                                            aria-expanded="true"
+                                            :aria-controls="
+                                                `group` + grp.grp_id
+                                            "
+                                        >
+                                            <div
+                                                class="acc-title"
+                                                :title="getGrpName(grp.grp_id)"
+                                            >
+                                                grp:
+                                                {{ getGrpName(grp.grp_id) }}
+                                            </div>
+                                        </button>
+                                    </h2>
+                                </div>
+                            </template>
+                        </div>
+                        <div
+                            :id="`group` + grp.grp_id"
+                            :data-bs-parent="`#group` + grp.grp_id"
+                            class="accordion-collapse collapse"
+                        >
+                            <div v-for="(node, idx) in grp.nodes" :key="idx">
+                                <div
+                                    class="row"
+                                    @mousedown="onNodeMouseDown"
+                                    :data-grp-id="node.grp_id"
+                                    :data-node-id="node.id"
+                                    :class="{
+                                        active: selectedNode.id == node.id
+                                    }"
+                                >
+                                    <div
+                                        class="col"
+                                        style="flex: 0 0 26px !important;"
+                                    >
+                                        <input
+                                            v-model="node.isVisible"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            @change="
+                                                onChangeNodeVisibility(
+                                                    node.id,
+                                                    $event.srcElement.checked
+                                                )
+                                            "
+                                        />
+                                    </div>
+                                    <div class="col">
+                                        {{ node.id }}
+                                    </div>
+                                    <div class="col">
+                                        {{ Math.trunc(node.x * 100) / 100 }}
+                                    </div>
+                                    <div class="col">
+                                        {{ Math.trunc(node.y * 100) / 100 }}
+                                    </div>
+                                    <div class="col">
+                                        {{ Math.trunc(node.z * 100) / 100 }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -171,12 +207,10 @@ import { Watch, Prop } from "@/components/vue-decorator";
 
 import {
     EditorNode,
-    nodeType,
     EditorGroup
-} from "@/components/Editor/RoR/TruckFileInterfaces";
+} from "@/components/Editor/TruckEditorInterfaces";
 
 import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
-import { TruckFileInterface } from "@/components/Editor/RoR/TruckFileInterfaces";
 
 import { ipcRenderer } from "electron";
 import { watch } from "fs";
@@ -190,6 +224,8 @@ const { Menu, MenuItem } = remote;
 export default class EditorNodesTab extends Vue {
     @Prop() readonly truckDataNodes!: EditorNode[];
     @Prop() readonly truckDataGroups!: EditorGroup[];
+
+    private truckfileName = "hai";
 
     private nodesList: {
         grp_id: number;
@@ -210,12 +246,9 @@ export default class EditorNodesTab extends Vue {
         z: 0,
         options: "",
         name: "-1",
-        type: nodeType.DEFAULT,
 
         grp_id: -1,
-        comment_id: -1,
-        sbd_preset_id: -1,
-        snd_preset_id: -1,
+
         isVisible: true
     };
 
@@ -280,7 +313,7 @@ export default class EditorNodesTab extends Vue {
 
     deleteNode(currNodeId: number) {
         TruckEditorManager.getInstance()
-            .getEditorObj()
+            .getEditorObj()!
             .removeNode(currNodeId);
     }
 
@@ -375,7 +408,7 @@ export default class EditorNodesTab extends Vue {
                     label: "Delete",
                     click: () => {
                         TruckEditorManager.getInstance()
-                            .getEditorObj()
+                            .getEditorObj()!
                             .removeGrp(data.grpId);
                     }
                 })
@@ -415,13 +448,13 @@ export default class EditorNodesTab extends Vue {
 
     onChangeNodeVisibility(id: number, state: boolean) {
         TruckEditorManager.getInstance()
-            .getEditorObj()
+            .getEditorObj()!
             .setNodeVisibility(id, state);
     }
 
     onChangeGroupVisibility(id: number, state: boolean) {
         TruckEditorManager.getInstance()
-            .getEditorObj()
+            .getEditorObj()!
             .setGroupVisibility(id, state);
 
         /**
@@ -437,7 +470,7 @@ export default class EditorNodesTab extends Vue {
 
     applySeletedNode() {
         TruckEditorManager.getInstance()
-            .getEditorObj()
+            .getEditorObj()!
             .setNodeData(this.selectedNode);
     }
 

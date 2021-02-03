@@ -1,53 +1,42 @@
 import myLogger from "electron-log";
+
 import {
-    TruckFileInterface,
     EditorNode,
-    nodeType,
-    EditorBeam
-} from "./TruckFileInterfaces";
+    EditorBeam,
+    EditorTruckData
+} from "../TruckEditorInterfaces";
+
 import TruckEditorRenderer from "../TruckEditorRenderer";
 import TruckEditorManager from "../TruckEditorManagaer";
+import Utils from "../Utils";
 
 /**
  * TODO: maybe a class for this?
  */
 import { useToast } from "vue-toastification";
 import { Vector3 } from "three";
+import Editor from "../Common/EditorClass";
 
 interface HistorySystem {
     fn: string;
     data: string;
 }
 
-export default class TruckEditor {
+export default class RoRTruckEditor extends Editor {
     private logger: myLogger.LogFunctions;
 
     private renderInstance: TruckEditorRenderer;
 
     private HistorySystem: HistorySystem[] = [];
 
-    private truckData: TruckFileInterface;
-    private filePath = "";
-    private isSaved = true;
+    private truckData: EditorTruckData;
 
     constructor() {
+        super();
         this.logger = myLogger.default.scope("TruckEditor");
         this.logger.info("init");
 
-        /**
-         * Base structure
-         */
         this.truckData = {
-            title: "",
-            globals: {
-                cargoMass: 500,
-                dryMass: 3000,
-                material: "",
-                sbd_preset_id: -1,
-                snd_preset_id: -1,
-                grp_id: -1,
-                comment_id: -1
-            },
             nodes: [],
             beams: [],
             groups: []
@@ -56,71 +45,22 @@ export default class TruckEditor {
         this.renderInstance = TruckEditorManager.getInstance().getRendererObj();
     }
 
-    public setFilePath(filePath: string) {
-        this.filePath = filePath;
-    }
-
-    public getFilePath(): string {
-        return this.filePath;
-    }
-
-    public getSaveState() {
-        return this.isSaved;
-    }
-
-    public setSaveState(state: boolean) {
-        this.isSaved = state;
-    }
-
-    /**
-     * fetch data
-     */
-    public loadData(data: TruckFileInterface) {
-        this.truckData = data;
-        this.sendUpdate();
-    }
-
-    /**
-     * get all truck data
-     */
-    public getData(): TruckFileInterface {
-        return this.truckData;
-    }
-
-    /**
-     * Reset truck data
-     * Warning: deletes everything
-     */
     public reset() {
-        this.filePath = "";
         this.truckData = {
-            title: "",
-            globals: {
-                cargoMass: 500,
-                dryMass: 3000,
-                material: "",
-                sbd_preset_id: -1,
-                snd_preset_id: -1,
-                grp_id: -1,
-                comment_id: -1
-            },
             nodes: [],
             beams: [],
             groups: []
         };
     }
 
-    /**
-     * Init a new file
-     * @param title truck title
-     * @param dryMass
-     * @param cargoMass
-     */
-    public create(title: string, dryMass: number, cargoMass: number) {
-        this.reset();
-        this.truckData.title = title;
-        this.truckData.globals.dryMass = dryMass;
-        this.truckData.globals.cargoMass = cargoMass;
+    public getData() {
+        return this.truckData;
+    }
+
+    public fetchData() {
+        this.truckData = TruckEditorManager.getInstance()
+            .getStoreObj()
+            .getEditorData();
     }
 
     /**
@@ -130,7 +70,7 @@ export default class TruckEditor {
         this.renderInstance.getSceneManager().reset();
 
         //Fetch the data again
-        //this.truckData = store.getters.getTruckData;
+        this.fetchData();
 
         this.logger.log("loading data..");
 
@@ -140,7 +80,7 @@ export default class TruckEditor {
             this.renderInstance
                 .getSceneManager()
                 .getCurrSceneController()
-                .addNodeToScene(currNode);
+                .addNodeToScene(Utils.convertNodeToScene(currNode));
         }
 
         this.renderInstance
@@ -191,17 +131,15 @@ export default class TruckEditor {
         const lastGrpId = this.getLastGroupId("node");
 
         const currNode: EditorNode = {
-            sbd_preset_id: -1,
-            snd_preset_id: -1,
             grp_id: lastGrpId,
-            comment_id: -1,
 
             id: nodeId,
             name: nodeId.toString(),
             x: position.x,
             y: position.y,
             z: position.z,
-            type: nodeType.DEFAULT,
+            options: "",
+
             isVisible: true
         };
 
@@ -217,7 +155,7 @@ export default class TruckEditor {
         this.renderInstance
             .getSceneManager()
             .getCurrSceneController()
-            .addNodeToScene(currNode);
+            .addNodeToScene(Utils.convertNodeToScene(currNode));
         this.sendUpdate();
     }
 
@@ -397,10 +335,8 @@ export default class TruckEditor {
             id: beamId,
             isVisible: true,
 
-            sbd_preset_id: -1,
-            snd_preset_id: -1,
             grp_id: lastGrpId,
-            comment_id: -1,
+
             options: "v" //TODO: set this from editor config
         });
 
@@ -755,7 +691,7 @@ export default class TruckEditor {
                     this.renderInstance
                         .getSceneManager()
                         .getCurrSceneController()
-                        .addNodeToScene(currNode);
+                        .addNodeToScene(Utils.convertNodeToScene(currNode));
                 }
 
                 for (let i = 0; i < nodesBeamsChangeEx.length; i++) {
@@ -860,7 +796,7 @@ export default class TruckEditor {
                 this.renderInstance
                     .getSceneManager()
                     .getCurrSceneController()
-                    .addNodeToScene(currNode);
+                    .addNodeToScene(Utils.convertNodeToScene(currNode));
             }
 
             for (let i = 0; i < nodesBeamsChangeEx.length; i++) {
@@ -1053,7 +989,7 @@ export default class TruckEditor {
             this.renderInstance
                 .getSceneManager()
                 .getCurrSceneController()
-                .addNodeToScene(currNode);
+                .addNodeToScene(Utils.convertNodeToScene(currNode));
         }
 
         for (let i = 0; i < nodesBeamsChangeEx.length; i++) {
@@ -1259,7 +1195,11 @@ export default class TruckEditor {
      * Update the UI
      */
     private async sendUpdate() {
-        this.isSaved = false;
+        //TODO: this should happen here
+        //Too much performance cost
+        TruckEditorManager.getInstance()
+            .getStoreObj()
+            .setEditorData(this.truckData);
         document.dispatchEvent(new Event("truckDataUpdate"));
     }
 

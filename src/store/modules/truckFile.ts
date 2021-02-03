@@ -1,4 +1,3 @@
-import { TruckFileInterface } from "@/components/Editor/RoR/TruckFileInterfaces";
 import { markRaw } from "vue";
 
 /**
