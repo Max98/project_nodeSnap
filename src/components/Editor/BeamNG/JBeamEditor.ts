@@ -15,7 +15,6 @@ export default class JBeamEditor extends Editor {
     constructor() {
         super();
         this.jBeamData = [];
-        console.log("HAI!");
     }
 
     public reset(): void {
@@ -59,6 +58,7 @@ export default class JBeamEditor extends Editor {
         this.jBeamData.forEach(slot => {
             for (let i = 0; i < slot.nodes.length; i++) {
                 const currNode = slot.nodes[i];
+
                 sceneController.addNodeToScene(
                     Utils.convertNodeToScene(currNode),
                     slot.slot?.name
@@ -67,6 +67,7 @@ export default class JBeamEditor extends Editor {
 
             for (let i = 0; i < slot.beams.length; i++) {
                 const currBeam = slot.beams[i];
+
                 sceneController.addBeamToScene(
                     Utils.convertBeamToScene(currBeam)
                 );
@@ -76,7 +77,7 @@ export default class JBeamEditor extends Editor {
         sceneController.prepareNodes();
         sceneController.buildBeamLines();
         sceneController.postCalc();
-        throw console.error("Not implemented!");
+        //throw console.error("Not implemented!");
     }
 
     public addNode(position: THREE.Vector3): void {

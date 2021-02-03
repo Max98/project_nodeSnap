@@ -3,6 +3,7 @@ import { Store } from "vuex";
 import StoreClass from "../../Common/StoreClass";
 import {
     EditorBeam,
+    EditorGroup,
     EditorNode,
     EditorTruckData
 } from "../../TruckEditorInterfaces";
@@ -58,69 +59,195 @@ export default class JBeamStore extends StoreClass {
                 for (let i = 0; i < currValue["nodes"].length; i++) {
                     const currNode = currValue["nodes"][i];
 
+                    let con = false;
+
                     if (currNode[0] == "id") {
                         continue;
                     }
 
-                    if (currNode.nodeWeight) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "nodeWeight"
+                        )
+                    ) {
                         nodeParams.nodeWeight = currNode.nodeWeight;
-                        continue;
+                        con = true;
                     }
 
-                    if (currNode.collision) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "collision"
+                        )
+                    ) {
                         nodeParams.collision = currNode.collision;
-                        continue;
+                        con = true;
                     }
 
-                    if (currNode.selfCollision) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "selfCollision"
+                        )
+                    ) {
                         nodeParams.selfCollision = currNode.selfCollision;
-                        continue;
+                        con = true;
                     }
 
-                    if (currNode.group) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(currNode, "group")
+                    ) {
                         nodeParams.group = currNode.group;
-                        continue;
+
+                        con = true;
                     }
-                    if (currNode.frictionCoef) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "frictionCoef"
+                        )
+                    ) {
                         nodeParams.frictionCoef = currNode.frictionCoef;
-                        continue;
+                        con = true;
                     }
-                    if (currNode.slidingFrictionCoef) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "slidingFrictionCoef"
+                        )
+                    ) {
                         nodeParams.slidingFrictionCoef =
                             currNode.slidingFrictionCoef;
-                        continue;
+                        con = true;
                     }
-                    if (currNode.treadCoef) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "treadCoef"
+                        )
+                    ) {
                         nodeParams.treadCoef = currNode.treadCoef;
-                        continue;
+                        con = true;
                     }
-                    if (currNode.softness) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "softness"
+                        )
+                    ) {
                         nodeParams.softness = currNode.softness;
-                        continue;
+                        con = true;
                     }
-                    if (currNode.loadSensitivitySlope) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "loadSensitivitySlope"
+                        )
+                    ) {
                         nodeParams.loadSensitivitySlope =
                             currNode.loadSensitivitySlope;
-                        continue;
+                        con = true;
                     }
-                    if (currNode.noLoadCoef) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "noLoadCoef"
+                        )
+                    ) {
                         nodeParams.noLoadCoef = currNode.noLoadCoef;
-                        continue;
+                        con = true;
                     }
-                    if (currNode.fullLoadCoef) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "fullLoadCoef"
+                        )
+                    ) {
                         nodeParams.fullLoadCoef = currNode.fullLoadCoef;
-                        continue;
+                        con = true;
                     }
-                    if (currNode.nodeMaterial) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "nodeMaterial"
+                        )
+                    ) {
                         nodeParams.nodeMaterial = currNode.nodeMaterial;
-                        continue;
+                        con = true;
                     }
-                    if (currNode.fixed) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(currNode, "fixed")
+                    ) {
                         nodeParams.fixed = currNode.fixed;
-                        continue;
+                        con = true;
                     }
-                    if (currNode.pairedNode) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "pairedNode"
+                        )
+                    ) {
                         nodeParams.pairedNode = currNode.pairedNode;
+                        con = true;
+                    }
+
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "burnRate"
+                        )
+                    ) {
+                        nodeParams.burnRate = currNode.burnRate;
+                        con = true;
+                    }
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "chemEnergy"
+                        )
+                    ) {
+                        nodeParams.chemEnergy = currNode.chemEnergy;
+                        con = true;
+                    }
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "flashPoint"
+                        )
+                    ) {
+                        nodeParams.flashPoint = currNode.flashPoint;
+                        con = true;
+                    }
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "selfIgnitionCoef"
+                        )
+                    ) {
+                        nodeParams.selfIgnitionCoef = currNode.selfIgnitionCoef;
+                        con = true;
+                    }
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "smokePoint"
+                        )
+                    ) {
+                        nodeParams.smokePoint = currNode.smokePoint;
+                        con = true;
+                    }
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currNode,
+                            "specHeat"
+                        )
+                    ) {
+                        nodeParams.specHeat = currNode.specHeat;
+                        con = true;
+                    }
+
+                    if (con) {
                         continue;
                     }
 
@@ -159,126 +286,248 @@ export default class JBeamStore extends StoreClass {
                     /**
                      * Normal beams
                      */
-                    if (currBeam.beamSpring) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "beamSpring"
+                        )
+                    ) {
                         beamParams.beamSpring = currBeam.beamSpring;
                         con = true;
                     }
-                    if (currBeam.beamDamp) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "beamDamp"
+                        )
+                    ) {
                         beamParams.beamDamp = currBeam.beamDamp;
                         con = true;
                     }
-                    if (currBeam.beamDeform) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "beamDeform"
+                        )
+                    ) {
                         beamParams.beamDeform = currBeam.beamDeform;
                         con = true;
                     }
-                    if (currBeam.beamStrength) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "beamStrength"
+                        )
+                    ) {
                         beamParams.beamStrength = currBeam.beamStrength;
                         con = true;
                     }
-                    if (currBeam.deformLimit) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "deformLimit"
+                        )
+                    ) {
                         beamParams.deformLimit = currBeam.deformLimit;
                         con = true;
                     }
-                    if (currBeam.deformLimitExpansion) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "deformLimitExpansion"
+                        )
+                    ) {
                         beamParams.deformLimitExpansion =
                             currBeam.deformLimitExpansion;
                         con = true;
                     }
-                    if (currBeam.precompression) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "precompression"
+                        )
+                    ) {
                         beamParams.precompression = currBeam.precompression;
                         con = true;
                     }
-                    if (currBeam.precompressionTime) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "precompressionTime"
+                        )
+                    ) {
                         beamParams.precompressionTime =
                             currBeam.precompressionTime;
                         con = true;
                     }
-                    if (currBeam.precompressionRange) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "precompressionRange"
+                        )
+                    ) {
                         beamParams.precompressionRange =
                             currBeam.precompressionRange;
                         con = true;
                     }
 
-                    if (currBeam.breakGroup || currBeam.breakGroup == "") {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "breakGroup"
+                        )
+                    ) {
                         beamParams.breakGroup = currBeam.breakGroup;
                         con = true;
                     }
-                    if (currBeam.breakGroupType) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "breakGroupType"
+                        )
+                    ) {
                         beamParams.breakGroupType = currBeam.breakGroupType;
                         con = true;
                     }
-                    if (currBeam.deformGroup) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "deformGroup"
+                        )
+                    ) {
                         beamParams.deformGroup = currBeam.deformGroup;
                         con = true;
                     }
-                    if (currBeam.deformationTriggerRatio) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "deformationTriggerRatio"
+                        )
+                    ) {
                         beamParams.deformationTriggerRatio =
                             currBeam.deformationTriggerRatio;
                         con = true;
                     }
-                    if (currBeam.dampCutoffHz) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "dampCutoffHz"
+                        )
+                    ) {
                         beamParams.dampCutoffHz = currBeam.dampCutoffHz;
                         con = true;
                     }
-                    if (currBeam.optional) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "optional"
+                        )
+                    ) {
                         beamParams.optional = currBeam.optional;
                         con = true;
                     }
 
                     if (
-                        currBeam.disableMeshBreaking ||
-                        currBeam.disableMeshBreaking == false
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "disableMeshBreaking"
+                        )
                     ) {
                         beamParams.disableMeshBreaking =
                             currBeam.disableMeshBreaking;
                         con = true;
                     }
 
-                    if (currBeam.beamPrecompression) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "beamPrecompression"
+                        )
+                    ) {
                         beamParams.beamPrecompression =
                             currBeam.beamPrecompression;
 
                         con = true;
                     }
 
-                    if (currBeam.beamType) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "beamType"
+                        )
+                    ) {
                         beamParams.beamType = currBeam.beamType;
                         con = true;
                     }
 
-                    if (currBeam.beamLongBound || currBeam.beamLongBound == 0) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "beamLongBound"
+                        )
+                    ) {
                         beamParams.beamLongBound = currBeam.beamLongBound;
                         con = true;
                     }
 
                     if (
-                        currBeam.beamShortBound ||
-                        currBeam.beamShortBound == 0
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "beamShortBound"
+                        )
                     ) {
                         beamParams.beamShortBound = currBeam.beamShortBound;
                         con = true;
                     }
 
                     if (
-                        currBeam.breakGroupType ||
-                        currBeam.breakGroupType == 0
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "breakGroupType"
+                        )
                     ) {
                         beamParams.breakGroupType = currBeam.breakGroupType;
                         con = true;
                     }
 
-                    if (currBeam.highlight || currBeam.highlight == false) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "highlight"
+                        )
+                    ) {
                         beamParams.highlight = currBeam.highlight;
                         con = true;
                     }
 
-                    if (currBeam.beamLimitSpring) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "beamLimitSpring"
+                        )
+                    ) {
                         beamParams.beamLimitSpring = currBeam.beamLimitSpring;
                         con = true;
                     }
 
-                    if (currBeam.beamLimitDamp) {
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "beamLimitDamp"
+                        )
+                    ) {
                         beamParams.beamLimitDamp = currBeam.beamLimitDamp;
+                        con = true;
+                    }
+
+                    if (
+                        Object.prototype.hasOwnProperty.call(
+                            currBeam,
+                            "deformLimitExpansion"
+                        )
+                    ) {
+                        beamParams.deformLimitExpansion =
+                            currBeam.deformLimitExpansion;
                         con = true;
                     }
 
@@ -316,6 +565,8 @@ export default class JBeamStore extends StoreClass {
                 slot: { name: currValue["slotType"], isVisible: true }
             });
         }
+
+        console.log(editorTruckData);
 
         return editorTruckData;
     }

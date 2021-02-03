@@ -118,6 +118,7 @@ export default class BeamNGSceneController extends SceneController {
 
         newNode.userData = {
             id: nodeData.nodeInfo.nodeId,
+            name: nodeData.nodeInfo.nodeName,
             grp_id: nodeData.nodeInfo.grpId,
             slot: slot
         };
@@ -293,8 +294,13 @@ export default class BeamNGSceneController extends SceneController {
 
             if (inv != undefined) return;
 
+            if (currBeam.node1 == -1) return;
+            if (currBeam.node2 == -1) return;
+
             this.lineIdx.push(currBeam.node1);
             this.lineIdx.push(currBeam.node2);
+
+            //console.log(currBeam.node1 + " : " + currBeam.node2);
         });
 
         const geometry = new THREE.BufferGeometry().setFromPoints(

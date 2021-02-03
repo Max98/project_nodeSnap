@@ -84,6 +84,7 @@ import EditorOtherTab from "./Editor//Editor_otherTab.vue";
 import EditorNavBar from "./Editor/Editor_navbar.vue";
 import EditorMain from "./Editor/Editor_main.vue";
 import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
+import { EditorTruckData } from "@/components/Editor/TruckEditorInterfaces";
 
 @Options({
     name: "Editor",
@@ -96,16 +97,14 @@ import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
     }
 })
 export default class Editor extends Vue {
-    truckDataSlots = [];
+    truckDataSlots: EditorTruckData[] = [];
 
     loadData() {
-        this.truckDataSlots = JSON.parse(
-            JSON.stringify(
-                TruckEditorManager.getInstance()
-                    .getEditorObj()!
-                    .getData()
-            )
-        );
+        this.truckDataSlots = {
+            ...TruckEditorManager.getInstance()
+                .getEditorObj()!
+                .getData()
+        };
     }
 
     created() {

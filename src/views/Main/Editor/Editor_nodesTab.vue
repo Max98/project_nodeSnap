@@ -1,32 +1,81 @@
 <template>
     <div class="node-table">
-        <div v-for="(slot, idx) in nodesList" :key="idx">
+        <div v-for="(slot, idx) in truckDataSlots" :key="idx">
             <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button
-                        class="accordion-button collapsed"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#Slot"
-                        aria-expanded="false"
-                        aria-controls="Slot"
-                    >
-                        {{ slot.name }}
-                    </button>
-                </h2>
+                <div class="row">
+                    <div class="col" style="flex: 0 0 26px !important;">
+                        <input
+                            v-model="slot.slot.isVisible"
+                            class="form-check-input"
+                            type="checkbox"
+                        />
+                    </div>
+                    <div class="col">
+                        <h2 class="accordion-header">
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                :data-bs-target="`#Slot` + idx"
+                                aria-expanded="false"
+                                :aria-controls="`Slot` + idx"
+                            >
+                                slot: {{ slot.slot.name }}
+                            </button>
+                        </h2>
+                    </div>
+                </div>
+
                 <div
-                    id="Slot"
-                    data-bs-parent="#Slot"
+                    :id="`Slot` + idx"
+                    :data-bs-parent="`#Slot` + idx"
                     class="accordion-collapse collapse"
                 >
-                    <div v-if="slot.data[0].nodes.length == 0 && !slot.data[1]">
+                    <div v-if="slot.nodes.length == 0 && !slot.nodes[1]">
                         <div class="row">
                             <div class="col">
                                 Empty
                             </div>
                         </div>
                     </div>
-                    <div v-for="grp in slot.data" :key="grp.grp_id">
+                    <div v-for="(node, idx) in slot.nodes" :key="idx">
+                        <div
+                            class="row"
+                            @mousedown="onNodeMouseDown"
+                            :data-grp-id="node.grp_id"
+                            :data-node-id="node.id"
+                            :class="{
+                                active: selectedNode.id == node.id
+                            }"
+                        >
+                            <div class="col" style="flex: 0 0 26px !important;">
+                                <input
+                                    v-model="node.isVisible"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    @change="
+                                        onChangeNodeVisibility(
+                                            node.id,
+                                            $event.srcElement.checked
+                                        )
+                                    "
+                                />
+                            </div>
+                            <div class="col" style="flex: 0 0 60px !important;">
+                                {{ node.name }}
+                            </div>
+                            <div class="col">
+                                {{ Math.trunc(node.x * 100) / 100 }}
+                            </div>
+                            <div class="col">
+                                {{ Math.trunc(node.y * 100) / 100 }}
+                            </div>
+                            <div class="col">
+                                {{ Math.trunc(node.z * 100) / 100 }}
+                            </div>
+                        </div>
+                    </div>
+                    <div v-for="grp in slot.groups" :key="grp.grp_id">
                         <div class="accordion-item">
                             <div
                                 class="row grp-row"
@@ -82,126 +131,81 @@
                                 :id="`group` + grp.grp_id"
                                 :data-bs-parent="`#group` + grp.grp_id"
                                 class="accordion-collapse collapse"
-                            >
-                                <div
-                                    v-for="(node, idx) in grp.nodes"
-                                    :key="idx"
-                                >
-                                    <div
-                                        class="row"
-                                        @mousedown="onNodeMouseDown"
-                                        :data-grp-id="node.grp_id"
-                                        :data-node-id="node.id"
-                                        :class="{
-                                            active: selectedNode.id == node.id
-                                        }"
-                                    >
-                                        <div
-                                            class="col"
-                                            style="flex: 0 0 26px !important;"
-                                        >
-                                            <input
-                                                v-model="node.isVisible"
-                                                class="form-check-input"
-                                                type="checkbox"
-                                                @change="
-                                                    onChangeNodeVisibility(
-                                                        node.id,
-                                                        $event.srcElement
-                                                            .checked
-                                                    )
-                                                "
-                                            />
-                                        </div>
-                                        <div class="col">
-                                            {{ node.id }}
-                                        </div>
-                                        <div class="col">
-                                            {{ Math.trunc(node.x * 100) / 100 }}
-                                        </div>
-                                        <div class="col">
-                                            {{ Math.trunc(node.y * 100) / 100 }}
-                                        </div>
-                                        <div class="col">
-                                            {{ Math.trunc(node.z * 100) / 100 }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            ></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="card bg-secondary sidebar-editor">
-            <div class="card-body">
-                <div style="min-height: 105px;">
-                    <div class="row">
-                        <div class="col-3">
-                            <label>x:</label>
-                        </div>
-                        <div class="col">
-                            <input
-                                type="text"
-                                class="form-control form-control-sm"
-                                v-model="selectedNode.x"
-                                :disabled="selectedNode.id == -1"
-                            />
-                        </div>
+    </div>
+    <div class="card bg-secondary sidebar-editor">
+        <div class="card-body">
+            <div style="min-height: 105px;">
+                <div class="row">
+                    <div class="col-3">
+                        <label>x:</label>
                     </div>
-                    <div class="row">
-                        <div class="col-3">
-                            <label>y:</label>
-                        </div>
-                        <div class="col">
-                            <input
-                                type="text"
-                                class="form-control form-control-sm"
-                                v-model="selectedNode.y"
-                                :disabled="selectedNode.id == -1"
-                            />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-3">
-                            <label>z:</label>
-                        </div>
-                        <div class="col">
-                            <input
-                                type="text"
-                                class="form-control form-control-sm"
-                                v-model="selectedNode.z"
-                                :disabled="selectedNode.id == -1"
-                            />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-3">
-                            <label>Option:</label>
-                        </div>
-                        <div class="col">
-                            <input
-                                type="text"
-                                class="form-control form-control-sm"
-                                v-model="selectedNode.options"
-                                :disabled="selectedNode.id == -1"
-                            />
-                        </div>
+                    <div class="col">
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="selectedNode.x"
+                            :disabled="selectedNode.id == -1"
+                        />
                     </div>
                 </div>
-
                 <div class="row">
+                    <div class="col-3">
+                        <label>y:</label>
+                    </div>
                     <div class="col">
-                        <div class="d-grid gap-2 mx-auto">
-                            <button
-                                type="button"
-                                class="btn btn-primary btn-sm me-0"
-                                :disabled="selectedNode.id == -1"
-                                @click="applySeletedNode()"
-                            >
-                                Apply
-                            </button>
-                        </div>
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="selectedNode.y"
+                            :disabled="selectedNode.id == -1"
+                        />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3">
+                        <label>z:</label>
+                    </div>
+                    <div class="col">
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="selectedNode.z"
+                            :disabled="selectedNode.id == -1"
+                        />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3">
+                        <label>Option:</label>
+                    </div>
+                    <div class="col">
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="selectedNode.options"
+                            :disabled="selectedNode.id == -1"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="d-grid gap-2 mx-auto">
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm me-0"
+                            :disabled="selectedNode.id == -1"
+                            @click="applySeletedNode()"
+                        >
+                            Apply
+                        </button>
                     </div>
                 </div>
             </div>
@@ -235,17 +239,6 @@ export default class EditorNodesTab extends Vue {
 
     private truckfileName = "hai";
 
-    private nodesList: {
-        slot: [
-            {
-                name: string;
-                data: [
-                    { grp_id: number; nodes: EditorNode[]; isVisible: boolean }
-                ];
-            }
-        ];
-    }[] = [];
-
     private selectedNode: EditorNode = {
         id: -1,
         x: 0,
@@ -260,7 +253,9 @@ export default class EditorNodesTab extends Vue {
     };
 
     @Watch("truckDataSlots")
-    updateNodesData() {}
+    updateNodesData() {
+        console.log(this.truckDataSlots);
+    }
 
     mounted() {
         this.updateNodesData();

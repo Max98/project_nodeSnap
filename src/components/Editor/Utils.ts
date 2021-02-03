@@ -95,7 +95,9 @@ export default class Utils {
     public static convertBeamToScene(currBeam: EditorBeam): SceneBeam {
         const sceneBeam: SceneBeam = {
             node1: currBeam.node1,
-            node2: currBeam.node2
+            node2: currBeam.node2,
+            node1Name: currBeam.node1Name,
+            node2Name: currBeam.node2Name
         };
         return sceneBeam;
     }
