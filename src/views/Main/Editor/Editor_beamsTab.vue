@@ -1,86 +1,93 @@
 <template>
     <div class="node-table">
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button
-                    class="accordion-button beamsCollapse"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#beamsCollapse"
-                    aria-expanded="true"
+        <div v-for="(slot, idx) in beamsList" :key="idx">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button
+                        class="accordion-button beamsCollapse"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#beamsCollapse"
+                        aria-expanded="true"
+                    >
+                        Beams
+                    </button>
+                </h2>
+                <div
+                    id="beamsCollapse"
+                    class="accordion-collapse collapse show"
+                    data-bs-parent="#beamsCollapse"
                 >
-                    Beams
-                </button>
-            </h2>
-            <div
-                id="beamsCollapse"
-                class="accordion-collapse collapse show"
-                data-bs-parent="#beamsCollapse"
-            >
-                <div v-if="beamsList[0].beams.length == 0 && !beamsList[1]">
-                    <div class="row">
-                        <div class="col">
-                            Empty
+                    <div v-if="slot.data[0].beams.length == 0 && !slot.data[1]">
+                        <div class="row">
+                            <div class="col">
+                                Empty
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div v-for="grp in beamsList" :key="grp.grp_id">
-                    <div class="accordion-item">
-                        <div
-                            class="row grp-row"
-                            :data-grp-id="grp.grp_id"
-                            @mousedown="onGrpMouseDown"
-                        >
-                            <template v-if="grp.grp_id != -1">
-                                <div class="col">
-                                    <h2 class="accordion-header">
-                                        <button
-                                            class="accordion-button groups-button collapsed"
-                                            type="button"
-                                            data-bs-toggle="collapse"
-                                            :data-bs-target="
-                                                `#group` + grp.grp_id
-                                            "
-                                            aria-expanded="true"
-                                            :aria-controls="
-                                                `group` + grp.grp_id
-                                            "
-                                        >
-                                            <div
-                                                class="acc-title"
-                                                :title="getGrpName(grp.grp_id)"
+                    <div v-for="grp in slot.data" :key="grp.grp_id">
+                        <div class="accordion-item">
+                            <div
+                                class="row grp-row"
+                                :data-grp-id="grp.grp_id"
+                                @mousedown="onGrpMouseDown"
+                            >
+                                <template v-if="grp.grp_id != -1">
+                                    <div class="col">
+                                        <h2 class="accordion-header">
+                                            <button
+                                                class="accordion-button groups-button collapsed"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                :data-bs-target="
+                                                    `#group` + grp.grp_id
+                                                "
+                                                aria-expanded="true"
+                                                :aria-controls="
+                                                    `group` + grp.grp_id
+                                                "
                                             >
-                                                grp:
-                                                {{ getGrpName(grp.grp_id) }}
-                                            </div>
-                                        </button>
-                                    </h2>
-                                </div>
-                            </template>
-                        </div>
-                        <div
-                            :id="`group` + grp.grp_id"
-                            :data-bs-parent="`#group` + grp.grp_id"
-                            class="accordion-collapse collapse"
-                        >
-                            <div v-for="(beam, idx) in grp.beams" :key="idx">
+                                                <div
+                                                    class="acc-title"
+                                                    :title="
+                                                        getGrpName(grp.grp_id)
+                                                    "
+                                                >
+                                                    grp:
+                                                    {{ getGrpName(grp.grp_id) }}
+                                                </div>
+                                            </button>
+                                        </h2>
+                                    </div>
+                                </template>
+                            </div>
+                            <div
+                                :id="`group` + grp.grp_id"
+                                :data-bs-parent="`#group` + grp.grp_id"
+                                class="accordion-collapse collapse"
+                            >
                                 <div
-                                    class="row"
-                                    @mousedown="onBeamMouseDown"
-                                    :data-beam-id="beam.id"
-                                    :data-grp-id="beam.grp_id"
-                                    :class="{
-                                        active: selectedBeam.id == beam.id
-                                    }"
+                                    v-for="(beam, idx) in grp.beams"
+                                    :key="idx"
                                 >
-                                    <div class="col">
-                                        {{ beam.node1 }}
-                                    </div>
-                                    <div class="col">
-                                        {{ beam.node2 }}
-                                    </div>
-                                    <div class="col">
-                                        {{ beam.options }}
+                                    <div
+                                        class="row"
+                                        @mousedown="onBeamMouseDown"
+                                        :data-beam-id="beam.id"
+                                        :data-grp-id="beam.grp_id"
+                                        :class="{
+                                            active: selectedBeam.id == beam.id
+                                        }"
+                                    >
+                                        <div class="col">
+                                            {{ beam.node1 }}
+                                        </div>
+                                        <div class="col">
+                                            {{ beam.node2 }}
+                                        </div>
+                                        <div class="col">
+                                            {{ beam.options }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -89,62 +96,62 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="card bg-secondary sidebar-editor">
-        <div class="card-body">
-            <div style="min-height: 105px;">
-                <div class="row">
-                    <div class="col-3">
-                        <label>Node1:</label>
+        <div class="card bg-secondary sidebar-editor">
+            <div class="card-body">
+                <div style="min-height: 105px;">
+                    <div class="row">
+                        <div class="col-3">
+                            <label>Node1:</label>
+                        </div>
+                        <div class="col">
+                            <input
+                                type="text"
+                                class="form-control form-control-sm"
+                                v-model="selectedBeam.node1"
+                                :disabled="selectedBeam.node1 == -1"
+                            />
+                        </div>
                     </div>
-                    <div class="col">
-                        <input
-                            type="text"
-                            class="form-control form-control-sm"
-                            v-model="selectedBeam.node1"
-                            :disabled="selectedBeam.node1 == -1"
-                        />
+                    <div class="row">
+                        <div class="col-3">
+                            <label>Node2:</label>
+                        </div>
+                        <div class="col">
+                            <input
+                                type="text"
+                                class="form-control form-control-sm"
+                                v-model="selectedBeam.node2"
+                                :disabled="selectedBeam.node1 == -1"
+                            />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <label>Option:</label>
+                        </div>
+                        <div class="col">
+                            <input
+                                type="text"
+                                class="form-control form-control-sm"
+                                v-model="selectedBeam.options"
+                                :disabled="selectedBeam.node1 == -1"
+                            />
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-3">
-                        <label>Node2:</label>
-                    </div>
-                    <div class="col">
-                        <input
-                            type="text"
-                            class="form-control form-control-sm"
-                            v-model="selectedBeam.node2"
-                            :disabled="selectedBeam.node1 == -1"
-                        />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-3">
-                        <label>Option:</label>
-                    </div>
-                    <div class="col">
-                        <input
-                            type="text"
-                            class="form-control form-control-sm"
-                            v-model="selectedBeam.options"
-                            :disabled="selectedBeam.node1 == -1"
-                        />
-                    </div>
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col">
-                    <div class="d-grid gap-2 mx-auto">
-                        <button
-                            type="button"
-                            class="btn btn-primary btn-sm me-0"
-                            :disabled="selectedBeam.node1 == -1"
-                            @click="applyBeamData()"
-                        >
-                            Apply
-                        </button>
+                <div class="row">
+                    <div class="col">
+                        <div class="d-grid gap-2 mx-auto">
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-sm me-0"
+                                :disabled="selectedBeam.node1 == -1"
+                                @click="applyBeamData()"
+                            >
+                                Apply
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -158,7 +165,7 @@ import { Watch, Prop } from "@/components/vue-decorator";
 
 import {
     EditorBeam,
-    EditorGroup
+    EditorTruckData
 } from "@/components/Editor/TruckEditorInterfaces";
 
 import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
@@ -171,20 +178,18 @@ const { Menu, MenuItem } = remote;
     components: {}
 })
 export default class EditorBeamsTab extends Vue {
-    @Prop() readonly truckDataBeams!: EditorBeam[];
-    @Prop() readonly truckDataGroups!: EditorGroup[];
+    @Prop() readonly truckDataSlots!: EditorTruckData[];
 
     private beamsList: {
-        grp_id: number;
-        beams: EditorBeam[];
-        is_visible: boolean;
-    }[] = [
-        {
-            grp_id: -1,
-            is_visible: true,
-            beams: []
-        }
-    ];
+        slot: [
+            {
+                name: string;
+                data: [
+                    { grp_id: number; beams: EditorBeam[]; isVisible: boolean }
+                ];
+            }
+        ];
+    }[] = [];
 
     private selectedBeam: EditorBeam = {
         node1: -1,
@@ -196,157 +201,11 @@ export default class EditorBeamsTab extends Vue {
     };
 
     @Watch("truckDataBeams")
-    updateBeamsData() {
-        let lastGrp = -1;
-
-        this.beamsList = [];
-
-        this.beamsList.push({
-            grp_id: -1,
-            is_visible: true,
-            beams: []
-        });
-
-        if (Array.isArray(this.truckDataBeams)) {
-            this.truckDataBeams.forEach(beam => {
-                if (beam.grp_id != lastGrp) {
-                    this.beamsList.push({
-                        grp_id: beam.grp_id,
-                        is_visible: true,
-                        beams: []
-                    });
-                    lastGrp = beam.grp_id;
-                }
-            });
-
-            this.truckDataBeams.forEach(beam => {
-                if (this.beamsList.some(el => el.grp_id == beam.grp_id)) {
-                    const newBeam: EditorBeam = beam as EditorBeam;
-                    newBeam.isVisible = true;
-
-                    this.beamsList
-                        .filter(el => el.grp_id == beam.grp_id)[0]
-                        .beams.push(newBeam);
-                }
-            });
-        }
-    }
-
-    @Watch("truckDataBeams")
-    onUpdate() {
-        this.setBeamEditor(this.selectedBeam.id);
-    }
-
-    setBeamEditor(beamId: number) {
-        const currBeam = this.truckDataBeams.find(el => el.id == beamId);
-        if (currBeam != undefined) {
-            this.selectedBeam = currBeam;
-        }
-    }
-
-    getGrpName(grp: number) {
-        if (grp == -1) return;
-
-        const title = this.truckDataGroups.filter(el => el.grp_id == grp)[0]
-            .title;
-        return title;
-    }
-
-    onBeamMouseDown(e: any /** MouseEvent */) {
-        let data: any;
-
-        if (e.path[0].dataset.length == 3) {
-            data = e.path[0].dataset;
-        } else {
-            data = e.path[1].dataset;
-        }
-
-        this.setBeamEditor(data.beamId);
-
-        const menu = new Menu();
-        if (e.button == 2) {
-            menu.append(
-                new MenuItem({
-                    label: "Add new group before beam",
-                    click: () => {
-                        ipcRenderer.send("setModalVisibility", {
-                            name: "addGrp",
-                            state: true,
-                            data: {
-                                id: data.beamId,
-                                title: "newGrp",
-                                type: "beam"
-                            }
-                        });
-                    }
-                })
-            );
-            menu.append(new MenuItem({ type: "separator" }));
-            menu.append(
-                new MenuItem({
-                    label: "Delete beam",
-                    click: () => {
-                        TruckEditorManager.getInstance()
-                            .getEditorObj()!
-                            .removeBeam(data.beamId);
-                    }
-                })
-            );
-            menu.popup({ window: remote.getCurrentWindow() });
-        }
-    }
-
-    onGrpMouseDown(e: any) {
-        let data: any;
-
-        if (e.path[0].dataset.length == 3) {
-            data = e.path[0].dataset;
-        } else {
-            data = e.path[1].dataset;
-        }
-
-        const menu = new Menu();
-        if (e.button == 2) {
-            menu.append(
-                new MenuItem({
-                    label: "Rename group",
-                    click: () => {
-                        ipcRenderer.send("setModalVisibility", {
-                            name: "renameGrp",
-                            state: true,
-                            data: {
-                                id: data.grpId,
-                                title: this.getGrpName(data.grpId)
-                            }
-                        });
-                    }
-                })
-            );
-            menu.append(
-                new MenuItem({
-                    label: "Delete group",
-                    click: () => {
-                        TruckEditorManager.getInstance()
-                            .getEditorObj()!
-                            .removeGrp(data.grpId);
-                    }
-                })
-            );
-            menu.popup({
-                window: remote.getCurrentWindow()
-            });
-        }
-    }
-
-    applyBeamData() {
-        TruckEditorManager.getInstance()
-            .getEditorObj()!
-            .setBeamData(this.selectedBeam);
-    }
+    updateBeamsData() {}
 
     mounted() {
         this.updateBeamsData();
-        this.setBeamEditor(0);
+        //this.setBeamEditor(0);
     }
 }
 </script>

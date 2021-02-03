@@ -50,16 +50,14 @@
                         role="tabpanel"
                     >
                         <EditorNodesTab
-                            v-bind:truckDataNodes="truckDataNodes"
-                            v-bind:truckDataGroups="truckDataGroups"
+                            v-bind:truckDataSlots="truckDataSlots"
                         />
                     </div>
 
                     <!-- Beams tab !-->
                     <div class="tab-pane fade" id="beams" role="tabpanel">
                         <EditorBeamsTab
-                            v-bind:truckDataBeams="truckDataBeams"
-                            v-bind:truckDataGroups="truckDataGroups"
+                            v-bind:truckDataSlots="truckDataSlots"
                         />
                     </div>
 
@@ -98,59 +96,26 @@ import TruckEditorManager from "@/components/Editor/TruckEditorManagaer";
     }
 })
 export default class Editor extends Vue {
-    truckDataNodes = JSON.parse(
-        JSON.stringify(
-            TruckEditorManager.getInstance()
-                .getEditorObj()!
-                .getData().nodes
-        )
-    );
-
-    truckDataBeams = JSON.parse(
-        JSON.stringify(
-            TruckEditorManager.getInstance()
-                .getEditorObj()!
-                .getData().beams
-        )
-    );
-
-    truckDataGroups = JSON.parse(
-        JSON.stringify(
-            TruckEditorManager.getInstance()
-                .getEditorObj()!
-                .getData().groups
-        )
-    );
+    truckDataSlots = [];
 
     loadData() {
-        this.truckDataNodes = JSON.parse(
+        this.truckDataSlots = JSON.parse(
             JSON.stringify(
                 TruckEditorManager.getInstance()
                     .getEditorObj()!
-                    .getData().nodes
-            )
-        );
-        this.truckDataBeams = JSON.parse(
-            JSON.stringify(
-                TruckEditorManager.getInstance()
-                    .getEditorObj()!
-                    .getData().beams
-            )
-        );
-        this.truckDataGroups = JSON.parse(
-            JSON.stringify(
-                TruckEditorManager.getInstance()
-                    .getEditorObj()!
-                    .getData().groups
+                    .getData()
             )
         );
     }
 
     created() {
-        this.loadData();
         document.addEventListener("truckDataUpdate", () => {
             this.loadData();
         });
+    }
+
+    mounted() {
+        this.loadData();
     }
 }
 </script>

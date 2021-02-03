@@ -8,7 +8,18 @@ export interface SceneNode {
         nodeId: number;
         nodeName: string;
         grpId: number;
+        slotType?: string;
     };
+}
+
+/**
+ * Simplified here, we don't need more
+ */
+export interface SceneBeam {
+    node1: number;
+    node2: number;
+    node1Name?: string;
+    node2Name?: string;
 }
 
 export default abstract class SceneController {
@@ -35,7 +46,7 @@ export default abstract class SceneController {
     public abstract onKeyUp(e: KeyboardEvent): void;
 
     public abstract addNodeToScene(nodeData: SceneNode): void;
-    public abstract addBeamToScene(node1: number, node2: number): void;
+    public abstract addBeamToScene(beam: SceneBeam): void;
     public abstract removeBeamFromScene(node1: number, node2: number): void;
     public abstract moveNodeSprite(
         id: number,

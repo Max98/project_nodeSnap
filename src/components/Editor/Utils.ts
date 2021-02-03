@@ -1,5 +1,5 @@
 import { Vector3 } from "three";
-import { SceneNode } from "./Common/SceneController";
+import { SceneBeam, SceneNode } from "./Common/SceneController";
 import {
     TruckFileBeam,
     TruckFileGroup,
@@ -89,7 +89,14 @@ export default class Utils {
                 grpId: currNode.grp_id
             }
         };
-
         return sceneNode;
+    }
+
+    public static convertBeamToScene(currBeam: EditorBeam): SceneBeam {
+        const sceneBeam: SceneBeam = {
+            node1: currBeam.node1,
+            node2: currBeam.node2
+        };
+        return sceneBeam;
     }
 }

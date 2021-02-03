@@ -1,26 +1,22 @@
 /**
  * This is where we store the truck file data
  */
-import {
-    EditorNode,
-    EditorSlot,
-    EditorTruckData
-} from "../../TruckEditorInterfaces";
+import StoreClass from "../../Common/StoreClass";
+import { EditorTruckData } from "../../TruckEditorInterfaces";
 import Utils from "../../Utils";
 import {
     TruckFileInterface,
-    nodeType,
     TruckFileNode,
     TruckFileBeam,
     TruckFileGroup
 } from "../RoRTruckFileInterfaces";
 
-export default class TruckFileData {
+export default class TruckFileData extends StoreClass {
     private truckData: TruckFileInterface;
-    private filePath = "";
-    private isSaved = true;
 
     constructor() {
+        super();
+
         this.filePath = "";
         /**
          * Base structure
@@ -65,22 +61,6 @@ export default class TruckFileData {
     public create(title: string) {
         this.reset();
         this.truckData.title = title;
-    }
-
-    public setFilePath(filePath: string) {
-        this.filePath = filePath;
-    }
-
-    public getFilePath(): string {
-        return this.filePath;
-    }
-
-    public getSaveState() {
-        return this.isSaved;
-    }
-
-    public setSaveState(state: boolean) {
-        this.isSaved = state;
     }
 
     public loadData(data: TruckFileInterface) {

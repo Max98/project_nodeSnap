@@ -127,7 +127,7 @@ export default class Projects extends Vue {
     }
 
     mounted() {
-        if (
+        /* if (
             TruckEditorManager.getInstance()
                 .getStoreObj()
                 .getData().title
@@ -135,7 +135,7 @@ export default class Projects extends Vue {
             this.currProject.title = TruckEditorManager.getInstance()
                 .getStoreObj()
                 .getData().title;
-        }
+        }*/
     }
 
     resetProjectsList() {
@@ -216,7 +216,7 @@ export default class Projects extends Vue {
     newFile() {
         if (this.checkBeforeOpen() == false) return;
 
-        this.$router.push("/New");
+        this.$router.push("/editor");
     }
 
     loadProject(project: LatestProjectsArray) {

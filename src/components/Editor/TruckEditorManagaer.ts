@@ -10,6 +10,9 @@ import JBeamImporter from "./BeamNG/Parser/JBeamImporter";
 import TruckFileData from "./RoR/Parser/TruckFileData";
 import Editor from "./Common/EditorClass";
 import { editorType } from "./TruckEditorInterfaces";
+import StoreClass from "./Common/StoreClass";
+import JBeamEditor from "./BeamNG/JBeamEditor";
+import JBeamStore from "./BeamNG/Parser/JBeamStore";
 
 /**
  * All of this runs on the renderer electron process, not the main!
@@ -22,11 +25,11 @@ export default class TruckEditorManager {
 
     private editorRenderer: TruckEditorRenderer;
     private editorObj: Editor | undefined;
-    private editorStore: TruckFileData;
+    private editorStore: StoreClass;
 
     private projectWatcher: ProjectWatcher;
 
-    private editorType: editorType = editorType.ROR;
+    private editorType: editorType = editorType.BEAMNG;
 
     constructor() {
         TruckEditorManager.instance = this;
@@ -35,7 +38,7 @@ export default class TruckEditorManager {
         this.Log.info("init");
 
         this.editorRenderer = new TruckEditorRenderer();
-        this.editorStore = new TruckFileData();
+        this.editorStore = new JBeamStore();
 
         this.projectWatcher = new ProjectWatcher();
 
@@ -62,7 +65,7 @@ export default class TruckEditorManager {
      * @returns truck title
      */
     public loadFile(path: string) {
-        if (this.editorObj) this.editorObj.reset();
+        /*if (this.editorObj) this.editorObj.reset();
         this.editorRenderer.getSceneManager().reset();
 
         this.editorStore.setFilePath(path);
@@ -70,13 +73,20 @@ export default class TruckEditorManager {
 
         if (!truckData) return;
 
-        this.editorStore.loadData(truckData);
+        (this.editorStore as TruckFileData).loadData(truckData);
         this.editorStore.setSaveState(true);
         this.editorObj = new TruckEditor();
 
         this.editorObj.fetchData();
 
-        return truckData.title;
+        return truckData.title;*/
+
+        const jBeam = new JBeamImporter().loadFile("");
+
+        (this.editorStore as JBeamStore).loadData(jBeam);
+        this.editorStore.setSaveState(true);
+
+        return "";
     }
 
     /**
@@ -118,7 +128,7 @@ export default class TruckEditorManager {
         return this.editorObj;
     }
 
-    public getStoreObj(): TruckFileData {
+    public getStoreObj(): StoreClass {
         return this.editorStore;
     }
 
@@ -127,15 +137,14 @@ export default class TruckEditorManager {
      * Warning: we are talking about Editor_main.vue here, not Editor.vue
      */
     public onLoaded() {
-        if (this.editorObj) {
-            this.editorObj.loadTruckData();
-            this.editorRenderer
-                .getSceneManager()
-                .loadConfig(this.editorStore.getFilePath());
-            this.projectWatcher.start(this.editorStore.getFilePath());
-        } else {
-            throw console.error("editorObj not found!");
-        }
+        this.loadFile("");
+        this.editorObj = new JBeamEditor();
+        this.editorObj.fetchData();
+        this.editorObj.loadTruckData();
+        this.editorRenderer
+            .getSceneManager()
+            .loadConfig(this.editorStore.getFilePath());
+        this.projectWatcher.start(this.editorStore.getFilePath());
     }
 
     /**

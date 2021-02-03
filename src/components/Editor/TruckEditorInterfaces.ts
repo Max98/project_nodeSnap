@@ -31,7 +31,7 @@ export interface EditorNode {
     z: number;
     options: string;
     grp_id: number;
-    slots?: string;
+
     parserData?: any; //to store stuff like sbd/snd
     isVisible: boolean;
 }
@@ -39,9 +39,11 @@ export interface EditorBeam {
     id: number;
     node1: number;
     node2: number;
+    node1Name?: string;
+    node2Name?: string;
     options: string;
     grp_id: number;
-    slots?: string;
+
     parserData?: any; //to store stuff like sbd/snd
     isVisible: boolean;
 }
@@ -49,7 +51,7 @@ export interface EditorGroup {
     grp_id: number;
     title: string;
     type: string;
-    slots?: string;
+
     isVisible: boolean;
 }
 
@@ -65,7 +67,7 @@ export interface EditorTruckData {
     nodes: EditorNode[];
     beams: EditorBeam[];
     groups: EditorGroup[];
-    slots?: EditorSlot[];
+    slot?: EditorSlot;
 }
 
 export enum editorType {

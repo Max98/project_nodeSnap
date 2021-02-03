@@ -9,6 +9,7 @@ import store from "@/store/index";
 import TruckEditorManager from "../../TruckEditorManagaer";
 
 import { useToast } from "vue-toastification";
+import TruckFileData from "./TruckFileData";
 
 const remote = require("electron").remote;
 const { Menu, MenuItem, dialog } = remote;
@@ -41,9 +42,7 @@ export default class TruckFileExporter {
         this.parserLog = Logger.default.scope("TruckFileExporter");
         this.parserLog.info("init");
 
-        this.truckFile = TruckEditorManager.getInstance()
-            .getStoreObj()
-            .getData();
+        this.truckFile = (TruckEditorManager.getInstance().getStoreObj() as TruckFileData).getData();
     }
 
     /**

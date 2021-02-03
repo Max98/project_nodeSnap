@@ -10,6 +10,7 @@ import {
     rendererViewType,
     viewCameraType
 } from "./TruckEditorInterfaces";
+import BeamNGSceneController from "./BeamNG/Scene/sceneController";
 
 export default class SceneManager {
     private scene: THREE.Scene;
@@ -30,7 +31,7 @@ export default class SceneManager {
         this.blueprintSystem = new BlueprintPlugin(this.scene);
         this.bluemodelSystem = new BluemodelPlugin(this.scene);
 
-        this.sceneController = new RoRSceneController(this.scene);
+        this.sceneController = new BeamNGSceneController(this.scene);
 
         console.log("hai");
     }

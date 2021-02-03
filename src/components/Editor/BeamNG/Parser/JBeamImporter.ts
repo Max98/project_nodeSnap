@@ -1,20 +1,27 @@
 import fs from "fs";
 //@ts-ignore
-import { toJson } from "really-relaxed-json";
+//import { toJson } from "really-relaxed-json";
+import rjson from "@/components/js/rjson.js";
 
 export default class JBeamImporter {
     constructor() {
+        console.log("hai!");
+    }
+
+    loadFile(path: string) {
         const data = fs
             .readFileSync("C:\\Users\\Moncef\\Desktop\\beamng\\test.jbeam")
             .toString();
 
-        const jbeam: any[any] = JSON.parse(toJson(data));
+        const jbeam: any[any] = rjson.parse(data, {
+            tolerant: true,
+            relaxed: true,
+            warnings: true,
+            duplicate: true
+        });
 
         console.log(jbeam);
 
-        for (const [key, value] of Object.entries(jbeam)) {
-            const currValue = value as any;
-            console.log(currValue["beams"]);
-        }
+        return jbeam;
     }
 }

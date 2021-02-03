@@ -16,6 +16,7 @@ import Utils from "../Utils";
 import { useToast } from "vue-toastification";
 import { Vector3 } from "three";
 import Editor from "../Common/EditorClass";
+import TruckFileData from "./Parser/TruckFileData";
 
 interface HistorySystem {
     fn: string;
@@ -58,9 +59,7 @@ export default class RoRTruckEditor extends Editor {
     }
 
     public fetchData() {
-        this.truckData = TruckEditorManager.getInstance()
-            .getStoreObj()
-            .getEditorData();
+        this.truckData = (TruckEditorManager.getInstance().getStoreObj() as TruckFileData).getEditorData();
     }
 
     /**
@@ -94,7 +93,10 @@ export default class RoRTruckEditor extends Editor {
             this.renderInstance
                 .getSceneManager()
                 .getCurrSceneController()
-                .addBeamToScene(currBeam.node1, currBeam.node2);
+                .addBeamToScene(
+                    currBeam.node1 as number,
+                    currBeam.node2 as number
+                );
         }
 
         this.renderInstance
@@ -1197,9 +1199,9 @@ export default class RoRTruckEditor extends Editor {
     private async sendUpdate() {
         //TODO: this should happen here
         //Too much performance cost
-        TruckEditorManager.getInstance()
-            .getStoreObj()
-            .setEditorData(this.truckData);
+        (TruckEditorManager.getInstance().getStoreObj() as TruckFileData).setEditorData(
+            this.truckData
+        );
         document.dispatchEvent(new Event("truckDataUpdate"));
     }
 

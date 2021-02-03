@@ -291,225 +291,212 @@ class View {
  * Main Renderer code
  */
 export default class TruckEditorRenderer {
-                   private Log: myLogger.LogFunctions;
-                   /**
-                    *
-                    * render propreties
-                    *
-                    */
-                   private scene: THREE.Scene;
-                   private renderer: THREE.WebGLRenderer;
-                   private views: View[] = [];
+    private Log: myLogger.LogFunctions;
+    /**
+     *
+     * render propreties
+     *
+     */
+    private scene: THREE.Scene;
+    private renderer: THREE.WebGLRenderer;
+    private views: View[] = [];
 
-                   /**
-                    *
-                    * User configs
-                    *
-                    */
-                   private renderOptions = {
-                       renderNodesNames: false,
-                       antiAlias: false,
-                       debugStatistics: false
-                   };
+    /**
+     *
+     * User configs
+     *
+     */
+    private renderOptions = {
+        renderNodesNames: false,
+        antiAlias: false,
+        debugStatistics: false
+    };
 
-                   /**
-                    * Scene stuff
-                    */
-                   private s = 5;
+    /**
+     * Scene stuff
+     */
+    private s = 5;
 
-                   private gridSize = 9600 * this.s;
-                   private gridDivisions = 160 * this.s;
-                   private gridTop?: THREE.GridHelper = undefined;
-                   private gridFront?: THREE.GridHelper = undefined;
-                   private gridSide?: THREE.GridHelper = undefined;
-                   private SceneManager: SceneManager;
+    private gridSize = 9600 * this.s;
+    private gridDivisions = 160 * this.s;
+    private gridTop?: THREE.GridHelper = undefined;
+    private gridFront?: THREE.GridHelper = undefined;
+    private gridSide?: THREE.GridHelper = undefined;
+    private SceneManager: SceneManager;
 
-                   public getSceneManager(): SceneManager {
-                       return this.SceneManager;
-                   }
+    public getSceneManager(): SceneManager {
+        return this.SceneManager;
+    }
 
-                   constructor() {
-                       this.Log = myLogger.default.scope("TruckEditorRenderer");
-                       this.Log.info("init");
+    constructor() {
+        this.Log = myLogger.default.scope("TruckEditorRenderer");
+        this.Log.info("init");
 
-                       this.renderer = new THREE.WebGLRenderer({
-                           antialias: this.renderOptions.antiAlias
-                       });
-                       this.scene = new THREE.Scene();
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: this.renderOptions.antiAlias
+        });
+        this.scene = new THREE.Scene();
 
-                       //TODO: different scene controllers
-                       this.SceneManager = new SceneManager(this.scene);
+        //TODO: different scene controllers
+        this.SceneManager = new SceneManager(this.scene);
 
-                       window.addEventListener("resize", () =>
-                           this.onWindowResize()
-                       );
-                   }
+        window.addEventListener("resize", () => this.onWindowResize());
+    }
 
-                   public dispose() {
-                       this.views.length = 0;
-                       this.SceneManager.dispose();
-                       this.scene.clear();
+    public dispose() {
+        this.views.length = 0;
+        this.SceneManager.dispose();
+        this.scene.clear();
 
-                       window.removeEventListener("resize", () =>
-                           this.onWindowResize()
-                       );
-                   }
+        window.removeEventListener("resize", () => this.onWindowResize());
+    }
 
-                   /**
-                    * Create one or more views using an array of canvases
-                    * @param canvasArray array of canvas (or can be just one)
-                    * @param last3D set last canvas to a prespective camera and all other to ortho
-                    */
-                   public createViews(canvasArray: RendererViewData[]) {
-                       this.renderer.setPixelRatio(window.devicePixelRatio);
+    /**
+     * Create one or more views using an array of canvases
+     * @param canvasArray array of canvas (or can be just one)
+     * @param last3D set last canvas to a prespective camera and all other to ortho
+     */
+    public createViews(canvasArray: RendererViewData[]) {
+        this.renderer.setPixelRatio(window.devicePixelRatio);
 
-                       if (canvasArray.length == 0) {
-                           this.Log.error("No views found!");
-                           return;
-                       }
+        if (canvasArray.length == 0) {
+            this.Log.error("No views found!");
+            return;
+        }
 
-                       this.views.forEach(el => el.dispose());
+        this.views.forEach(el => el.dispose());
 
-                       this.views.length = 0;
+        this.views.length = 0;
 
-                       for (let i = 0; i < canvasArray.length; i++) {
-                           this.views.push(
-                               new View(
-                                   i,
-                                   canvasArray[i].canvas,
-                                   this.renderer,
-                                   this.scene,
-                                   {
-                                       type: canvasArray[i].type,
-                                       cameraType: canvasArray[i].cameraType
-                                   }
-                               )
-                           );
-                       }
+        for (let i = 0; i < canvasArray.length; i++) {
+            this.views.push(
+                new View(i, canvasArray[i].canvas, this.renderer, this.scene, {
+                    type: canvasArray[i].type,
+                    cameraType: canvasArray[i].cameraType
+                })
+            );
+        }
 
-                       this.populateScene();
-                       this.update(0);
-                   }
+        this.populateScene();
+        this.update(0);
+    }
 
-                   /**
-                    * @returns views array
-                    */
-                   public getViews(): View[] {
-                       return this.views;
-                   }
+    /**
+     * @returns views array
+     */
+    public getViews(): View[] {
+        return this.views;
+    }
 
-                   private populateScene() {
-                       this.scene.clear();
+    private populateScene() {
+        this.scene.clear();
 
-                       this.gridFront = new THREE.GridHelper(
-                           this.gridSize,
-                           this.gridDivisions,
-                           0x4f4f4f,
-                           0x272727
-                       );
-                       this.gridFront.position.set(0, 12200, 0);
-                       this.gridFront.layers.set(12);
-                       this.scene.add(this.gridFront);
+        this.gridFront = new THREE.GridHelper(
+            this.gridSize,
+            this.gridDivisions,
+            0x4f4f4f,
+            0x272727
+        );
+        this.gridFront.position.set(0, 12200, 0);
+        this.gridFront.layers.set(12);
+        this.scene.add(this.gridFront);
 
-                       this.gridSide = new THREE.GridHelper(
-                           this.gridSize,
-                           this.gridDivisions,
-                           0x4f4f4f,
-                           0x272727
-                       );
-                       this.gridSide.position.set(12000, 0, 0);
-                       this.gridSide.rotateZ(-Math.PI / 2);
-                       this.gridSide.layers.set(11);
-                       this.scene.add(this.gridSide);
+        this.gridSide = new THREE.GridHelper(
+            this.gridSize,
+            this.gridDivisions,
+            0x4f4f4f,
+            0x272727
+        );
+        this.gridSide.position.set(12000, 0, 0);
+        this.gridSide.rotateZ(-Math.PI / 2);
+        this.gridSide.layers.set(11);
+        this.scene.add(this.gridSide);
 
-                       this.gridTop = new THREE.GridHelper(
-                           this.gridSize,
-                           this.gridDivisions,
-                           0x4f4f4f,
-                           0x272727
-                       );
-                       this.gridTop.position.set(0, 0, -12500);
-                       this.gridTop.rotateX(Math.PI / 2);
-                       this.gridTop.layers.set(10);
-                       this.scene.add(this.gridTop);
+        this.gridTop = new THREE.GridHelper(
+            this.gridSize,
+            this.gridDivisions,
+            0x4f4f4f,
+            0x272727
+        );
+        this.gridTop.position.set(0, 0, -12500);
+        this.gridTop.rotateX(Math.PI / 2);
+        this.gridTop.layers.set(10);
+        this.scene.add(this.gridTop);
 
-                       const gridSpace = new THREE.GridHelper(
-                           this.gridSize / this.s,
-                           this.gridDivisions / this.s,
-                           0x4f4f4f,
-                           0x272727
-                       );
-                       gridSpace.position.set(0, 0, 0);
-                       gridSpace.layers.set(13);
-                       gridSpace.rotateX(-Math.PI / 2);
-                       this.scene.add(gridSpace);
+        const gridSpace = new THREE.GridHelper(
+            this.gridSize / this.s,
+            this.gridDivisions / this.s,
+            0x4f4f4f,
+            0x272727
+        );
+        gridSpace.position.set(0, 0, 0);
+        gridSpace.layers.set(13);
+        gridSpace.rotateX(-Math.PI / 2);
+        this.scene.add(gridSpace);
 
-                       /*const axesHelper = new THREE.AxesHelper(100);
+        /*const axesHelper = new THREE.AxesHelper(100);
         axesHelper.position.set(-60.75, -60.75, 60.75);
         this.scene.add(axesHelper);*/
-                   }
+    }
 
-                   public async setGridFactor(
-                       factor: number
-                   ): Promise<boolean> {
-                       this.gridTop!.scale.set(factor, factor, factor);
+    public async setGridFactor(factor: number): Promise<boolean> {
+        this.gridTop!.scale.set(factor, factor, factor);
 
-                       this.gridSide!.scale.set(factor, factor, factor);
+        this.gridSide!.scale.set(factor, factor, factor);
 
-                       this.gridFront!.scale.set(factor, factor, factor);
+        this.gridFront!.scale.set(factor, factor, factor);
 
-                       this.SceneManager.setSnapFactor(factor);
+        this.SceneManager.setSnapFactor(factor);
 
-                       return true;
-                   }
+        return true;
+    }
 
-                   /**
-                    *
-                    */
-                   private onWindowResize() {
-                       this.views.forEach(el => {
-                           switch (el.getCameraType()) {
-                               case viewCameraType.ORTHOGRAPHIC: {
-                                   const cam = el.getCamera() as THREE.OrthographicCamera;
+    /**
+     *
+     */
+    private onWindowResize() {
+        this.views.forEach(el => {
+            switch (el.getCameraType()) {
+                case viewCameraType.ORTHOGRAPHIC: {
+                    const cam = el.getCamera() as THREE.OrthographicCamera;
 
-                                   cam.left = el.getCanvas().clientWidth / -2;
-                                   cam.right = el.getCanvas().clientWidth / 2;
-                                   cam.top = el.getCanvas().clientHeight / 2;
-                                   cam.bottom =
-                                       el.getCanvas().clientHeight / -2;
+                    cam.left = el.getCanvas().clientWidth / -2;
+                    cam.right = el.getCanvas().clientWidth / 2;
+                    cam.top = el.getCanvas().clientHeight / 2;
+                    cam.bottom = el.getCanvas().clientHeight / -2;
 
-                                   cam.updateProjectionMatrix();
-                                   break;
-                               }
+                    cam.updateProjectionMatrix();
+                    break;
+                }
 
-                               case viewCameraType.PERSPECTIVE: {
-                                   const cam = el.getCamera() as THREE.PerspectiveCamera;
+                case viewCameraType.PERSPECTIVE: {
+                    const cam = el.getCamera() as THREE.PerspectiveCamera;
 
-                                   cam.aspect =
-                                       el.getCanvas().clientWidth /
-                                       el.getCanvas().clientHeight;
+                    cam.aspect =
+                        el.getCanvas().clientWidth /
+                        el.getCanvas().clientHeight;
 
-                                   cam.updateProjectionMatrix();
-                                   break;
-                               }
-                           }
+                    cam.updateProjectionMatrix();
+                    break;
+                }
+            }
 
-                           el.update();
-                       });
-                   }
+            el.update();
+        });
+    }
 
-                   public onViewsResize() {
-                       this.onWindowResize(); //same thing
-                   }
+    public onViewsResize() {
+        this.onWindowResize(); //same thing
+    }
 
-                   /**
-                    * Main function
-                    */
-                   private update(time: number) {
-                       requestAnimationFrame(e => this.update(e));
+    /**
+     * Main function
+     */
+    private update(time: number) {
+        requestAnimationFrame(e => this.update(e));
 
-                       for (let i = 0; i < this.views.length; ++i) {
-                           this.views[i].render(time);
-                       }
-                   }
-               }
+        for (let i = 0; i < this.views.length; ++i) {
+            this.views[i].render(time);
+        }
+    }
+}
