@@ -59,7 +59,9 @@ export interface EditorGroup {
  * BeamNG specific
  */
 export interface EditorSlot {
+    id: number;
     name: string;
+    type: string;
     isVisible: boolean;
 }
 

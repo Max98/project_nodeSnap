@@ -22,6 +22,16 @@ export interface SceneBeam {
     node2Name?: string;
 }
 
+export interface SceneSlot {
+    id: number;
+    visible: boolean;
+    title: string;
+    nodes: THREE.Sprite[];
+    beams: SceneBeam[];
+    scene: THREE.Scene;
+    mesh?: THREE.LineSegments;
+}
+
 export default abstract class SceneController {
     protected scene: THREE.Scene;
 
@@ -61,4 +71,9 @@ export default abstract class SceneController {
     public abstract setNodeVisibility(id: number, state: boolean): void;
     public abstract updateNodeSpriteGrp(id: number, grpId: number): void;
     public abstract setGroupVisibility(id: number, state: boolean): void;
+    public abstract setSlotVisibility(
+        id: number,
+        state: boolean,
+        slotId: number
+    ): void;
 }

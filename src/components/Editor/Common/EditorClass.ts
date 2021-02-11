@@ -1,6 +1,14 @@
 import { EditorNode, EditorBeam } from "../TruckEditorInterfaces";
+import TruckEditorManager from "../TruckEditorManagaer";
+import TruckEditorRenderer from "../TruckEditorRenderer";
 
 export default abstract class Editor {
+    protected renderInstance: TruckEditorRenderer;
+
+    constructor() {
+        this.renderInstance = TruckEditorManager.getInstance().getRendererObj();
+    }
+
     public abstract reset(): void;
     public abstract getData(): any;
     public abstract fetchData(): void;
@@ -38,6 +46,11 @@ export default abstract class Editor {
     ): void;
 
     public abstract setGroupVisibility(id: number, state: boolean): void;
+    public abstract setSlotVisibility(
+        id: number,
+        state: boolean,
+        slotId: number
+    ): void;
     public abstract scaleAll(factor: number, isHistory?: boolean): void;
     public abstract translateAll(
         offset: { x: number; y: number; z: number },

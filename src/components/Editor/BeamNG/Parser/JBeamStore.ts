@@ -10,13 +10,14 @@ import {
 
 export default class JBeamStore extends StoreClass {
     private jBeam: any;
-
+    private pcData: { title: string; data: any }[] = [];
     constructor() {
         super();
     }
 
-    public loadData(jbeam: any) {
+    public loadData(jbeam: any, pcData: { title: string; data: any }[]) {
         this.jBeam = jbeam;
+        this.pcData = pcData;
     }
 
     public reset(): void {
@@ -30,28 +31,49 @@ export default class JBeamStore extends StoreClass {
     public getEditorData(): EditorTruckData[] {
         const editorTruckData: EditorTruckData[] = [];
 
-        let nodeId = 0;
+        const mainSlots: string[] = [];
+
+        let currSlotId = 0;
+
         for (const [key, value] of Object.entries(this.jBeam)) {
             const currValue = value as any;
             const nodes: EditorNode[] = [];
             const beams: EditorBeam[] = [];
+            let nodeId = 0;
+            let visible = false;
 
-            /* const params = {
-                nodeWeight: 25,
-                collision: true,
-                selfCollision: false,
-                group: "",
-                frictionCoef: 1,
-                slidingFrictionCoef: 1,
-                treadCoef: 0.5,
-                softness: 0,
-                loadSensitivitySlope: 0,
-                noLoadCoef: 1,
-                fullLoadCoef: 0,
-                nodeMaterial: "",
-                fixed: false,
-                pairedNode: ""
-            };*/
+            /**
+             * Select the first pc file we find
+             */
+            for (const [key2, value2] of Object.entries(
+                this.pcData[0].data.parts
+            )) {
+                if (currValue["slotType"] == key2) {
+                    if (value2 == key) {
+                        visible = true;
+                    }
+                }
+            }
+
+            if (currValue["slots"]) {
+                for (let i = 0; i < currValue["slots"].length; i++) {
+                    const element = currValue["slots"][i];
+
+                    if (
+                        element[3] &&
+                        Object.prototype.hasOwnProperty.call(
+                            element[3],
+                            "coreSlot"
+                        )
+                    ) {
+                        mainSlots.push(element[1]);
+                    }
+                }
+            }
+
+            if (mainSlots.find(el => el == key)) {
+                visible = true;
+            }
 
             const nodeParams: any = {};
 
@@ -262,7 +284,7 @@ export default class JBeamStore extends StoreClass {
                             y: currNode[2],
                             z: currNode[3],
                             grp_id: -1,
-                            isVisible: true,
+                            isVisible: visible,
                             options: "",
                             parserData: { params: { ...nodeParams } }
                         };
@@ -562,8 +584,14 @@ export default class JBeamStore extends StoreClass {
                 nodes,
                 beams,
                 groups: [],
-                slot: { name: currValue["slotType"], isVisible: true }
+                slot: {
+                    id: currSlotId,
+                    name: key,
+                    type: currValue["slotType"],
+                    isVisible: visible
+                }
             });
+            currSlotId++;
         }
 
         console.log(editorTruckData);

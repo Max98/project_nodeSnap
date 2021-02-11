@@ -1,15 +1,16 @@
 import * as THREE from "three";
 import { DragControls } from "../../../js/DragControls.js";
 import TruckEditorManager from "../../TruckEditorManagaer";
-import { rendererViewType } from "../../TruckEditorInterfaces";
-import { Vector3 } from "three";
+import { EditorSlot, rendererViewType } from "../../TruckEditorInterfaces";
+import { Scene, Vector3 } from "three";
 
 import { useToast } from "vue-toastification";
 
 import * as Logger from "electron-log";
 import SceneController, {
     SceneBeam,
-    SceneNode
+    SceneNode,
+    SceneSlot
 } from "../../Common/SceneController";
 
 const remote = require("electron").remote;
@@ -21,19 +22,17 @@ enum ControlMode {
 }
 
 export default class BeamNGSceneController extends SceneController {
-    private nodesSpriteArray: THREE.Sprite[] = [];
+    private sceneSlot: SceneSlot[] = [];
+
     private displayNodesName = false;
     private nodesDragControl: DragControls[] = [];
     private isNodeMove = false;
 
-    private invisibleNodesArray: number[] = [];
-    private beamsArray: SceneBeam[] = [];
-    private beamLinesMesh: THREE.LineSegments | undefined;
+    private invisibleNodesArray: {
+        id: number;
+        slotId: number;
+    }[] = [];
     //optim
-    private linePoints: Vector3[] = [];
-    private lineIdx: number[] = [];
-
-    private editorScene: THREE.Object3D;
 
     private mouse: THREE.Vector2 = new THREE.Vector2(0, 0);
 
@@ -66,8 +65,6 @@ export default class BeamNGSceneController extends SceneController {
 
         this.logger = Logger.default.scope("sceneController");
         this.logger.log("init");
-
-        this.editorScene = new THREE.Object3D();
     }
 
     public dispose() {
@@ -81,29 +78,31 @@ export default class BeamNGSceneController extends SceneController {
      * Resets the editor scene
      */
     public reset() {
-        this.nodesSpriteArray.forEach(el => {
-            this.editorScene.remove(el);
-        });
-
-        if (this.beamLinesMesh) this.editorScene.remove(this.beamLinesMesh);
-
-        this.nodesSpriteArray = [];
-        this.invisibleNodesArray = [];
-
-        this.nodesDragControl.forEach(el => {
-            el.dispose();
-        });
-        this.nodesDragControl = [];
-
-        this.beamsArray = [];
+        throw console.error("Not implemented");
     }
 
     /**
      * Addes a node to the 3D Scene
      * @param nodeData node data
      */
-    public addNodeToScene(nodeData: SceneNode, slot?: string) {
-        if (!slot) return;
+    public addNodeToScene(nodeData: SceneNode, slotData?: EditorSlot) {
+        //well 0 = false, so undefined suits here
+        if (!slotData) return;
+
+        let currSlot = this.getSlotById(slotData.id);
+
+        if (!currSlot) {
+            const id = this.sceneSlot.push({
+                id: slotData.id,
+                title: slotData.name,
+                nodes: [],
+                beams: [],
+                scene: new THREE.Scene(),
+                visible: slotData.isVisible
+            });
+            currSlot = this.sceneSlot[id - 1];
+        }
+        if (!currSlot.scene) return;
 
         const spriteMaterial = new THREE.SpriteMaterial({
             color: "green"
@@ -120,13 +119,12 @@ export default class BeamNGSceneController extends SceneController {
             id: nodeData.nodeInfo.nodeId,
             name: nodeData.nodeInfo.nodeName,
             grp_id: nodeData.nodeInfo.grpId,
-            slot: slot
+            slot: slotData.name
         };
 
         newNode.layers.set(1);
 
         //Generate node name
-        //TODO: support nodes2
         const spritey = this.makeTextSprite(
             nodeData.nodeInfo.nodeName.toString()
         );
@@ -143,11 +141,19 @@ export default class BeamNGSceneController extends SceneController {
         });
 
         newNode.visible = nodeData.visible;
-        if (!nodeData.visible)
-            this.invisibleNodesArray.push(nodeData.nodeInfo.nodeId);
 
-        this.nodesSpriteArray.push(newNode);
-        this.editorScene.add(newNode);
+        if (!nodeData.visible)
+            this.invisibleNodesArray.push({
+                id: nodeData.nodeInfo.nodeId,
+                slotId: currSlot.id
+            });
+
+        currSlot.nodes.push(newNode);
+        currSlot.scene.add(newNode);
+    }
+
+    private getSlotById(id: number): SceneSlot | undefined {
+        return this.sceneSlot.find(el => el.id == id);
     }
 
     /**
@@ -155,8 +161,12 @@ export default class BeamNGSceneController extends SceneController {
      * @param node1
      * @param node2
      */
-    public addBeamToScene(beam: SceneBeam) {
-        this.beamsArray.push({ node1: beam.node1, node2: beam.node2 });
+    public addBeamToScene(beam: SceneBeam, slotId?: number) {
+        if (slotId == undefined) return;
+        const currSlot = this.getSlotById(slotId);
+        if (!currSlot) return;
+
+        currSlot.beams.push(beam);
     }
 
     /**
@@ -166,11 +176,7 @@ export default class BeamNGSceneController extends SceneController {
      * @param node2
      */
     public removeBeamFromScene(node1: number, node2: number) {
-        const currBeam = this.beamsArray.find(
-            el => el.node1 == node1 && el.node2 == node2
-        );
-
-        this.beamsArray = this.beamsArray.filter(el => el != currBeam);
+        throw console.error("Not implemented");
     }
 
     /**
@@ -186,13 +192,7 @@ export default class BeamNGSceneController extends SceneController {
         id: number,
         position: { x: number; y: number; z: number }
     ) {
-        TruckEditorManager.getInstance()
-            .getEditorObj()!
-            .moveNode(id, {
-                x: position.x / this.nodesPosRenderScale,
-                y: position.y / this.nodesPosRenderScale,
-                z: position.z / this.nodesPosRenderScale
-            });
+        throw console.error("Not implemented");
     }
 
     /**
@@ -202,13 +202,7 @@ export default class BeamNGSceneController extends SceneController {
         id: number,
         position: { x: number; y: number; z: number }
     ) {
-        const sprite = this.nodesSpriteArray.find(el => el.userData.id == id);
-
-        if (sprite != undefined) {
-            sprite.position.x = position.x * this.nodesPosRenderScale;
-            sprite.position.y = position.y * this.nodesPosRenderScale;
-            sprite.position.z = position.z * this.nodesPosRenderScale;
-        }
+        throw console.error("Not implemented");
     }
 
     /**
@@ -234,94 +228,71 @@ export default class BeamNGSceneController extends SceneController {
      * Prepares nodes in the scene for the editor
      */
     public prepareNodes() {
-        TruckEditorManager.getInstance()
-            .getRendererObj()
-            .getViews()
-            .forEach(el => {
-                const dragControl = new DragControls(
-                    [...this.nodesSpriteArray],
-                    el.getCamera(),
-                    el.getCanvas()
-                );
-                this.nodesDragControl.push(dragControl);
-
-                dragControl.addEventListener("hoveron", e =>
-                    this.onNodeDragHoverOn(e)
-                );
-                dragControl.addEventListener("hoveroff", e =>
-                    this.onNodeDragHoverOff(e)
-                );
-                dragControl.addEventListener("drag", e =>
-                    this.onNodeDragMove(e)
-                );
-                dragControl.addEventListener("dragstart", e =>
-                    this.onNodeDragStart(e)
-                );
-                dragControl.addEventListener("dragend", e =>
-                    this.onNodeDragEnd(e)
-                );
-
-                dragControl.mouseButton = 0; //Only mouse button 0 drags nodes (Left click)
-                dragControl.view = el.getType();
-
-                /**
-                 * We do not want to drag nodes on the main view
-                 */
-                if (el.getType() == rendererViewType.VIEW_MAIN)
-                    dragControl.enabled = false;
-            });
+        console.warn("Not implemented");
     }
 
-    /**
-     * Builds the beam lines
-     */
-    public buildBeamLines() {
-        if (this.beamLinesMesh != undefined) {
-            this.editorScene.remove(this.beamLinesMesh);
+    private builSlotBeamLines(currSlot: SceneSlot) {
+        if (currSlot.mesh != undefined) {
+            currSlot.scene.remove(currSlot.mesh);
+            currSlot.mesh = undefined;
         }
 
-        this.lineIdx.length = 0;
-        this.linePoints.length = 0;
+        console.log("rebuilding..");
 
-        this.nodesSpriteArray.forEach(el => {
-            this.linePoints.push(el.position);
+        const linePoints: Vector3[] = [];
+        const lineIdx: number[] = [];
+
+        lineIdx.length = 0;
+        linePoints.length = 0;
+
+        currSlot.nodes.forEach(el => {
+            linePoints.push(el.position);
         });
 
-        this.beamsArray.forEach(currBeam => {
+        currSlot.beams.forEach(currBeam => {
             const inv = this.invisibleNodesArray.find(
-                el => el == currBeam.node1 || el == currBeam.node2
+                el =>
+                    (el.id == currBeam.node1 || el.id == currBeam.node2) &&
+                    el.slotId == currSlot.id
             );
 
             if (inv != undefined) return;
 
+            console.log("visible");
+
             if (currBeam.node1 == -1) return;
             if (currBeam.node2 == -1) return;
 
-            this.lineIdx.push(currBeam.node1);
-            this.lineIdx.push(currBeam.node2);
-
-            //console.log(currBeam.node1 + " : " + currBeam.node2);
+            lineIdx.push(currBeam.node1);
+            lineIdx.push(currBeam.node2);
         });
 
-        const geometry = new THREE.BufferGeometry().setFromPoints(
-            this.linePoints
-        );
-        geometry.setIndex(this.lineIdx);
+        const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
+        geometry.setIndex(lineIdx);
 
         const lineMaterial = new THREE.LineBasicMaterial({
             color: "#7e543e"
         });
 
-        this.beamLinesMesh = new THREE.LineSegments(geometry, lineMaterial);
-        this.beamLinesMesh.name = "beamLines";
-        this.editorScene.add(this.beamLinesMesh);
+        currSlot.mesh = new THREE.LineSegments(geometry, lineMaterial);
+        currSlot.scene.add(currSlot.mesh);
+    }
+    /**
+     * Builds the beam lines
+     */
+    public buildBeamLines() {
+        this.sceneSlot.forEach(currSlot => {
+            this.builSlotBeamLines(currSlot);
+        });
     }
 
     /**
      * post node and beams scene population
      */
     public postCalc() {
-        this.scene.add(this.editorScene);
+        this.sceneSlot.forEach(currSlot => {
+            this.scene.add(currSlot.scene);
+        });
     }
 
     /**
@@ -330,15 +301,15 @@ export default class BeamNGSceneController extends SceneController {
      */
     public scaleNodeSprites(scaleFactor: number) {
         this.nodesSpriteScale = scaleFactor * 4;
-        for (let i = 0, n = this.nodesSpriteArray.length; i < n; i++) {
-            const currSprite = this.nodesSpriteArray[i];
-
-            currSprite.scale.set(
-                this.nodesSpriteScale,
-                this.nodesSpriteScale,
-                1.0
-            );
-        }
+        this.sceneSlot.forEach(currSlot => {
+            currSlot.nodes.forEach(currNode => {
+                currNode.scale.set(
+                    this.nodesSpriteScale,
+                    this.nodesSpriteScale,
+                    1.0
+                );
+            });
+        });
     }
 
     /**
@@ -348,12 +319,11 @@ export default class BeamNGSceneController extends SceneController {
     public setNodesNameVisibility(state: boolean) {
         this.displayNodesName = state;
 
-        for (let i = 0, n = this.nodesSpriteArray.length; i < n; i++) {
-            const currNode = this.nodesSpriteArray[i];
-
-            //the first children is the nameSprite
-            currNode.children[0].visible = this.displayNodesName;
-        }
+        this.sceneSlot.forEach(currSlot => {
+            currSlot.nodes.forEach(currNode => {
+                currNode.children[0].visible = this.displayNodesName;
+            });
+        });
     }
 
     /**
@@ -361,15 +331,19 @@ export default class BeamNGSceneController extends SceneController {
      * @param id nodeId
      * @param state
      */
-    public setNodeVisibility(id: number, state: boolean) {
-        const currNode = this.nodesSpriteArray.filter(
-            el => el.userData.id == id
-        )[0];
+    public setNodeVisibility(id: number, state: boolean, slotId?: number) {
+        if (slotId == undefined) return;
+
+        const currSlot = this.getSlotById(slotId);
+
+        if (!currSlot) return;
+        const currNode = currSlot.nodes.find(el => el.id == id);
+        if (!currNode) return;
 
         currNode.visible = state;
 
         if (!state) {
-            this.invisibleNodesArray.push(currNode.userData.id);
+            this.invisibleNodesArray.push({ id, slotId });
 
             this.nodesDragControl.forEach(el => {
                 let obj = el.getObjects();
@@ -377,7 +351,7 @@ export default class BeamNGSceneController extends SceneController {
             });
         } else {
             this.invisibleNodesArray = this.invisibleNodesArray.filter(
-                el => el != currNode.userData.id
+                el => el.id != id
             );
 
             this.nodesDragControl.forEach(el => {
@@ -386,7 +360,7 @@ export default class BeamNGSceneController extends SceneController {
             });
         }
 
-        this.buildBeamLines();
+        this.builSlotBeamLines(currSlot);
     }
 
     /**
@@ -395,9 +369,7 @@ export default class BeamNGSceneController extends SceneController {
      * @param grpId grpId
      */
     public updateNodeSpriteGrp(id: number, grpId: number) {
-        this.nodesSpriteArray.find(
-            el => el.userData.id == id
-        )!.userData.grp_id = grpId;
+        throw console.error("Not implemented");
     }
 
     /**
@@ -405,23 +377,46 @@ export default class BeamNGSceneController extends SceneController {
      * @param id groupId
      * @param state
      */
-    public setGroupVisibility(id: number, state: boolean) {
-        const nodesArray = this.nodesSpriteArray.filter(
-            el => el.userData.grp_id == id
-        );
+    public setGroupVisibility(id: number, state: boolean, slotId?: number) {
+        return;
+    }
 
-        nodesArray.forEach(currNode => {
+    /**
+     * sets a group's visibility
+     * @param id groupId
+     * @param state
+     */
+    public setSlotVisibility(id: number, state: boolean, slotId: number) {
+        const currSlot = this.getSlotById(slotId);
+
+        if (!currSlot) return;
+
+        currSlot.nodes.forEach(currNode => {
             currNode.visible = state;
 
-            if (!state) this.invisibleNodesArray.push(currNode.userData.id);
-            else {
+            if (!state) {
+                this.invisibleNodesArray.push({
+                    id: currNode.userData.id,
+                    slotId
+                });
+
+                this.nodesDragControl.forEach(el => {
+                    let obj = el.getObjects();
+                    obj = obj.filter(el => el != currNode);
+                });
+            } else {
                 this.invisibleNodesArray = this.invisibleNodesArray.filter(
-                    el => el != currNode.userData.id
+                    el => el.id != currNode.userData.id
                 );
+
+                this.nodesDragControl.forEach(el => {
+                    const obj = el.getObjects();
+                    obj.push(currNode);
+                });
             }
         });
 
-        this.buildBeamLines();
+        this.builSlotBeamLines(currSlot);
     }
 
     /**
@@ -429,7 +424,7 @@ export default class BeamNGSceneController extends SceneController {
      * @param factor factor
      */
     public setSnapFactor(factor: number) {
-        this.snapScaleFactor = factor;
+        //throw console.error("Not implemented");
     }
 
     /**
@@ -441,74 +436,7 @@ export default class BeamNGSceneController extends SceneController {
         view: rendererViewType,
         posOriginal: THREE.Vector3
     ): Vector3 {
-        const pos: Vector3 = posOriginal.copy(posOriginal);
-
-        switch (view) {
-            case rendererViewType.VIEW_TOP:
-                pos.x = Math.trunc(
-                    Math.round(
-                        pos.x / (this.snapScale * this.snapScaleFactor)
-                    ) *
-                        this.snapScale *
-                        this.snapScaleFactor
-                );
-
-                pos.y = Math.trunc(
-                    Math.round(
-                        pos.y / (this.snapScale * this.snapScaleFactor)
-                    ) *
-                        this.snapScale *
-                        this.snapScaleFactor
-                );
-
-                pos.z = Math.trunc(Math.round(pos.z));
-                break;
-
-            case rendererViewType.VIEW_SIDE:
-                pos.z = Math.trunc(
-                    Math.round(
-                        pos.z / (this.snapScale * this.snapScaleFactor)
-                    ) *
-                        this.snapScale *
-                        this.snapScaleFactor
-                );
-
-                pos.y = Math.trunc(
-                    Math.round(
-                        pos.y / (this.snapScale * this.snapScaleFactor)
-                    ) *
-                        this.snapScale *
-                        this.snapScaleFactor
-                );
-
-                pos.x = Math.trunc(Math.round(pos.x));
-                break;
-
-            case rendererViewType.VIEW_FRONT:
-                pos.z = Math.trunc(
-                    Math.round(
-                        pos.z / (this.snapScale * this.snapScaleFactor)
-                    ) *
-                        this.snapScale *
-                        this.snapScaleFactor
-                );
-
-                pos.x = Math.trunc(
-                    Math.round(
-                        pos.x / (this.snapScale * this.snapScaleFactor)
-                    ) *
-                        this.snapScale *
-                        this.snapScaleFactor
-                );
-
-                pos.y = Math.trunc(Math.round(pos.y));
-                break;
-
-            default:
-                break;
-        }
-
-        return pos;
+        throw console.error("Not implemented");
     }
 
     /*
@@ -591,162 +519,35 @@ export default class BeamNGSceneController extends SceneController {
      */
 
     private onNodeDragHoverOn(event: any) {
-        const currObj = event.object;
-
-        currObj.material.color.g = 0;
-        currObj.material.color.r = 1;
-        currObj.material.color.b = 0;
-
-        if (this.makeBeamPt.length == 1) {
-            if (this.tempBeamLine != undefined) {
-                this.scene.remove(this.tempBeamLine);
-            }
-
-            const firstNode = this.nodesSpriteArray.find(
-                el => el.userData.id == this.makeBeamPt[0]
-            );
-            if (firstNode == undefined) {
-                return;
-            }
-
-            const material = new THREE.LineBasicMaterial({
-                color: 0x0000ff
-            });
-
-            const points = [];
-            points.push(firstNode.position);
-            points.push(currObj.position);
-
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            this.tempBeamLine = new THREE.Line(geometry, material);
-            this.scene.add(this.tempBeamLine);
-        } else {
-            if (this.tempBeamLine != undefined) {
-                this.scene.remove(this.tempBeamLine);
-            }
-        }
+        throw console.error("Not implemented");
     }
 
     private onNodeDragHoverOff(event: any) {
-        const currObj = event.object;
-
-        currObj.material.color.g = 0.5;
-        currObj.material.color.r = 0;
-        currObj.material.color.b = 0;
-
-        if (this.tempBeamLine != undefined) {
-            this.scene.remove(this.tempBeamLine);
-        }
+        throw console.error("Not implemented");
     }
 
     private onNodeDragStart(event: any) {
-        if (event.object) {
-            const currObj = event.object as THREE.Object3D;
-            if (this.makeBeam) {
-                if (this.makeBeamPt.length >= 2) {
-                    this.makeBeamPt = [];
-                }
-                this.makeBeamPt.push(currObj.userData.id);
-            }
-        }
+        throw console.error("Not implemented");
     }
 
     private onNodeDragEnd(event: any) {
-        //if (event.button != 0) return;
-
-        if (event.object && this.isNodeMove) {
-            this.isNodeMove = false;
-            const currObj = event.object as THREE.Object3D;
-            this.moveNode(currObj.userData.id, {
-                x: currObj.position.x,
-                y: currObj.position.y,
-                z: currObj.position.z
-            });
-        }
+        throw console.error("Not implemented");
     }
 
     private onNodeDragMove(event: any) {
-        /**
-         * If we actually moved the node, we proceed to calc
-         */
-        this.isNodeMove = true;
-
-        /**
-         * disable making beams if we detect movment
-         */
-        this.makeBeam = false;
-        this.makeBeamPt = [];
-
-        /**
-         * TODO: implement option snap 2D <=> 3D
-         */
-        const obj: THREE.Object3D = event.object;
-        const view: rendererViewType = event.target.view;
-
-        if (this.snapEnable) {
-            obj.position.copy(this.snapToGrid(view, obj.position));
-        }
+        throw console.error("Not implemented");
     }
 
     public onMouseDown(event: MouseEvent, camera: THREE.Camera) {
-        if (this.controlMode != ControlMode.TRUCK) return;
-
-        this.nodesDragControl.forEach(el => {
-            el.activate();
-        });
+        throw console.error("Not implemented");
     }
 
     public onMouseUp(event: any, camera: THREE.Camera) {
-        if (this.controlMode != ControlMode.TRUCK) return;
-
-        if (event.button == 2) {
-            const raycaster = new THREE.Raycaster();
-            raycaster.setFromCamera(this.mouse, camera);
-            //We need only the nodes layer
-            raycaster.layers.set(1);
-
-            const intersects = raycaster.intersectObjects(
-                this.nodesSpriteArray
-            );
-
-            if (intersects.length > 0) {
-                //Deactivate the drag nodes system to prevent bugs
-                this.nodesDragControl.forEach(el => {
-                    el.deactivate();
-                });
-
-                const menu = new Menu();
-                menu.append(
-                    new MenuItem({
-                        label: "Delete node",
-                        click: () => {
-                            TruckEditorManager.getInstance()
-                                .getEditorObj()!
-                                .removeNode(intersects[0].object.userData.id);
-                        }
-                    })
-                );
-                menu.popup({
-                    window: remote.getCurrentWindow()
-                });
-            }
-        }
+        throw console.error("Not implemented");
     }
 
     public onMouseMove(event: any) {
-        const canvasBounds = event.target.getBoundingClientRect();
-        this.mouse.x =
-            ((event.clientX - canvasBounds.left) /
-                (canvasBounds.right - canvasBounds.left)) *
-                2 -
-            1;
-        this.mouse.y =
-            -(
-                (event.clientY - canvasBounds.top) /
-                (canvasBounds.bottom - canvasBounds.top)
-            ) *
-                2 +
-            1;
+        throw console.error("Not implemented");
     }
 
     public onMouseDblClick(
@@ -754,40 +555,7 @@ export default class BeamNGSceneController extends SceneController {
         camera: THREE.Camera,
         view: rendererViewType
     ) {
-        if (this.controlMode != ControlMode.TRUCK) return;
-        if (
-            view ==
-            (rendererViewType.VIEW_MAIN || rendererViewType.VIEW_DEFAULT)
-        )
-            return;
-
-        //Project mouse to 3D scene
-        const mousePos = new THREE.Vector3();
-        mousePos.set(this.mouse.x, this.mouse.y, 0);
-        mousePos.unproject(camera);
-
-        let nodePos = new THREE.Vector3();
-
-        switch (view) {
-            case rendererViewType.VIEW_TOP:
-                nodePos.set(mousePos.x, mousePos.y, 0);
-                break;
-
-            case rendererViewType.VIEW_SIDE:
-                nodePos.set(0, mousePos.y, mousePos.z);
-                break;
-
-            case rendererViewType.VIEW_FRONT:
-                nodePos.set(mousePos.x, 0, mousePos.z);
-                break;
-
-            default:
-                break;
-        }
-
-        if (this.snapEnable) nodePos = this.snapToGrid(view, nodePos);
-
-        this.addNode(nodePos);
+        throw console.error("Not implemented");
     }
 
     /**
@@ -796,115 +564,17 @@ export default class BeamNGSceneController extends SceneController {
      */
 
     public onKeyDown(e: KeyboardEvent) {
-        if (e.shiftKey) {
-            const mainView = TruckEditorManager.getInstance()
-                .getRendererObj()
-                .getViews()
-                .find(el => el.getType() == rendererViewType.VIEW_MAIN);
-            if (mainView != undefined) {
-                mainView.getCameraControl().enableRotate = false;
-            }
-
-            this.nodesDragControl.forEach(el => {
-                el.enabled = false;
-            });
-        }
-
-        switch (e.key) {
-            case "Z":
-            case "z":
-                if (e.ctrlKey) {
-                    if (this.controlMode == ControlMode.TRUCK) {
-                        TruckEditorManager.getInstance()
-                            .getEditorObj()!
-                            .requestUndo();
-                    }
-                }
-                break;
-
-            case "B":
-            case "b":
-                if (e.ctrlKey) {
-                    this.switchEditorMode(ControlMode.BLUEPRINT);
-                    useToast().info("Switching to blueprint edit");
-                }
-                break;
-
-            case "N":
-            case "n":
-                if (e.ctrlKey) {
-                    this.switchEditorMode(ControlMode.TRUCK);
-                    useToast().info("Switching to truck edit");
-                }
-                break;
-
-            default:
-                if (this.controlMode == ControlMode.TRUCK) {
-                    if (e.ctrlKey) {
-                        this.snapEnable = true;
-                    }
-                    if (e.shiftKey) {
-                        this.makeBeam = true;
-
-                        if (this.makeBeamPt.length > 1) {
-                            this.addBeam({
-                                node1: this.makeBeamPt[0],
-                                node2: this.makeBeamPt[1]
-                            });
-                            this.makeBeamPt = [];
-                        }
-                    }
-                }
-                break;
-        }
+        throw console.error("Not implemented");
     }
 
     public onKeyUp(e: KeyboardEvent) {
-        const mainView = TruckEditorManager.getInstance()
-            .getRendererObj()
-            .getViews()
-            .find(el => el.getType() == rendererViewType.VIEW_MAIN);
-        if (mainView != undefined) {
-            mainView.getCameraControl().enableRotate = true;
-        }
-
-        this.nodesDragControl.forEach(el => {
-            el.enabled = true;
-        });
-
-        switch (e.key) {
-            default:
-                if (this.controlMode == ControlMode.TRUCK) {
-                    this.snapEnable = false;
-                    this.makeBeam = false;
-                }
-
-                break;
-        }
+        throw console.error("Not implemented");
     }
 
     /**
      * Editor modes
      */
     public switchEditorMode(control: ControlMode) {
-        this.controlMode = control;
-
-        if (control != ControlMode.TRUCK) {
-            this.nodesDragControl.forEach(el => {
-                el.enabled = false;
-            });
-        } else {
-            this.nodesDragControl.forEach(el => {
-                el.enabled = true;
-            });
-        }
-
-        /*if (control != ControlMode.BLUEPRINT) {
-            this.blueprintSystem.setControlState(false);
-            this.bluemodelSystem.setControlState(false);
-        } else {
-            this.blueprintSystem.setControlState(true);
-            this.bluemodelSystem.setControlState(true);
-        }*/
+        throw console.error("Not implemented");
     }
 }

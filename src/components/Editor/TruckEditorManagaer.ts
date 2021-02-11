@@ -81,9 +81,12 @@ export default class TruckEditorManager {
 
         return truckData.title;*/
 
-        const jBeam = new JBeamImporter().loadFile("");
+        const jBeam = new JBeamImporter();
 
-        (this.editorStore as JBeamStore).loadData(jBeam);
+        (this.editorStore as JBeamStore).loadData(
+            jBeam.loadFile(""),
+            jBeam.loadPCData()
+        );
         this.editorStore.setSaveState(true);
 
         return "";

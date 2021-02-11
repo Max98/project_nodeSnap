@@ -30,22 +30,26 @@ export default class JBeamEditor extends Editor {
 
         this.jBeamData.forEach(slot => {
             slot.beams.forEach(currBeam => {
-                currBeam.node1 = this.getNodeIdByName(currBeam.node1Name!);
-                currBeam.node2 = this.getNodeIdByName(currBeam.node2Name!);
+                currBeam.node1 = this.getNodeIdByName(
+                    currBeam.node1Name!,
+                    slot
+                )!;
+                currBeam.node2 = this.getNodeIdByName(
+                    currBeam.node2Name!,
+                    slot
+                )!;
             });
         });
     }
 
-    private getNodeIdByName(name: string) {
+    private getNodeIdByName(name: string, slot: EditorTruckData) {
         let id = -1;
-        this.jBeamData.forEach(el => {
-            const node = el.nodes.find(currNode => currNode.name == name);
-            if (node) {
-                id = node.id;
-                return;
-            }
-        });
-        return id;
+
+        const node = slot.nodes.find(currNode => currNode.name == name);
+        if (node) {
+            id = node.id;
+            return id;
+        }
     }
 
     public loadTruckData(): void {
@@ -55,21 +59,25 @@ export default class JBeamEditor extends Editor {
             .getCurrSceneController() as BeamNGSceneController;
 
         console.log("load");
+
         this.jBeamData.forEach(slot => {
             for (let i = 0; i < slot.nodes.length; i++) {
                 const currNode = slot.nodes[i];
 
                 sceneController.addNodeToScene(
                     Utils.convertNodeToScene(currNode),
-                    slot.slot?.name
+                    slot.slot!
                 );
             }
+        });
 
+        this.jBeamData.forEach(slot => {
             for (let i = 0; i < slot.beams.length; i++) {
                 const currBeam = slot.beams[i];
 
                 sceneController.addBeamToScene(
-                    Utils.convertBeamToScene(currBeam)
+                    Utils.convertBeamToScene(currBeam),
+                    slot.slot!.id
                 );
             }
         });
@@ -145,6 +153,14 @@ export default class JBeamEditor extends Editor {
     public setGroupVisibility(id: number, state: boolean): void {
         throw console.error("Not implemented!");
     }
+
+    public setSlotVisibility(id: number, state: boolean, slotId: number): void {
+        this.renderInstance
+            .getSceneManager()
+            .getCurrSceneController()
+            .setSlotVisibility(id, state, slotId);
+    }
+
     public scaleAll(factor: number, isHistory?: boolean): void {
         throw console.error("Not implemented!");
     }

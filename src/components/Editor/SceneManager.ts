@@ -44,31 +44,17 @@ export default class SceneManager {
         console.log("reset");
     }
 
-    public setSnapFactor(factor: number) {
-        console.log("sn");
-    }
-    public onMouseDown(event: MouseEvent, camera: THREE.Camera) {
-        console.log("reset");
-    }
-    public onMouseUp(event: any, camera: THREE.Camera) {
-        console.log("reset");
-    }
+    public setSnapFactor(factor: number) {}
+    public onMouseDown(event: MouseEvent, camera: THREE.Camera) {}
+    public onMouseUp(event: any, camera: THREE.Camera) {}
     public onMouseDblClick(
         event: any,
         camera: THREE.Camera,
         view: rendererViewType
-    ) {
-        console.log("reset");
-    }
-    public onMouseMove(event: any) {
-        console.log("reset");
-    }
-    public onKeyDown(e: KeyboardEvent) {
-        console.log("reset");
-    }
-    public onKeyUp(e: KeyboardEvent) {
-        console.log("reset");
-    }
+    ) {}
+    public onMouseMove(event: any) {}
+    public onKeyDown(e: KeyboardEvent) {}
+    public onKeyUp(e: KeyboardEvent) {}
 
     public getCurrSceneController(): SceneController {
         return this.sceneController;

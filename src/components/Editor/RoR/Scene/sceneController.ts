@@ -7,7 +7,10 @@ import { Vector3 } from "three";
 import { useToast } from "vue-toastification";
 
 import * as Logger from "electron-log";
-import SceneController, { SceneNode } from "../../Common/SceneController";
+import SceneController, {
+    SceneBeam,
+    SceneNode
+} from "../../Common/SceneController";
 
 const remote = require("electron").remote;
 const { Menu, MenuItem, dialog } = remote;
@@ -156,8 +159,8 @@ export default class RoRSceneController extends SceneController {
      * @param node1
      * @param node2
      */
-    public addBeamToScene(node1: number, node2: number) {
-        this.beamsArray.push({ node1, node2 });
+    public addBeamToScene(beamData: SceneBeam) {
+        this.beamsArray.push({ node1: beamData.node1, node2: beamData.node2 });
     }
 
     /**

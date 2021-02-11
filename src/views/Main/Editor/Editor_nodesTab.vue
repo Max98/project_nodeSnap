@@ -8,6 +8,12 @@
                             v-model="slot.slot.isVisible"
                             class="form-check-input"
                             type="checkbox"
+                            @change="
+                                onChangeSlotVisibility(
+                                    slot.slot.id,
+                                    $event.srcElement.checked
+                                )
+                            "
                         />
                     </div>
                     <div class="col">
@@ -20,7 +26,9 @@
                                 aria-expanded="false"
                                 :aria-controls="`Slot` + idx"
                             >
-                                slot: {{ slot.slot.name }}
+                                <div class="acc-title" :title="slot.slot.name">
+                                    slot: {{ slot.slot.name }}
+                                </div>
                             </button>
                         </h2>
                     </div>
@@ -255,6 +263,12 @@ export default class EditorNodesTab extends Vue {
     @Watch("truckDataSlots")
     updateNodesData() {
         console.log(this.truckDataSlots);
+    }
+
+    onChangeSlotVisibility(slotid: number, state: boolean) {
+        TruckEditorManager.getInstance()
+            .getEditorObj()!
+            .setSlotVisibility(0, state, slotid);
     }
 
     mounted() {
