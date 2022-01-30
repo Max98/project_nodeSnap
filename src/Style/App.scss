@@ -1,0 +1,378 @@
+@import "./var.scss";
+
+//
+//Font sizes
+//
+
+$font-family-sans-serif: $editorFont;
+
+$font-size-base: $editorFontSize; // Assumes the browser default, typically `16px`
+$font-size-sm: $font-size-base * 0.795;
+$font-size-lg: $font-size-base * 1.15;
+
+$h1-font-size: $font-size-base * 2;
+$h2-font-size: $font-size-base * 1.75;
+$h3-font-size: $font-size-base * 1.5;
+$h4-font-size: $font-size-base * 1.25;
+$h5-font-size: $font-size-base * 1.15;
+$h6-font-size: $font-size-base;
+
+$paragraph-margin-bottom: 0.3rem;
+$font-weight-bolder: 600;
+
+//
+// Forms
+//
+$input-bg: #00000066;
+$input-color: #fcfcfcdd;
+$input-placeholder-color: rgba(255, 255, 255, 0.5);
+
+//$input-disabled-bg: $gray-200 ;
+//$input-disabled-border-color: null ;
+$input-border-color: transparent;
+//$input-border-width: $input-btn-border-width ;
+//$input-box-shadow: $box-shadow-inset ;
+
+//
+//containers
+//
+$container-max-widths: (
+  sm: 100%,
+  md: 100%,
+  lg: 100%,
+  xl: 100%,
+  xxl: 100%,
+);
+
+/**
+*
+*   Breadcrumb
+*/
+
+$breadcrumb-bg: $gray-900;
+
+//List group
+$list-group-color: white;
+
+$list-group-item-bg-level: -9;
+$list-group-item-color-level: 6;
+
+$list-group-hover-bg: $gray-700;
+
+$list-group-bg: $gray-800;
+
+$list-group-action-color: $gray-100;
+$list-group-action-hover-color: $list-group-action-color;
+
+$list-group-action-active-color: $body-color;
+$list-group-action-active-bg: $gray-200;
+
+@import "node_modules/bootstrap/scss/bootstrap";
+
+//set sidebar header height the same as the navbar (56px)
+$b-sidebar-header-padding-y: 10px;
+$b-sidebar-width: 265px;
+
+//@import "node_modules/bootstrap-vue/src/index.scss";
+
+.side_bar_col {
+  flex: 0 0 $b-sidebar-width !important;
+  padding-right: 0 !important;
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.nav-link:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.nav-tabs {
+  border: none;
+  .nav-link {
+    border: none;
+    transition: none;
+  }
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus {
+  background-color: $primary;
+
+  color: white;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: $secondary;
+  border: none;
+
+  color: white;
+}
+
+hr {
+  border-top: 1px solid rgba(0, 0, 0, 0.54);
+}
+
+a {
+  color: #ffffff80;
+  &:hover {
+    color: white;
+    text-decoration: none;
+  }
+}
+
+.navbar-text {
+  padding: 0.5rem 1rem;
+  font-size: 14px;
+  margin-top: 15px;
+}
+
+.sidebar_menu_card > .nav > .nav-item {
+  &:hover {
+    background-color: $gray-800;
+  }
+}
+
+//vue js stuff
+.container > div > .row {
+  margin-bottom: 20px;
+}
+
+.btn {
+  margin-right: 10px;
+}
+
+.reverse-color-a {
+  color: white;
+  &:hover {
+    color: #ffffff80;
+  }
+}
+
+.toast {
+  border-radius: 0 !important;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #252525;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgb(94, 94, 94);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.custom-file-label::after {
+  background-color: $secondary;
+}
+
+a {
+  text-decoration: none;
+}
+
+.sidebar_header {
+  p {
+    padding: 5px 20px;
+    font-size: 20px;
+    color: white;
+    text-align: center;
+  }
+}
+
+.grp-row {
+  background-color: #3d0155;
+}
+
+.body_row {
+  margin-right: 0 !important;
+}
+.body_col {
+  padding: 0 !important;
+}
+
+.sidebar_menu_card {
+  height: 100%;
+  min-height: 100vh;
+  max-height: 100vh;
+  border: 0 !important;
+  box-shadow: 5px 0px 5px rgba(0, 0, 0, 0.082);
+  z-index: 10;
+}
+
+.sidebar_header {
+  height: 40px;
+  background-color: $primary;
+  //margin-bottom: 10px;
+}
+
+.card_body_sidebar_avatar {
+  padding: 1.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.sidebar_avatar p {
+  padding-left: 10px;
+  display: inline-block;
+}
+
+.sidebar_nav {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+.nav-tabs {
+  background-color: $primary;
+}
+
+.node-table {
+  overflow: auto !important;
+  min-height: calc(100vh - 64px - 160px);
+  max-height: calc(100vh - 64px - 160px);
+
+  .row {
+    margin: 0;
+    padding: 0px 5px;
+    .col {
+      padding-right: 0;
+      padding-left: 10px;
+      overflow: hidden;
+      //max-width: 7ch;
+    }
+    &:hover {
+      background-color: $secondary;
+      color: white;
+    }
+  }
+
+  .active {
+    background-color: $primary;
+    color: white;
+  }
+}
+
+.sidebar-editor {
+  font-size: 14px;
+  .card-body {
+    padding: 0.5rem 1rem 0.5rem 1rem;
+  }
+}
+
+.wheels-list {
+  height: 200px;
+  .row {
+    color: white;
+    background-color: $secondary;
+    &:hover {
+      background-color: $primary;
+    }
+  }
+}
+.row-editor {
+  margin-bottom: 0px;
+}
+
+canvas:focus {
+  outline: none;
+}
+
+body {
+  overflow: hidden;
+}
+
+.editor {
+  //100% - 40px navbar
+  //margin-top: -8px;
+  height: calc(100vh - 40px);
+  overflow: hidden;
+  //height: 100vh ;
+}
+
+.editor-container {
+  height: 100%;
+  padding-right: 11px !important; //12px - 1px border
+  padding-left: 12px !important;
+  //margin-top: 10px;
+  .row {
+    height: 50%;
+
+    //margin-bottom: 10px;
+  }
+  .col {
+    //height: 100%;
+    position: relative;
+
+    height: 100%;
+    .renderer {
+      //border: 1px $secondary solid;
+      height: 100%;
+      width: 100%;
+      display: block;
+    }
+
+    canvas:focus {
+      outline: none;
+    }
+  }
+}
+
+.nav-cube {
+  /* background-color: aliceblue; */
+  position: absolute;
+  z-index: 9;
+  height: 50px;
+  width: 50px;
+}
+
+.row-editor > div {
+  padding-right: 1px;
+  padding-left: 0px;
+  border-right-style: solid;
+  border-bottom-style: solid;
+  border-width: 1px;
+}
+
+.navbar {
+  padding: 0rem 1rem !important;
+  height: 40px;
+}
+
+.checkbox-col {
+  flex: 0 0 26px !important;
+}
+
+.nodename-col {
+  flex: 0 0 40px !important;
+}
+
+.accordion-button {
+  padding: 0;
+  background-color: transparent;
+}
+
+.accordion-button:not(.collapsed) {
+  color: white;
+  background-color: transparent;
+}
+
+.accordion-button:not(.collapsed)::after {
+  color: white;
+}
+
+.acc-title {
+  width: 201px;
+  height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+}

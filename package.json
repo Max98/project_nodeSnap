@@ -1,84 +1,54 @@
 {
-    "name": "nodesnap",
-    "version": "0.1.1-beta",
-    "private": true,
-    "scripts": {
-        "lint": "vue-cli-service lint",
-        "electron:build": "vue-cli-service electron:build",
-        "electron:serve": "vue-cli-service electron:serve",
-        "postinstall": "electron-builder install-app-deps",
-        "postuninstall": "electron-builder install-app-deps"
-    },
-    "main": "background.js",
-    "dependencies": {
-        "@tweenjs/tween.js": "^18.6.4",
-        "@types/bootstrap": "^5.0.4",
-        "@types/mime-types": "^2.1.0",
-        "@types/xml2js": "^0.4.7",
-        "bootstrap": "^5.0.0-beta1",
-        "bootstrap-icons-vue": "^0.5.0",
-        "core-js": "^3.6.5",
-        "electron-log": "^4.3.1",
-        "electron-promise-ipc": "^2.2.4",
-        "electron-store": "^6.0.1",
-        "mime-types": "^2.1.28",
-        "node-watch": "^0.7.1",
-        "three": "^0.124.0",
-        "vue": "^3.0.0",
-        "vue-class-component": "^8.0.0-0",
-        "vue-router": "^4.0.0-0",
-        "vue-toastification": "^2.0.0-rc.1",
-        "vuex": "^4.0.0-0",
-        "xml2js": "^0.4.23"
-    },
-    "devDependencies": {
-        "@types/electron-devtools-installer": "^2.2.0",
-        "@typescript-eslint/eslint-plugin": "^2.33.0",
-        "@typescript-eslint/parser": "^2.33.0",
-        "@vue/cli-plugin-babel": "~4.5.0",
-        "@vue/cli-plugin-eslint": "~4.5.0",
-        "@vue/cli-plugin-router": "~4.5.0",
-        "@vue/cli-plugin-typescript": "~4.5.0",
-        "@vue/cli-plugin-vuex": "~4.5.0",
-        "@vue/cli-service": "~4.5.0",
-        "@vue/compiler-sfc": "^3.0.0",
-        "@vue/eslint-config-prettier": "^6.0.0",
-        "@vue/eslint-config-typescript": "^5.0.2",
-        "electron": "^9.0.0",
-        "electron-devtools-installer": "^3.1.0",
-        "eslint": "^6.7.2",
-        "eslint-plugin-prettier": "^3.1.3",
-        "eslint-plugin-vue": "^7.0.0-0",
-        "prettier": "^1.19.1",
-        "sass": "^1.26.5",
-        "sass-loader": "^8.0.2",
-        "typescript": "~3.9.3",
-        "vue-cli-plugin-electron-builder": "^2.0.0-rc.5",
-        "worker-plugin": "^5.0.0"
-    },
-    "eslintConfig": {
-        "root": true,
-        "env": {
-            "node": true
-        },
-        "extends": [
-            "plugin:vue/vue3-essential",
-            "eslint:recommended",
-            "@vue/typescript/recommended",
-            "@vue/prettier",
-            "@vue/prettier/@typescript-eslint"
-        ],
-        "parserOptions": {
-            "ecmaVersion": 2020
-        },
-        "rules": {
-            "@typescript-eslint/ban-ts-ignore": "off",
-            "@typescript-eslint/camelcase": "off"
-        }
-    },
-    "browserslist": [
-        "> 1%",
-        "last 2 versions",
-        "not dead"
+  "name": "mk4",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.4",
+    "@tauri-apps/api": "^1.0.0-beta.8",
+    "@testing-library/jest-dom": "^5.16.1",
+    "@testing-library/react": "^12.1.2",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.4.0",
+    "@types/node": "^16.11.21",
+    "@types/react": "^17.0.38",
+    "@types/react-dom": "^17.0.11",
+    "bootstrap": "^5.1.3",
+    "node-sass": "^7.0.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-router-dom": "^6.2.1",
+    "react-scripts": "5.0.0",
+    "three": "^0.136.0",
+    "typescript": "^4.5.4",
+    "web-vitals": "^2.1.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "tauri": "tauri"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
     ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.0.0-beta.10",
+    "@types/three": "^0.136.1"
+  }
 }
