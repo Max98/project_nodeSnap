@@ -6,6 +6,7 @@ import EditorData, {
   EditorNode,
   EditorSlot,
 } from "../../Editor/EditorDataInterfaces";
+import EditorManager from "../../Editor/EditorManager";
 
 export default function BeamsTab(props: { editorData: EditorData }) {
   const [editorData, setEditorData] = useState(props.editorData);
@@ -24,7 +25,9 @@ export default function BeamsTab(props: { editorData: EditorData }) {
   }, [props.editorData]);
 
   function toggleSlotVisiblity(slot: EditorSlot) {
-    console.log(slot);
+    EditorManager.getInstance()
+      .getEditorObj()
+      .setSlotVisibility(slot.id, !slot.isVisible);
   }
 
   function generateBeamRow(beam: EditorBeam) {
