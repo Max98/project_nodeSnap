@@ -2,14 +2,18 @@ import React, { Fragment } from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { Vector3 } from "three";
+import ContextMenu from "../../Components/vanilla-context-menu";
 import EditorData, {
   EditorGrp,
   EditorNode,
   EditorSlot,
 } from "../../Editor/EditorDataInterfaces";
+import EditorManager from "../../Editor/EditorManager";
 
 export default function NodesTab(props: { editorData: EditorData }) {
   const [editorData, setEditorData] = useState(props.editorData);
+
+  const [currSlotId, setCurrSlotId] = useState<number>(0);
 
   const [selectedNode, setSelectedNode] = useState<EditorNode>({
     info: {
@@ -28,28 +32,41 @@ export default function NodesTab(props: { editorData: EditorData }) {
 
   //
 
-  function toggleNodeVisiblity(node: EditorNode) {
-    console.log(node);
+  function toggleNodeVisiblity(slotId: number, node: EditorNode) {
+    EditorManager.getInstance()
+      .getEditorObj()
+      .setNodeVisibility(slotId, node.info.id, !node.isVisible);
   }
 
   function toggleSlotVisiblity(slot: EditorSlot) {
-    console.log(slot);
+    EditorManager.getInstance()
+      .getEditorObj()
+      .setSlotVisibility(slot.id, !slot.isVisible);
   }
 
-  function toggleGrpVisiblity(grp: EditorGrp) {
-    console.log(grp);
+  function toggleGrpVisiblity(slotId: number, grp: EditorGrp) {
+    EditorManager.getInstance()
+      .getEditorObj()
+      .setGrpVisibility(slotId, grp.id, !grp.isVisible);
   }
 
   //
-  function generateNodeRow(node: EditorNode) {
+  function generateNodeRow(slot: EditorSlot, node: EditorNode) {
     return (
       <div key={node.info.id}>
         <div
           onMouseDown={() => {
             setSelectedNode(node);
           }}
+          onContextMenuCapture={(e) => {
+            new ContextMenu(e, [
+              { label: "Add new group before node" },
+              "hr",
+              { label: "Delete node" },
+            ]);
+          }}
           className={
-            "row " + (selectedNode.info.id == node.info.id ? "active" : "")
+            "row  " + (selectedNode.info.id == node.info.id ? "active" : "")
           }
         >
           <div className="col checkbox-col">
@@ -59,7 +76,7 @@ export default function NodesTab(props: { editorData: EditorData }) {
               id=""
               className="form-check-input"
               checked={node.isVisible}
-              onChange={() => toggleNodeVisiblity(node)}
+              onChange={() => toggleNodeVisiblity(slot.id, node)}
             />
           </div>
           <div className="col nodename-col">{node.info.name}</div>
@@ -73,12 +90,38 @@ export default function NodesTab(props: { editorData: EditorData }) {
 
   return (
     <div>
-      <div className="node-table">
+      <div
+        className="node-table"
+        onContextMenuCapture={(e) => {
+          e.preventDefault();
+          new ContextMenu(e, [{ label: "New slot" }]);
+        }}
+      >
         {/*  */}
         {editorData.slots.map((slot) => {
           return (
             <div className="accordion-item" key={slot.id}>
-              <div className="row">
+              <div
+                className={
+                  "row  " + (currSlotId == slot.id ? "active-slot" : "")
+                }
+                onMouseDown={() => {}}
+                onContextMenuCapture={(e) => {
+                  e.preventDefault();
+                  new ContextMenu(e, [
+                    {
+                      label: "Select slot",
+                      callback: () => {
+                        setCurrSlotId(slot.id);
+                        EditorManager.getInstance()
+                          .getEditorObj()
+                          .setSelectedSlotId(slot.id);
+                      },
+                    },
+                    "hr",
+                  ]);
+                }}
+              >
                 <div className="col checkbox-col">
                   <input
                     type="checkbox"
@@ -117,26 +160,41 @@ export default function NodesTab(props: { editorData: EditorData }) {
                 )}
 
                 {slot.nodes
-                  .filter((el) => el.info.grpId == -1)
-                  .map((el) => {
-                    return generateNodeRow(el);
+                  .filter((node) => node.info.grpId == -1)
+                  .map((node) => {
+                    return generateNodeRow(slot, node);
                   })}
 
                 {slot.grps
-                  .filter((el) => el.type == "node")
-                  .map((el) => {
+                  .filter((grp) => grp.type == "node")
+                  .map((grp) => {
                     return (
-                      <div key={el.id}>
-                        <div className="accordion-item">
+                      <div key={grp.id}>
+                        <div
+                          className="accordion-item"
+                          onContextMenuCapture={(e) => {
+                            new ContextMenu(e, [
+                              { label: "Rename group" },
+                              "hr",
+                              { label: "Duplicate" },
+                              { label: "Delete" },
+                              "hr",
+                              { label: "Show only this" },
+                              { label: "Show all" },
+                            ]);
+                          }}
+                        >
                           <div className="row grp-row">
-                            {el.id != -1 && (
+                            {grp.id != -1 && (
                               <Fragment>
                                 <div className="col checkbox-col">
                                   <input
                                     type="checkbox"
                                     className="form-check-input"
-                                    checked={el.isVisible}
-                                    onChange={() => toggleGrpVisiblity(el)}
+                                    checked={grp.isVisible}
+                                    onChange={() =>
+                                      toggleGrpVisiblity(slot.id, grp)
+                                    }
                                   />
                                 </div>
                                 <div className="col">
@@ -145,15 +203,15 @@ export default function NodesTab(props: { editorData: EditorData }) {
                                       className="accordion-button groups-button collapsed"
                                       type="button"
                                       data-bs-toggle="collapse"
-                                      data-bs-target={`#groupN` + el.id}
+                                      data-bs-target={`#groupN` + grp.id}
                                       aria-expanded="true"
-                                      aria-controls={`groupN` + el.id}
+                                      aria-controls={`groupN` + grp.id}
                                     >
                                       <div
                                         className="acc-title"
-                                        title={el.title}
+                                        title={grp.title}
                                       >
-                                        grp: {el.title}
+                                        grp: {grp.title}
                                       </div>
                                     </button>
                                   </h2>
@@ -162,14 +220,14 @@ export default function NodesTab(props: { editorData: EditorData }) {
                             )}
                           </div>
                           <div
-                            id={`groupN` + el.id}
-                            data-bs-parent={`#groupN` + el.id}
+                            id={`groupN` + grp.id}
+                            data-bs-parent={`#groupN` + grp.id}
                             className="accordion-collapse collapse"
                           >
                             {slot.nodes
-                              .filter((nodes) => nodes.info.grpId == el.id)
+                              .filter((nodes) => nodes.info.grpId == grp.id)
                               ?.map((node) => {
-                                return generateNodeRow(node);
+                                return generateNodeRow(slot, node);
                               })}
                           </div>
                         </div>
@@ -228,7 +286,7 @@ export default function NodesTab(props: { editorData: EditorData }) {
             </div>
             <div className="row">
               <div className="col-3">
-                <label>Option:</label>
+                <label>Name:</label>
               </div>
               <div className="col">
                 <input

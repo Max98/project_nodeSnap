@@ -10,6 +10,7 @@ import { DragControls } from "./Ex/js/DragControls.js";
 import { ConeBufferGeometry, Vector3 } from "three";
 import EditorManager from "./EditorManager";
 import Editor from "./Editor";
+import ContextMenu from "../Components/vanilla-context-menu";
 
 enum ControlMode {
   TRUCK,
@@ -36,7 +37,7 @@ export default class SceneController {
 
   private scene: THREE.Scene;
 
-  private displayNodesName = false;
+  private displayNodesName = true;
   private nodesDragControl: DragControls[] = [];
   private isNodeMove = false;
 
@@ -44,14 +45,6 @@ export default class SceneController {
     id: number;
     slotId: number;
   }[] = [];
-
-  private beamsArray: EditorBeam[] = [];
-  private beamLinesMesh: THREE.LineSegments | undefined;
-  //optim
-  private linePoints: Vector3[] = [];
-  private lineIdx: number[] = [];
-
-  private editorScene: THREE.Object3D;
 
   private mouse: THREE.Vector2 = new THREE.Vector2(0, 0);
 
@@ -76,8 +69,6 @@ export default class SceneController {
 
     this.scene = scene;
 
-    this.editorScene = new THREE.Object3D();
-
     this.editorManager = _EditorManager;
   }
 
@@ -88,10 +79,40 @@ export default class SceneController {
 
   /** Main editor functions */
 
+  public reset() {
+    this.removeDragControl();
+
+    this.invisibleNodesArray.length = 0;
+
+    this.sceneSlot.forEach((slot) => {
+      this.scene.remove(slot.scene);
+    });
+
+    this.sceneSlot.length = 0;
+  }
+
   /**
    * Resets the editor scene
    */
-  public reset() {}
+  public removeDragControl() {
+    this.nodesDragControl.forEach((dragControl) => {
+      dragControl.removeEventListener("hoveron", (e) =>
+        this.onNodeDragHoverOn(e)
+      );
+      dragControl.removeEventListener("hoveroff", (e) =>
+        this.onNodeDragHoverOff(e)
+      );
+      dragControl.removeEventListener("drag", (e) => this.onNodeDragMove(e));
+      dragControl.removeEventListener("dragstart", (e) =>
+        this.onNodeDragStart(e)
+      );
+      dragControl.removeEventListener("dragend", (e) => this.onNodeDragEnd(e));
+
+      dragControl.dispose();
+    });
+
+    this.nodesDragControl.length = 0;
+  }
 
   public addSlot(id: number, title: string) {
     this.sceneSlot.push({
@@ -132,7 +153,7 @@ export default class SceneController {
     };
 
     newNode.layers.set(1);
-    const spritey = this.makeTextSprite(node.info.name.toString());
+    const spritey = this.makeTextSprite(`${node.info.name.toString()}`);
 
     if (spritey) {
       spritey.visible = this.displayNodesName;
@@ -336,6 +357,89 @@ export default class SceneController {
     this.snapScaleFactor = factor;
   }
 
+  /**
+   * sets a slot's visibility
+   * @param id slotId
+   * @param state
+   */
+  public setSlotVisibility(id: number, state: boolean) {
+    const currSlot = this.sceneSlot.find((el) => el.id == id);
+
+    if (!currSlot) {
+      console.error("Slot not found");
+      return;
+    }
+
+    if (!state) this.scene.remove(currSlot.scene);
+    else this.scene.add(currSlot.scene);
+  }
+
+  private processNodeVisiblity(
+    slotId: number,
+    currNode: THREE.Sprite,
+    state: boolean
+  ) {
+    currNode.visible = state;
+    if (!state) {
+      this.invisibleNodesArray.push({ id: currNode.userData.id, slotId });
+
+      this.nodesDragControl.forEach((control) => {
+        let obj = control.getObjects();
+        obj = obj.filter((node) => node != currNode);
+      });
+    } else {
+      this.invisibleNodesArray = this.invisibleNodesArray.filter(
+        (node) =>
+          node.id != currNode.userData.id ||
+          node.slotId != currNode.userData.slotId
+      );
+
+      this.nodesDragControl.forEach((control) => {
+        const obj = control.getObjects();
+        obj.push(currNode);
+      });
+    }
+  }
+
+  /**
+   * sets a group's visibility
+   * @param id groupId
+   * @param state
+   */
+  public setGrpVisibility(slotId: number, grpId: number, state: boolean) {
+    const nodesArray = this.sceneSlot
+      .find((slot) => slot.id == slotId)!
+      .nodes.filter((node) => node.userData.grpId == grpId);
+
+    nodesArray.forEach((currNode) => {
+      this.processNodeVisiblity(slotId, currNode, state);
+    });
+
+    console.log(this.invisibleNodesArray);
+
+    this.buildBeamLines();
+  }
+
+  /**
+   * sets a node visibility
+   * @param id nodeId
+   * @param state
+   */
+  public setNodeVisibility(slotId: number, nodeId: number, state: boolean) {
+    const currNode = this.sceneSlot
+      .find((slot) => slot.id == slotId)!
+      .nodes.find((node) => node.userData.id == nodeId);
+
+    if (!currNode) {
+      console.error("node not found");
+      return;
+    }
+
+    this.processNodeVisiblity(slotId, currNode, state);
+
+    this.buildBeamLines();
+  }
+
   /*
     Author: Lee Stemkoski
     Just made it work since it was from 2013
@@ -463,6 +567,11 @@ export default class SceneController {
     }
   }
 
+  /**
+   * Events
+   *
+   */
+
   private onNodeDragHoverOff(event: any) {
     const currObj = event.object;
 
@@ -533,7 +642,38 @@ export default class SceneController {
     });
   }
 
-  public onMouseUp(event: any, camera: THREE.Camera) {}
+  public onMouseUp(event: any, camera: THREE.Camera) {
+    if (event.button == 2) {
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(this.mouse, camera);
+      //We need only the nodes layer
+      raycaster.layers.set(1);
+
+      const intersects = raycaster.intersectObjects(this.getAllNodes());
+
+      if (intersects.length > 0) {
+        //Deactivate the drag nodes system to prevent bugs
+        this.nodesDragControl.forEach((el) => {
+          el.deactivate();
+        });
+
+        new ContextMenu(event, [
+          {
+            label: "Delete node",
+            callback: () => {
+              this.editorManager
+                .getEditorObj()
+                .removeNode(
+                  intersects[0].object.userData.id,
+                  intersects[0].object.userData.slotId
+                );
+            },
+          },
+          "hr",
+        ]);
+      }
+    }
+  }
 
   public onMouseMove(event: any) {
     const canvasBounds = event.target.getBoundingClientRect();
@@ -678,5 +818,17 @@ export default class SceneController {
 
         break;
     }
+  }
+
+  private getAllNodes() {
+    const nodes: THREE.Sprite[] = [];
+
+    this.sceneSlot.forEach((el) => {
+      el.nodes.forEach((node) => {
+        nodes.push(node);
+      });
+    });
+
+    return nodes;
   }
 }

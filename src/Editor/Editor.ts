@@ -41,6 +41,14 @@ export default class Editor {
   public async loadData(filePath: string, importer: Importers) {
     this.editorData = await this.importerManager.loadFile(filePath, importer);
 
+    this.loadSlotsToScene();
+
+    this.sendUpdate();
+  }
+
+  private loadSlotsToScene() {
+    this.renderInstance.getSceneController().reset();
+
     this.editorData.slots.forEach((slot) => {
       this.renderInstance.getSceneController().addSlot(slot.id, slot.title);
 
@@ -52,10 +60,7 @@ export default class Editor {
         this.renderInstance.getSceneController().addBeam(beam, slot.id);
       });
     });
-
     this.renderInstance.getSceneController().finalize();
-
-    this.sendUpdate();
   }
 
   /**
@@ -170,10 +175,6 @@ export default class Editor {
     );
     if (currBeam.length == 0) return;
 
-    // this.renderInstance
-    //   .getSceneController()
-    //   .removeBeamFromScene(currBeam[0].node1, currBeam[0].node2);
-
     this.editorData.slots[slotId].beams = this.editorData.slots[
       slotId
     ].beams.filter((el) => el != currBeam[0]);
@@ -191,6 +192,61 @@ export default class Editor {
     }
 
     this.renderInstance.getSceneController().buildBeamLines();
+
+    this.sendUpdate();
+  }
+
+  /**
+   * remove a specific node without updating all the nodes after it
+   * @param id
+   */
+  private removeNodeLoop(id: number, slotId: number) {
+    this.editorData.slots[slotId].nodes = this.editorData.slots[
+      slotId
+    ].nodes.filter((el) => el.info.id != id);
+
+    this.editorData.slots[slotId].beams = this.editorData.slots[
+      slotId
+    ].beams.filter(
+      (el) => el.node1 != id && el.node2 != id //thanks only_a_ptr ;)
+    );
+  }
+
+  /**
+   * remove a specific node and update everything after it
+   * @param id nodeId
+   */
+  public removeNode(id: number, slotId: number) {
+    this.removeNodeLoop(id, slotId);
+
+    for (
+      let i = 0, n = this.editorData.slots[slotId].nodes.length;
+      i < n;
+      i++
+    ) {
+      const currNode = this.editorData.slots[slotId].nodes[i];
+      if (currNode.info.id > id) {
+        currNode.info.id -= 1;
+      }
+    }
+
+    for (
+      let i = 0, n = this.editorData.slots[slotId].beams.length;
+      i < n;
+      i++
+    ) {
+      const currBeam = this.editorData.slots[slotId].beams[i];
+
+      if (currBeam.node1 > id) {
+        currBeam.node1 -= 1;
+      }
+
+      if (currBeam.node2 > id) {
+        currBeam.node2 -= 1;
+      }
+    }
+
+    this.loadSlotsToScene();
     this.sendUpdate();
   }
 
@@ -243,17 +299,60 @@ export default class Editor {
     }
   }
 
+  public setSelectedSlotId(id: number) {
+    this.selectedSlotId = id;
+  }
+
   /**
-   * Register react's function to update ui
-   * @param func useState function
+   * change a slot's visibility
+   * @param id slot id
+   * @param state visibility
    */
-  // public registerUI(func: Function) {
-  //   this.UIFunc = func;
+  public setSlotVisibility(id: number, state: boolean) {
+    this.renderInstance.getSceneController().setSlotVisibility(id, state);
 
-  //   this.sendUpdate();
-  // }
+    this.editorData.slots[id].isVisible = state;
 
-  // public unregisterUI() {
-  //   this.UIFunc = null;
-  // }
+    this.sendUpdate();
+  }
+
+  /**
+   * change a slot's visibility
+   * @param id slot id
+   * @param state visibility
+   */
+  public setGrpVisibility(slotId: number, grpId: number, state: boolean) {
+    this.renderInstance
+      .getSceneController()
+      .setGrpVisibility(slotId, grpId, state);
+
+    this.editorData.slots[slotId].nodes
+      .filter((node) => node.info.grpId == grpId)
+      .forEach((el) => {
+        el.isVisible = state;
+      });
+
+    this.editorData.slots[slotId].grps.find(
+      (grp) => grp.id == grpId
+    )!.isVisible = state;
+
+    this.sendUpdate();
+  }
+
+  /**
+   * change a node's visibility
+   * @param id node id
+   * @param state visibility
+   */
+  public setNodeVisibility(slotId: number, nodeId: number, state: boolean) {
+    this.renderInstance
+      .getSceneController()
+      .setNodeVisibility(slotId, nodeId, state);
+
+    this.editorData.slots[slotId].nodes.find(
+      (node) => node.info.id == nodeId
+    )!.isVisible = state;
+
+    this.sendUpdate();
+  }
 }

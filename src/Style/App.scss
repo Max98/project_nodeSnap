@@ -240,6 +240,8 @@ a {
   overflow: auto !important;
   min-height: calc(100vh - 64px - 160px);
   max-height: calc(100vh - 64px - 160px);
+  color: #b1b1b1;
+  user-select: none;
 
   .row {
     margin: 0;
@@ -248,9 +250,8 @@ a {
       padding-right: 0;
       padding-left: 10px;
       overflow: hidden;
-      //max-width: 7ch;
     }
-    &:hover {
+    &:hover:not(.active-slot) {
       background-color: $secondary;
       color: white;
     }
@@ -259,6 +260,10 @@ a {
   .active {
     background-color: $primary;
     color: white;
+  }
+
+  .active-slot {
+    background-color: green;
   }
 }
 
@@ -375,4 +380,44 @@ body {
   height: 20px;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 10000;
+  min-width: 130px;
+  transform: scale(0);
+  transition-property: transform;
+  transition-timing-function: ease-in-out;
+  background: #1b1a1a;
+  border: 1px solid rgba(94, 94, 94, 0.445);
+
+  hr {
+    background-color: rgb(128, 128, 128);
+    margin: 2px 0;
+    height: 1px;
+    border: 0;
+  }
+
+  & > *:not(hr) {
+    color: #eee;
+
+    &:hover {
+      background: #3a3a3a;
+    }
+  }
+
+  &.visible {
+    transform: scale(1);
+  }
+
+  & > *:not(hr) {
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  span {
+    margin: 0px 20px;
+  }
 }
