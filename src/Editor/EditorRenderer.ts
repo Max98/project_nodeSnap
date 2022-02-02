@@ -10,6 +10,8 @@ import EditorManager from "./EditorManager";
 
 //We use our own camera modifed from the original OrbitCamera class from three.js
 import { OrbitControls, MapControls } from "./Ex/js/EditorOrbitCamera.js";
+import { SelectionBox } from "./Ex/js/SelectionBox";
+import SelectionHelper from "./Ex/SelectionHelper";
 import SceneController from "./sceneController";
 
 //@ts-ignore
@@ -27,6 +29,8 @@ class View {
 
   private type: rendererViewType = rendererViewType.VIEW_DEFAULT;
   private cameraType: viewCameraType = viewCameraType.ORTHOGRAPHIC;
+
+  private selectionHelper: SelectionHelper | null = null;
 
   // private viewCube: viewCube | undefined;
 
@@ -129,6 +133,14 @@ class View {
     //   });
     // }
 
+    if (this.type != rendererViewType.VIEW_MAIN) {
+      this.selectionHelper = new SelectionHelper(
+        this.canvas,
+        this.camera,
+        this.scene
+      );
+    }
+
     /**
      * Register mouse events
      */
@@ -195,6 +207,14 @@ class View {
     return this.cameraType;
   }
 
+  public getRenderer() {
+    return this.renderer;
+  }
+
+  public getSelectionBox() {
+    return this.selectionHelper;
+  }
+
   /**
    * Returns the current used camera
    * Can be either othogonal or perspective
@@ -245,13 +265,13 @@ class View {
     EditorManager.getInstance()
       .getRenderer()
       .getSceneController()
-      .onMouseDown(event, camera);
+      .onMouseDown(event, camera, this.selectionHelper);
   }
   private onMouseUp(event: MouseEvent, camera: THREE.Camera) {
     EditorManager.getInstance()
       .getRenderer()
       .getSceneController()
-      .onMouseUp(event, camera);
+      .onMouseUp(event, camera, this.selectionHelper);
   }
   private onMouseDblClick(event: MouseEvent, camera: THREE.Camera) {
     EditorManager.getInstance()
@@ -263,7 +283,7 @@ class View {
     EditorManager.getInstance()
       .getRenderer()
       .getSceneController()
-      .onMouseMove(event);
+      .onMouseMove(event, this.selectionHelper);
   }
 
   private onKeyDown(event: KeyboardEvent) {

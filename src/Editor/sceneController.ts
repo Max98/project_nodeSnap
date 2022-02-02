@@ -7,10 +7,13 @@ import {
 } from "./EditorDataInterfaces";
 // import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { DragControls } from "./Ex/js/DragControls.js";
-import { ConeBufferGeometry, Vector3 } from "three";
+import { Color, ConeBufferGeometry, Vector3 } from "three";
 import EditorManager from "./EditorManager";
 import Editor from "./Editor";
 import ContextMenu from "../Components/vanilla-context-menu";
+
+import { SelectionBox } from "./Ex/js/SelectionBox";
+import SelectionHelper from "./Ex/SelectionHelper";
 
 enum ControlMode {
   TRUCK,
@@ -34,7 +37,7 @@ export default class SceneController {
 
   private scene: THREE.Scene;
 
-  private displayNodesName = false;
+  private displayNodesName = true;
   private nodesDragControl: DragControls[] = [];
   private isNodeMove = false;
 
@@ -53,6 +56,8 @@ export default class SceneController {
   private makeBeamPt: number[] = [];
   private tempBeamLine: THREE.Line | undefined;
 
+  private selectedBeamId: number = -1;
+
   /**
    * Default values
    */
@@ -60,6 +65,11 @@ export default class SceneController {
   private nodesPosRenderScale = 60;
 
   private editorManager: EditorManager;
+
+  private selectedNodes: THREE.Sprite[] = [];
+  private selectedColor = "blue";
+  private defaultColor = "green";
+  private hoverColor = "red";
 
   constructor(scene: THREE.Scene, _EditorManager: EditorManager) {
     console.log("init");
@@ -162,6 +172,7 @@ export default class SceneController {
     };
 
     newNode.layers.set(1);
+
     const spritey = this.makeTextSprite(`${node.info.name.toString()}`);
 
     if (spritey) {
@@ -285,7 +296,7 @@ export default class SceneController {
        * Prepare nodes
        */
 
-      EditorManager.getInstance()
+      this.editorManager
         .getRenderer()
         .getViews()
         .forEach((el) => {
@@ -323,6 +334,17 @@ export default class SceneController {
        */
       if (currSlot.visible) this.scene.add(currSlot.scene);
     });
+  }
+
+  public setSelectedSprites(sprites: THREE.Sprite[]) {
+    sprites.forEach((sprite) => {
+      if (this.selectedNodes.find((el) => el == sprite)) return;
+
+      this.selectedNodes.push(sprite);
+      sprite.material.color = new Color(this.selectedColor);
+    });
+
+    console.log(this.selectedNodes);
   }
 
   private getSlotById(id: number): SceneSlot | undefined {
@@ -588,20 +610,23 @@ export default class SceneController {
    */
 
   private onNodeDragHoverOn(event: any) {
-    console.log("HOVER");
     const currObj = event.object;
 
-    console.log(currObj);
-
-    currObj.material.color.g = 0;
-    currObj.material.color.r = 1;
-    currObj.material.color.b = 0;
+    currObj.material.color = new Color(this.hoverColor);
 
     const currSlot = this.sceneSlot.find(
       (el) => el.id == currObj.userData.slotId
     );
 
     if (!currSlot) return;
+
+    this.editorManager
+      .getRenderer()
+      .getViews()
+      .forEach((el) => {
+        if (!el.getSelectionBox()) return;
+        el.getSelectionBox()!.isDisabled = true;
+      });
 
     if (this.makeBeamPt.length == 1) {
       if (this.tempBeamLine != undefined) {
@@ -635,17 +660,20 @@ export default class SceneController {
     }
   }
 
-  /**
-   * Events
-   *
-   */
-
   private onNodeDragHoverOff(event: any) {
+    this.editorManager
+      .getRenderer()
+      .getViews()
+      .forEach((el) => {
+        if (!el.getSelectionBox()) return;
+        el.getSelectionBox()!.isDisabled = false;
+      });
+
     const currObj = event.object;
 
-    currObj.material.color.g = 0.5;
-    currObj.material.color.r = 0;
-    currObj.material.color.b = 0;
+    if (!this.selectedNodes.find((sprite) => sprite == currObj))
+      currObj.material.color = new Color(this.defaultColor);
+    else currObj.material.color = new Color(this.selectedColor);
 
     if (this.tempBeamLine != undefined) {
       this.scene.remove(this.tempBeamLine);
@@ -682,6 +710,7 @@ export default class SceneController {
   }
 
   private onNodeDragMove(event: any) {
+    console.log(this.selectedNodes);
     /**
      * If we actually moved the node, we proceed to calc
      */
@@ -704,13 +733,33 @@ export default class SceneController {
     }
   }
 
-  public onMouseDown(event: MouseEvent, camera: THREE.Camera) {
+  public onMouseDown(
+    event: MouseEvent,
+    camera: THREE.Camera,
+    selection: SelectionHelper | null
+  ) {
     this.nodesDragControl.forEach((el) => {
       el.activate();
     });
+
+    if (event.button == 0) {
+      if (selection != null) {
+        if (this.selectedNodes.length > 0 && !selection.isDisabled) {
+          this.selectedNodes.forEach((currSprite) => {
+            currSprite.material.color = new Color(this.defaultColor);
+          });
+
+          this.selectedNodes.length = 0;
+        }
+      }
+    }
   }
 
-  public onMouseUp(event: any, camera: THREE.Camera) {
+  public onMouseUp(
+    event: any,
+    camera: THREE.Camera,
+    selection: SelectionHelper | null
+  ) {
     if (event.button == 2) {
       const raycaster = new THREE.Raycaster();
       raycaster.setFromCamera(this.mouse, camera);
@@ -725,25 +774,73 @@ export default class SceneController {
           el.deactivate();
         });
 
-        new ContextMenu(event, [
-          {
-            label: "Delete node",
-            callback: () => {
-              this.editorManager
-                .getEditorObj()
-                .removeNode(
-                  intersects[0].object.userData.id,
-                  intersects[0].object.userData.slotId
-                );
+        if (this.selectedNodes.length > 1) {
+          new ContextMenu(event, [
+            {
+              label: "Delete selected nodes",
+              callback: () => {
+                /**
+                 * Quite the thing
+                 * JS does not order loops so we have to do it manually
+                 */
+                while (this.selectedNodes.length != 0) {
+                  let max = 0;
+                  for (let x = 0; x < this.selectedNodes.length; x++) {
+                    const el = this.selectedNodes[x];
+
+                    if (el.userData.id > max) {
+                      max = el.userData.id;
+                    }
+                  }
+
+                  const currObj = this.selectedNodes.find(
+                    (el) => el.userData.id == max
+                  )!;
+
+                  this.editorManager
+                    .getEditorObj()
+                    .removeNode(currObj.userData.id, currObj.userData.slotId);
+
+                  this.selectedNodes = this.selectedNodes.filter(
+                    (el) => el != currObj
+                  );
+                  max = 0;
+                }
+              },
             },
-          },
-          "hr",
-        ]);
+            "hr",
+          ]);
+        } else {
+          new ContextMenu(event, [
+            {
+              label: "Delete node",
+              callback: () => {
+                this.editorManager
+                  .getEditorObj()
+                  .removeNode(
+                    intersects[0].object.userData.id,
+                    intersects[0].object.userData.slotId
+                  );
+              },
+            },
+            "hr",
+          ]);
+        }
+      }
+    }
+
+    if (event.button == 0) {
+      {
+        //@ts-ignore
+        this.selectedNodes = selection.getSelected();
+        this.selectedNodes.forEach((sprite) => {
+          sprite.material.color = new Color(this.selectedColor);
+        });
       }
     }
   }
 
-  public onMouseMove(event: any) {
+  public onMouseMove(event: any, selection: SelectionHelper | null) {
     const canvasBounds = event.target.getBoundingClientRect();
     this.mouse.x =
       ((event.clientX - canvasBounds.left) /

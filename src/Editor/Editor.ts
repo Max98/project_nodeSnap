@@ -220,6 +220,8 @@ export default class Editor {
    * @param id nodeId
    */
   public removeNode(id: number, slotId: number) {
+    console.log(id);
+    console.log(slotId);
     this.removeNodeLoop(id, slotId);
 
     for (

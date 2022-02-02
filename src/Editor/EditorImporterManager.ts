@@ -57,6 +57,7 @@ export default class EditorImporterMananger {
           name: el.name,
           grpId: el.grpId,
         },
+        slotId: 0,
         position: new Vector3(el.x, el.y, el.z),
         isVisible: true,
       });
@@ -68,6 +69,8 @@ export default class EditorImporterMananger {
           id: el.id,
           grpId: el.grpId,
         },
+        slotId: 0,
+
         node1: el.node1,
         node2: el.node2,
       });
