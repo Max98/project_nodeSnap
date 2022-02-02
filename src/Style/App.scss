@@ -26,6 +26,7 @@ $font-weight-bolder: 600;
 $input-bg: #00000066;
 $input-color: #fcfcfcdd;
 $input-placeholder-color: rgba(255, 255, 255, 0.5);
+$input-disabled-bg: #ffffff1f;
 
 //$input-disabled-bg: $gray-200 ;
 //$input-disabled-border-color: null ;
@@ -268,7 +269,7 @@ a {
 }
 
 .sidebar-editor {
-  font-size: 14px;
+  font-size: 12px;
   .card-body {
     padding: 0.5rem 1rem 0.5rem 1rem;
   }

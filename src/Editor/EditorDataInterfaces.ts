@@ -7,6 +7,8 @@ export interface EditorNode {
     name: string;
   };
 
+  slotId?: number;
+
   position: Vector3;
   isVisible: boolean;
 }
@@ -16,6 +18,8 @@ export interface EditorBeam {
     id: number;
     grpId: number;
   };
+
+  slotId?: number;
 
   node1: number;
   node2: number;

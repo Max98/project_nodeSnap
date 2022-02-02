@@ -23,10 +23,7 @@ interface SceneSlot {
   title: string;
 
   nodes: THREE.Sprite[];
-  beams: {
-    node1: number;
-    node2: number;
-  }[];
+  beams: EditorBeam[];
 
   scene: THREE.Scene;
   mesh?: THREE.LineSegments;
@@ -37,7 +34,7 @@ export default class SceneController {
 
   private scene: THREE.Scene;
 
-  private displayNodesName = true;
+  private displayNodesName = false;
   private nodesDragControl: DragControls[] = [];
   private isNodeMove = false;
 
@@ -114,17 +111,29 @@ export default class SceneController {
     this.nodesDragControl.length = 0;
   }
 
-  public addSlot(id: number, title: string) {
+  /**
+   * Add new slot to scene
+   * @param id
+   * @param title
+   * @param visible
+   */
+  public addSlot(id: number, title: string, visible = true) {
     this.sceneSlot.push({
       id,
       title,
-      visible: true,
+      visible,
       nodes: [],
       beams: [],
       scene: new THREE.Scene(),
     });
   }
 
+  /**
+   * Add new node to scene
+   * @param node
+   * @param slotId
+   * @returns
+   */
   public addNode(node: EditorNode, slotId: number) {
     const currSlot = this.getSlotById(slotId);
 
@@ -172,6 +181,12 @@ export default class SceneController {
     currSlot.scene.add(newNode);
   }
 
+  /**
+   * Add new beam to scene
+   * @param beam
+   * @param slotId
+   * @returns
+   */
   public addBeam(beam: EditorBeam, slotId: number) {
     const currSlot = this.getSlotById(slotId);
     if (!currSlot) {
@@ -182,6 +197,37 @@ export default class SceneController {
     currSlot.beams.push(beam);
   }
 
+  public removeBeam(slotId: number, beamId: number) {
+    const currSlot = this.getSlotById(slotId);
+
+    if (!currSlot) {
+      console.error("Slot not found");
+      return;
+    }
+
+    currSlot.beams = currSlot.beams.filter(
+      (currBeam) => currBeam.info.id != beamId
+    );
+  }
+
+  public updateBeam(slotId: number, beam: EditorBeam) {
+    const currSlot = this.getSlotById(slotId);
+
+    if (!currSlot) {
+      console.error("Slot not found");
+      return;
+    }
+
+    const currBeam = currSlot.beams.find(
+      (currBeam) => currBeam.info.id == beam.info.id
+    )!;
+
+    Object.assign(currBeam, beam);
+  }
+
+  /**
+   * Build all beams
+   */
   public buildBeamLines() {
     this.sceneSlot.forEach((currSlot) => {
       /**
@@ -226,6 +272,7 @@ export default class SceneController {
       });
 
       currSlot.mesh = new THREE.LineSegments(geometry, lineMaterial);
+
       currSlot.scene.add(currSlot.mesh);
     });
   }
@@ -274,7 +321,7 @@ export default class SceneController {
       /**
        * Add to scene
        */
-      this.scene.add(currSlot.scene);
+      if (currSlot.visible) this.scene.add(currSlot.scene);
     });
   }
 
@@ -363,12 +410,14 @@ export default class SceneController {
    * @param state
    */
   public setSlotVisibility(id: number, state: boolean) {
-    const currSlot = this.sceneSlot.find((el) => el.id == id);
+    const currSlot = this.getSlotById(id);
 
     if (!currSlot) {
       console.error("Slot not found");
       return;
     }
+
+    currSlot.visible = state;
 
     if (!state) this.scene.remove(currSlot.scene);
     else this.scene.add(currSlot.scene);
@@ -407,9 +456,9 @@ export default class SceneController {
    * @param state
    */
   public setGrpVisibility(slotId: number, grpId: number, state: boolean) {
-    const nodesArray = this.sceneSlot
-      .find((slot) => slot.id == slotId)!
-      .nodes.filter((node) => node.userData.grpId == grpId);
+    const nodesArray = this.getSlotById(slotId)!.nodes.filter(
+      (node) => node.userData.grpId == grpId
+    );
 
     nodesArray.forEach((currNode) => {
       this.processNodeVisiblity(slotId, currNode, state);
@@ -426,9 +475,9 @@ export default class SceneController {
    * @param state
    */
   public setNodeVisibility(slotId: number, nodeId: number, state: boolean) {
-    const currNode = this.sceneSlot
-      .find((slot) => slot.id == slotId)!
-      .nodes.find((node) => node.userData.id == nodeId);
+    const currNode = this.getSlotById(slotId)!.nodes.find(
+      (node) => node.userData.id == nodeId
+    );
 
     if (!currNode) {
       console.error("node not found");
@@ -438,6 +487,25 @@ export default class SceneController {
     this.processNodeVisiblity(slotId, currNode, state);
 
     this.buildBeamLines();
+  }
+
+  /**
+   *
+   */
+  public moveNodeSprite(
+    slotId: number,
+    nodeId: number,
+    position: THREE.Vector3
+  ) {
+    const sprite = this.getSlotById(slotId)!.nodes.find(
+      (currNode) => currNode.userData.id == nodeId
+    );
+
+    if (sprite != undefined) {
+      sprite.position.x = position.x * this.nodesPosRenderScale;
+      sprite.position.y = position.y * this.nodesPosRenderScale;
+      sprite.position.z = position.z * this.nodesPosRenderScale;
+    }
   }
 
   /*

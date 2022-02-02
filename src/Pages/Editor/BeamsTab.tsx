@@ -1,6 +1,7 @@
 import React, { Fragment, useState } from "react";
 import { useEffect } from "react";
 import { Vector3 } from "three";
+import ContextMenu from "../../Components/vanilla-context-menu";
 import EditorData, {
   EditorBeam,
   EditorNode,
@@ -24,18 +25,41 @@ export default function BeamsTab(props: { editorData: EditorData }) {
     setEditorData(props.editorData);
   }, [props.editorData]);
 
+  function setSelectedBeamData(e: React.FormEvent<HTMLElement>) {
+    e.preventDefault();
+    EditorManager.getInstance()
+      .getEditorObj()
+      .setBeamData(selectedBeam.slotId!, selectedBeam);
+  }
+
   function toggleSlotVisiblity(slot: EditorSlot) {
     EditorManager.getInstance()
       .getEditorObj()
       .setSlotVisibility(slot.id, !slot.isVisible);
   }
 
-  function generateBeamRow(beam: EditorBeam) {
+  function generateBeamRow(slotId: number, beam: EditorBeam) {
     return (
       <div key={beam.info.id}>
         <div
           onMouseDown={() => {
-            setSelectedBeam(beam);
+            beam.slotId = slotId;
+
+            setSelectedBeam(JSON.parse(JSON.stringify(beam)));
+          }}
+          onContextMenuCapture={(e) => {
+            new ContextMenu(e, [
+              { label: "Add new group before beam" },
+              "hr",
+              {
+                label: "Delete beam",
+                callback: () => {
+                  EditorManager.getInstance()
+                    .getEditorObj()
+                    .removeBeam(beam.info.id, slotId);
+                },
+              },
+            ]);
           }}
           className={
             "row " + (selectedBeam.info.id == beam.info.id ? "active" : "")
@@ -49,13 +73,19 @@ export default function BeamsTab(props: { editorData: EditorData }) {
   }
 
   return (
-    <div>
-      <div className="node-table">
+    <Fragment>
+      <div
+        className="node-table"
+        onContextMenuCapture={(e) => e.preventDefault()}
+      >
         {/*  */}
         {editorData.slots.map((slot) => {
           return (
             <div className="accordion-item" key={slot.id}>
-              <div className="row">
+              <div
+                className="row"
+                onContextMenuCapture={(e) => e.preventDefault()}
+              >
                 <div className="col checkbox-col">
                   <input
                     type="checkbox"
@@ -96,7 +126,7 @@ export default function BeamsTab(props: { editorData: EditorData }) {
                 {slot.beams
                   .filter((beam) => beam.info.grpId == -1)
                   .map((beam) => {
-                    return generateBeamRow(beam);
+                    return generateBeamRow(slot.id, beam);
                   })}
 
                 {slot.grps
@@ -105,7 +135,16 @@ export default function BeamsTab(props: { editorData: EditorData }) {
                     return (
                       <div key={el.id}>
                         <div className="accordion-item">
-                          <div className="row grp-row">
+                          <div
+                            className="row grp-row"
+                            onContextMenuCapture={(e) => {
+                              new ContextMenu(e, [
+                                { label: "Rename group" },
+                                "hr",
+                                { label: "Delete group" },
+                              ]);
+                            }}
+                          >
                             {el.id != -1 && (
                               <Fragment>
                                 {/* <div className="col checkbox-col">
@@ -145,7 +184,7 @@ export default function BeamsTab(props: { editorData: EditorData }) {
                             {slot.beams
                               .filter((beam) => beam.info.grpId == el.id)
                               ?.map((beam) => {
-                                return generateBeamRow(beam);
+                                return generateBeamRow(slot.id, beam);
                               })}
                           </div>
                         </div>
@@ -160,12 +199,16 @@ export default function BeamsTab(props: { editorData: EditorData }) {
 
         {/*  */}
       </div>
-      <div className="card bg-secondary sidebar-editor">
+      {/* I don't think we will need this */}
+      <form
+        className="card bg-secondary sidebar-editor"
+        onSubmit={setSelectedBeamData}
+      >
         <div className="card-body">
           <div style={{ minHeight: 105 }}>
             <div className="row">
-              <div className="col-3">
-                <label>Node1:</label>
+              <div className="col-4">
+                <label>Node 1:</label>
               </div>
               <div className="col">
                 <input
@@ -173,12 +216,17 @@ export default function BeamsTab(props: { editorData: EditorData }) {
                   className="form-control form-control-sm"
                   value={selectedBeam.node1}
                   disabled={selectedBeam.info.id == -1}
+                  onChange={(e) => {
+                    const data = Object.assign({}, selectedBeam);
+                    data.node1 = Number(e.target.value);
+                    setSelectedBeam(data);
+                  }}
                 />
               </div>
             </div>
             <div className="row">
-              <div className="col-3">
-                <label>Node2:</label>
+              <div className="col-4">
+                <label>Node 2:</label>
               </div>
               <div className="col">
                 <input
@@ -186,6 +234,11 @@ export default function BeamsTab(props: { editorData: EditorData }) {
                   className="form-control form-control-sm"
                   value={selectedBeam.node2}
                   disabled={selectedBeam.info.id == -1}
+                  onChange={(e) => {
+                    const data = Object.assign({}, selectedBeam);
+                    data.node2 = Number(e.target.value);
+                    setSelectedBeam(data);
+                  }}
                 />
               </div>
             </div>
@@ -195,7 +248,7 @@ export default function BeamsTab(props: { editorData: EditorData }) {
             <div className="col">
               <div className="d-grid gap-2 mx-auto">
                 <button
-                  type="button"
+                  type="submit"
                   className="btn btn-primary btn-sm me-0"
                   disabled={selectedBeam.info.id == -1}
                 >
@@ -205,7 +258,7 @@ export default function BeamsTab(props: { editorData: EditorData }) {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </form>
+    </Fragment>
   );
 }

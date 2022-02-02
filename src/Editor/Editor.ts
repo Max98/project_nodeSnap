@@ -50,7 +50,9 @@ export default class Editor {
     this.renderInstance.getSceneController().reset();
 
     this.editorData.slots.forEach((slot) => {
-      this.renderInstance.getSceneController().addSlot(slot.id, slot.title);
+      this.renderInstance
+        .getSceneController()
+        .addSlot(slot.id, slot.title, slot.isVisible);
 
       slot.nodes.forEach((node) => {
         this.renderInstance.getSceneController().addNode(node, slot.id);
@@ -191,6 +193,7 @@ export default class Editor {
       }
     }
 
+    this.renderInstance.getSceneController().removeBeam(slotId, currBeamId);
     this.renderInstance.getSceneController().buildBeamLines();
 
     this.sendUpdate();
@@ -352,6 +355,49 @@ export default class Editor {
     this.editorData.slots[slotId].nodes.find(
       (node) => node.info.id == nodeId
     )!.isVisible = state;
+
+    this.sendUpdate();
+  }
+
+  /**
+   * Set a specific node to specific data
+   * @param node
+   */
+  public setNodeData(slotId: number, node: EditorNode) {
+    const currNode = this.editorData.slots[slotId].nodes.find(
+      (currNode) => currNode.info.id == node.info.id
+    );
+
+    if (currNode == undefined) {
+      //case where select last node, then delete the node
+      // useToast().warning("Could not find node: " + node.id);
+      return;
+    }
+
+    Object.assign(currNode, node);
+
+    this.renderInstance
+      .getSceneController()
+      .moveNodeSprite(slotId, currNode.info.id, currNode.position);
+
+    this.renderInstance.getSceneController().buildBeamLines();
+    this.sendUpdate();
+  }
+
+  public setBeamData(slotId: number, beam: EditorBeam) {
+    const currBeam = this.editorData.slots[slotId].beams.find(
+      (el) => el.info.id == beam.info.id
+    );
+
+    if (!currBeam) {
+      console.error("Beam not found");
+      return;
+    }
+
+    Object.assign(currBeam, beam);
+
+    this.renderInstance.getSceneController().updateBeam(slotId, beam);
+    this.renderInstance.getSceneController().buildBeamLines();
 
     this.sendUpdate();
   }

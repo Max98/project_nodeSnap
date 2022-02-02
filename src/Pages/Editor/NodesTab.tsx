@@ -18,7 +18,7 @@ export default function NodesTab(props: { editorData: EditorData }) {
   const [selectedNode, setSelectedNode] = useState<EditorNode>({
     info: {
       id: -1,
-      name: "",
+      name: "Undefined",
       grpId: -1,
     },
 
@@ -50,13 +50,21 @@ export default function NodesTab(props: { editorData: EditorData }) {
       .setGrpVisibility(slotId, grp.id, !grp.isVisible);
   }
 
+  function setSelectedNodeData(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    EditorManager.getInstance()
+      .getEditorObj()
+      .setNodeData(selectedNode.slotId!, selectedNode);
+  }
+
   //
   function generateNodeRow(slot: EditorSlot, node: EditorNode) {
     return (
       <div key={node.info.id}>
         <div
           onMouseDown={() => {
-            setSelectedNode(node);
+            node.slotId = slot.id;
+            setSelectedNode(JSON.parse(JSON.stringify(node)));
           }}
           onContextMenuCapture={(e) => {
             new ContextMenu(e, [
@@ -119,6 +127,8 @@ export default function NodesTab(props: { editorData: EditorData }) {
                       },
                     },
                     "hr",
+                    { label: "Show only this" },
+                    { label: "Show all" },
                   ]);
                 }}
               >
@@ -242,9 +252,30 @@ export default function NodesTab(props: { editorData: EditorData }) {
 
         {/*  */}
       </div>
-      <div className="card bg-secondary sidebar-editor">
+      <form
+        className="card bg-secondary sidebar-editor"
+        onSubmit={setSelectedNodeData}
+      >
         <div className="card-body">
           <div style={{ minHeight: 105 }}>
+            <div className="row">
+              <div className="col-3">
+                <label>Name:</label>
+              </div>
+              <div className="col">
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  value={selectedNode.info.name}
+                  disabled={selectedNode.info.id == -1}
+                  onChange={(e) => {
+                    const data = Object.assign({}, selectedNode);
+                    data.info.name = e.target.value;
+                    setSelectedNode(data);
+                  }}
+                />
+              </div>
+            </div>
             <div className="row">
               <div className="col-3">
                 <label>x:</label>
@@ -255,6 +286,11 @@ export default function NodesTab(props: { editorData: EditorData }) {
                   className="form-control form-control-sm"
                   value={selectedNode.position.x}
                   disabled={selectedNode.info.id == -1}
+                  onChange={(e) => {
+                    const data = Object.assign({}, selectedNode);
+                    data.position.x = Number(e.target.value);
+                    setSelectedNode(data);
+                  }}
                 />
               </div>
             </div>
@@ -268,6 +304,11 @@ export default function NodesTab(props: { editorData: EditorData }) {
                   className="form-control form-control-sm"
                   value={selectedNode.position.y}
                   disabled={selectedNode.info.id == -1}
+                  onChange={(e) => {
+                    const data = Object.assign({}, selectedNode);
+                    data.position.y = Number(e.target.value);
+                    setSelectedNode(data);
+                  }}
                 />
               </div>
             </div>
@@ -281,31 +322,22 @@ export default function NodesTab(props: { editorData: EditorData }) {
                   className="form-control form-control-sm"
                   value={selectedNode.position.z}
                   disabled={selectedNode.info.id == -1}
-                />
-              </div>
-            </div>
-            <div className="row">
-              <div className="col-3">
-                <label>Name:</label>
-              </div>
-              <div className="col">
-                <input
-                  type="text"
-                  className="form-control form-control-sm"
-                  value={selectedNode.info.name}
-                  disabled={selectedNode.info.id == -1}
+                  onChange={(e) => {
+                    const data = Object.assign({}, selectedNode);
+                    data.position.z = Number(e.target.value);
+                    setSelectedNode(data);
+                  }}
                 />
               </div>
             </div>
           </div>
-
           <div className="row">
             <div className="col">
               <div className="d-grid gap-2 mx-auto">
                 <button
-                  type="button"
                   className="btn btn-primary btn-sm me-0"
                   disabled={selectedNode.info.id == -1}
+                  type="submit"
                 >
                   Apply
                 </button>
@@ -313,7 +345,7 @@ export default function NodesTab(props: { editorData: EditorData }) {
             </div>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
