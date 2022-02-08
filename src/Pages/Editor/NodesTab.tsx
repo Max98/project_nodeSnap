@@ -68,9 +68,23 @@ export default function NodesTab(props: { editorData: EditorData }) {
           }}
           onContextMenuCapture={(e) => {
             new ContextMenu(e, [
-              { label: "Add new group before node" },
+              {
+                label: "Add new group before node",
+                callback: () => {
+                  EditorManager.getInstance()
+                    .getWinManager()
+                    .showGrpNodesWindow(slot.id, node.info.id);
+                },
+              },
               "hr",
-              { label: "Delete node" },
+              {
+                label: "Delete node",
+                callback: () => {
+                  EditorManager.getInstance()
+                    .getEditorObj()
+                    .removeNode(node.info.id, slot.id);
+                },
+              },
             ]);
           }}
           className={

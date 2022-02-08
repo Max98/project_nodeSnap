@@ -6,9 +6,12 @@ import EditorData, {
   EditorGrp,
   EditorSlot,
 } from "./EditorDataInterfaces";
+import EditorEventListener from "./EditorEventListener";
 import EditorImporterMananger, { Importers } from "./EditorImporterManager";
+import EditorPlugins from "./EditorPlugins";
 import EditorRenderer from "./EditorRenderer";
 import TruckFileImporter from "./Ex/TruckFileImporter";
+import WindowManager from "./WindowManager";
 
 export default class EditorManager {
   private static instance: EditorManager;
@@ -16,14 +19,27 @@ export default class EditorManager {
   ImporterManager: EditorImporterMananger;
   Renderer: EditorRenderer;
   Editor: Editor;
+  winManager: WindowManager;
+  EditorEventListener: EditorEventListener;
+
+  EditorPlugins: EditorPlugins;
 
   constructor() {
     EditorManager.instance = this;
 
+    this.winManager = new WindowManager();
+
     this.Renderer = new EditorRenderer(this);
     this.ImporterManager = new EditorImporterMananger();
-
     this.Editor = new Editor(this.Renderer, this.ImporterManager);
+
+    this.EditorEventListener = new EditorEventListener(this.Editor);
+
+    this.EditorPlugins = new EditorPlugins(
+      this.Editor,
+      this.Renderer,
+      this.ImporterManager
+    );
   }
 
   /**
@@ -31,10 +47,8 @@ export default class EditorManager {
    */
   public static getInstance(): EditorManager {
     if (!EditorManager.instance) {
-      console.warn(
-        this.constructor.name + "is still not created, creating one"
-      );
-      EditorManager.instance = new EditorManager();
+      console.error(this.constructor.name + "is still not created");
+      // EditorManager.instance = new EditorManager();
     }
 
     return EditorManager.instance;
@@ -46,6 +60,14 @@ export default class EditorManager {
 
   public getEditorObj() {
     return this.Editor;
+  }
+
+  public getWinManager() {
+    return this.winManager;
+  }
+
+  public getEventListener() {
+    return this.EditorEventListener;
   }
 
   public loadData(path: string) {

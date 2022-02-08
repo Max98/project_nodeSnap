@@ -3,20 +3,14 @@
   windows_subsystem = "windows"
 )]
 
-// Default stuff
-#[tauri::command]
-fn add(n1: f64, n2: f64) -> f64 {
-  return n1 + n2;
-}
-
-#[tauri::command]
-fn multiply(n1: f64, n2: f64) -> f64 {
-  return n1 * n2;
-}
+mod commands;
+mod events;
 
 fn main() {
-  tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![add, multiply])
-    .run(tauri::generate_context!())
+  let app = tauri::Builder::default()
+    .invoke_handler(tauri::generate_handler![commands::add, commands::multiply])
+    .build(tauri::generate_context!())
     .expect("error while running tauri application");
+
+  app.run(|app_handle, e| events::run_event(app_handle, e));
 }

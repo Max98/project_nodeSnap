@@ -9,6 +9,7 @@ import BeamsTab from "./Editor/BeamsTab";
 import Main from "./Editor/Main";
 import Navbar from "./Editor/Navbar";
 import NodesTab from "./Editor/NodesTab";
+import { dialog } from "@tauri-apps/api";
 
 export default function Editor() {
   let updateData;
@@ -19,13 +20,18 @@ export default function Editor() {
   });
 
   useEffect(() => {
+    // dialog.open().then((path) => {
+    //   EditorManager.getInstance().loadData(path.toString());
+    //   console.log(path);
+    // });
+
     gVars.updateUI = (data: EditorData) => {
       setEditorData({ ...data });
     };
 
-    // return () => {
-    //   gVars.updateUI = null;
-    // };
+    return () => {
+      gVars.updateUI = null;
+    };
   }, []);
 
   useEffect(() => {

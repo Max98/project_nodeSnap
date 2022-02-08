@@ -8,6 +8,9 @@ import EditorRenderer from "./EditorRenderer";
 import EditorImporterMananger, { Importers } from "./EditorImporterManager";
 import { Vector3 } from "three";
 import gVars from "./Bridge";
+import { listen } from "@tauri-apps/api/event";
+import WindowManager from "./WindowManager";
+import EditorEventListener from "./EditorEventListener";
 
 export default class Editor {
   // private logger: myLogger.LogFunctions;
@@ -33,6 +36,13 @@ export default class Editor {
      * Base structure
      */
     this.editorData = this.importerManager.getCleanData();
+
+    /**
+     * Window specific stuff
+     */
+    listen("backData", (e) => {
+      console.log(e);
+    });
   }
 
   /**
@@ -255,6 +265,8 @@ export default class Editor {
     this.sendUpdate();
   }
 
+  public addGrpNodes(slotId: number, nodeId: number, title: string) {}
+
   /**
    * Utils
    */
@@ -403,4 +415,8 @@ export default class Editor {
 
     this.sendUpdate();
   }
+
+  /**
+   * Window specific actions
+   */
 }
